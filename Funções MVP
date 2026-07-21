@@ -1,0 +1,21 @@
+# CRRIA CERTO - MVP
+
+## Funções
+
+    - Cadastro de animais
+        - Sexo
+        - Identificação
+        - Apelido `Opcional`
+        - Registro PBB `Opcional`
+        - Raça
+        - Origem `Opcional`
+        - Data Nascimento `Opcional`
+        - Data de entrada no plantel
+        - Peso de entrada no plantel
+        - GPD `Opcional`
+        - Pai `Opcional`
+        - Mãe `Opcional`
+        - Score corporal (Muito magro/Magro/Ideal/Gordo/Muito gordo)
+    
+    - Listagem de animais
+        
