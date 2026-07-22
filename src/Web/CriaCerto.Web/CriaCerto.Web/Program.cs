@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using CriaCerto.Web.Client.Pages;
 using CriaCerto.Web.Components;
 
@@ -11,6 +12,11 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<CriaCerto.Web.Client.Auth.CustomAuthStateProvider>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => 
     sp.GetRequiredService<CriaCerto.Web.Client.Auth.CustomAuthStateProvider>());
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+    });
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -28,6 +34,9 @@ else
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 
