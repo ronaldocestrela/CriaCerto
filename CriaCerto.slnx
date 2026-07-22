@@ -32,5 +32,6 @@
   </Folder>
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/CriaCerto.BuildingBlocks.UnitTests/CriaCerto.BuildingBlocks.UnitTests.csproj" />
+    <Project Path="tests/Unit/CriaCerto.Modules.Breeding.UnitTests/CriaCerto.Modules.Breeding.UnitTests.csproj" />
   </Folder>
 </Solution>

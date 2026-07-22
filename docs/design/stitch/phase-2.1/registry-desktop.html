@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cria Certo - Sow &amp; Boar Registry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#c5430f",
+                    "on-secondary-fixed": "#111c2d",
+                    "surface-tint": "#006d30",
+                    "on-tertiary-fixed-variant": "#832600",
+                    "on-surface": "#191c1e",
+                    "on-tertiary-container": "#fff1ed",
+                    "background": "#f7f9fb",
+                    "on-primary-fixed-variant": "#005323",
+                    "tertiary-fixed-dim": "#ffb59d",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e0e3e5",
+                    "surface": "#f7f9fb",
+                    "on-tertiary-fixed": "#390c00",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#79db8d",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#ffdbd0",
+                    "on-secondary-container": "#586377",
+                    "secondary": "#545f73",
+                    "primary-container": "#15803d",
+                    "on-primary-fixed": "#00210a",
+                    "surface-dim": "#d8dadc",
+                    "tertiary": "#9f3000",
+                    "outline-variant": "#becabc",
+                    "surface-container-low": "#f2f4f6",
+                    "inverse-surface": "#2d3133",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "on-primary-container": "#d3ffd5",
+                    "on-error": "#ffffff",
+                    "primary": "#00652c",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-bright": "#f7f9fb",
+                    "secondary-container": "#d5e0f8",
+                    "primary-fixed": "#95f8a7",
+                    "error-container": "#ffdad6",
+                    "on-background": "#191c1e",
+                    "inverse-primary": "#79db8d",
+                    "on-surface-variant": "#3f493f",
+                    "secondary-fixed": "#d8e3fb",
+                    "outline": "#6f7a6e",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e0e3e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "unit": "4px",
+                    "margin-mobile": "16px",
+                    "touch-target-min": "48px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "data-table": ["Work Sans"],
+                    "headline-lg": ["Work Sans"],
+                    "label-bold": ["JetBrains Mono"],
+                    "body-lg": ["Work Sans"],
+                    "headline-sm": ["Work Sans"],
+                    "body-md": ["Work Sans"],
+                    "headline-md": ["Work Sans"]
+            },
+            "fontSize": {
+                    "data-table": ["15px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-bold": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6f7a6e;
+            border-radius: 10px;
+        }
+        body {
+            background-color: #f7f9fb;
+        }
+        .pressed-effect:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface select-none overflow-hidden h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col h-full w-64 bg-surface-container-low border-r border-outline-variant p-unit">
+<div class="px-4 py-6 flex flex-col gap-1">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Cria Certo</h1>
+<p class="text-on-surface-variant font-label-bold text-xs uppercase tracking-widest">Swine Management</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-bold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined">pets</span>
+<span class="font-label-bold">Breeding</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary-container text-on-primary-container rounded-xl font-bold shadow-sm" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-bold">Sow Registry</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-bold">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-bold">Reports</span>
+</a>
+</nav>
+<div class="px-2 pb-4 flex flex-col gap-1">
+<button class="w-full bg-primary text-on-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2 pressed-effect mb-4 shadow-sm hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">add</span>
+<span>Add New Entry</span>
+</button>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-bold">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-bold">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- Top App Bar -->
+<header class="h-16 flex items-center justify-between px-margin-desktop bg-surface border-b border-outline-variant z-10">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Sow &amp; Boar Registry</h2>
+<!-- Sub-nav tabs -->
+<nav class="flex h-16">
+<button class="px-4 border-b-2 border-primary text-primary font-bold transition-all">Matrizes (Sows)</button>
+<button class="px-4 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-all">Reprodutores (Boars)</button>
+<button class="px-4 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-all">Lotes de Reposição</button>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center group">
+<span class="material-symbols-outlined absolute left-3 text-outline">search</span>
+<input class="bg-surface-container-low border-outline-variant focus:ring-primary focus:border-primary rounded-lg pl-10 pr-10 py-1.5 w-64 text-sm transition-all group-hover:border-outline" placeholder="Search Ear Tag ID..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 text-outline cursor-pointer hover:text-primary transition-colors">barcode_scanner</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">signal_wifi_off</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border border-white"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">agriculture</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-outline-variant border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a farm manager in natural lighting, outdoors in a modern agricultural facility. The image has high clarity and high contrast, maintaining a clean light-mode corporate aesthetic with subtle forest green tones in the environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdOpbnP9Gvnot_DWeGe3CmP1-jTB56Clumw7-G7en0iUenLYsm5VdWNkxAqoYy-flX2DS4K4YNKkCC1GNeyCGruWhJZDr4YCMRlCk2O9zXGGSxVlqH3-fZ4w4uNHLV45VT5KnOWDv6beZ8qw8UaCEyJMg6X4Hg-bO7Qe2Unwl6I1mlABDWwws60smWyFj9tx3wScQRgcTO3vpb8Vrm5N18PkiuJqdYliG01apY-076bjw3Z8MJ8A4o"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-gutter md:p-margin-desktop bg-surface">
+<!-- KPI Cards Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-8">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm hover:border-primary/30 transition-all">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-bold text-on-surface-variant uppercase tracking-tighter">Total de Matrizes</span>
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg">1,248</span>
+<span class="text-primary font-bold text-sm">+2.4%</span>
+</div>
+<p class="text-on-surface-variant text-xs mt-1">Ativas no plantel atual</p>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm hover:border-primary/30 transition-all">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-bold text-on-surface-variant uppercase tracking-tighter">DNP Médio</span>
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg">14.2</span>
+<span class="text-error font-bold text-sm">+0.5</span>
+</div>
+<p class="text-on-surface-variant text-xs mt-1">Dias Não Produtivos por ciclo</p>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm hover:border-primary/30 transition-all">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-bold text-on-surface-variant uppercase tracking-tighter">Taxa de Nascidos Vivos</span>
+<div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">child_care</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg">13.8</span>
+<span class="text-primary font-bold text-sm">+1.2%</span>
+</div>
+<p class="text-on-surface-variant text-xs mt-1">Leitões por parto (média móvel)</p>
+</div>
+</section>
+<!-- Filters Bar -->
+<div class="bg-surface-container-low p-4 rounded-xl mb-6 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-xs text-on-surface-variant">FILTRAR POR:</span>
+<div class="flex gap-2">
+<button class="bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-bold transition-all">Todas</button>
+<button class="bg-surface border border-outline-variant text-on-surface-variant px-3 py-1 rounded-full text-xs hover:bg-surface-container-high transition-all">Vazia</button>
+<button class="bg-surface border border-outline-variant text-on-surface-variant px-3 py-1 rounded-full text-xs hover:bg-surface-container-high transition-all">Coberta</button>
+<button class="bg-surface border border-outline-variant text-on-surface-variant px-3 py-1 rounded-full text-xs hover:bg-surface-container-high transition-all">Gestante</button>
+<button class="bg-surface border border-outline-variant text-on-surface-variant px-3 py-1 rounded-full text-xs hover:bg-surface-container-high transition-all">Lactante</button>
+</div>
+</div>
+<button class="flex items-center gap-2 text-primary font-bold text-sm px-4 py-2 bg-surface hover:bg-surface-container-highest transition-colors border border-primary/20 rounded-lg">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                    Advanced Filters
+                </button>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse text-left font-data-table text-data-table">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant border-b border-outline-variant">
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs">Tag ID</th>
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs text-center">Parity (OP)</th>
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs text-center">DNP</th>
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs">Last Event</th>
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs">Location</th>
+<th class="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Table Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-primary">MT-9482</span>
+<span class="text-xs text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded">F1</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-label-bold bg-primary/10 text-primary uppercase">Gestante</span>
+</td>
+<td class="px-6 py-4 text-center font-label-bold">04</td>
+<td class="px-6 py-4 text-center">
+<span class="text-on-surface">0</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-on-surface">Confirm. Prenhez</span>
+<span class="text-xs text-on-surface-variant">12 Out 2023</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Baia G-04</td>
+<td class="px-6 py-4 text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 2 (Alert State) -->
+<tr class="bg-error/5 hover:bg-error/10 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-primary">MT-8120</span>
+<span class="text-xs text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded">LWB</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-label-bold bg-error/10 text-error uppercase">Vazia</span>
+</td>
+<td class="px-6 py-4 text-center font-label-bold">02</td>
+<td class="px-6 py-4 text-center">
+<span class="text-error font-bold">28</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-on-surface">Desmame</span>
+<span class="text-xs text-on-surface-variant">15 Set 2023</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Piquete 02</td>
+<td class="px-6 py-4 text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-primary">MT-9501</span>
+<span class="text-xs text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded">F1</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-label-bold bg-secondary-container text-on-secondary-container uppercase">Coberta</span>
+</td>
+<td class="px-6 py-4 text-center font-label-bold">01</td>
+<td class="px-6 py-4 text-center">
+<span class="text-on-surface">4</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-on-surface">Inseminação</span>
+<span class="text-xs text-on-surface-variant">22 Out 2023</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Baia C-12</td>
+<td class="px-6 py-4 text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-primary">MT-9515</span>
+<span class="text-xs text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded">F1</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-label-bold bg-tertiary-fixed-dim text-on-tertiary-fixed uppercase">Lactante</span>
+</td>
+<td class="px-6 py-4 text-center font-label-bold">06</td>
+<td class="px-6 py-4 text-center">
+<span class="text-on-surface">0</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-on-surface">Parto</span>
+<span class="text-xs text-on-surface-variant">05 Out 2023</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Maternidade 03</td>
+<td class="px-6 py-4 text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="bg-surface-container px-6 py-4 flex items-center justify-between border-t border-outline-variant">
+<span class="text-xs text-on-surface-variant font-label-bold">SHOWING 4 OF 1,248 MATRIZES</span>
+<div class="flex items-center gap-2">
+<button class="p-1 hover:bg-surface rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="px-3 py-1 bg-primary text-on-primary rounded text-xs font-bold">1</button>
+<button class="px-3 py-1 hover:bg-surface rounded text-xs">2</button>
+<button class="px-3 py-1 hover:bg-surface rounded text-xs">3</button>
+<span class="text-xs px-1">...</span>
+<button class="px-3 py-1 hover:bg-surface rounded text-xs">312</button>
+<button class="p-1 hover:bg-surface rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for Mobile (as requested in Shared Components context logic, even though this is a desktop focus) -->
+<button class="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center pressed-effect z-50">
+<span class="material-symbols-outlined">add</span>
+</button>
+<!-- Bottom Nav for Mobile -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 md:hidden pb-safe bg-surface border-t border-outline-variant shadow-lg">
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-bold text-[10px]">Herd</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">opacity</span>
+<span class="font-label-bold text-[10px]">Inseminate</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">task_alt</span>
+<span class="font-label-bold text-[10px]">Tasks</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-bold text-[10px]">Home</span>
+</button>
+</nav>
+<script>
+        // Micro-interactions for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.cursor = 'pointer';
+            });
+            row.addEventListener('click', () => {
+                // Potential navigate to animal detail
+                console.log('Navigate to animal details');
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('w-80');
+            searchInput.classList.add('w-80');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('w-80');
+            searchInput.classList.remove('w-80');
+        });
+    </script>
+</body></html>

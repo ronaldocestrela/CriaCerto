@@ -1,0 +1,30 @@
+<div class="plantel-kpi-card">
+    <div class="plantel-kpi-icon @IconClass">
+        <span class="material-symbols-outlined">@Icon</span>
+    </div>
+    <div>
+        <p>@Label</p>
+        <strong>@Value</strong>
+        <small class="@TrendClass">@Trend</small>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Trend { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Icon { get; set; } = "monitoring";
+
+    [Parameter]
+    public string IconClass { get; set; } = "";
+
+    [Parameter]
+    public string TrendClass { get; set; } = "trend-positive";
+}

@@ -1,8 +1,13 @@
 using System.Text;
 using CriaCerto.BuildingBlocks.Application;
+using CriaCerto.BuildingBlocks.Abstractions.Results;
 using CriaCerto.BuildingBlocks.Infrastructure;
 using CriaCerto.BuildingBlocks.Infrastructure.Persistence;
 using CriaCerto.Modules.Breeding.Application;
+using CriaCerto.Modules.Breeding.Application.Domain;
+using CriaCerto.Modules.Breeding.Application.Features.Plantel;
+using CriaCerto.Modules.Breeding.Infrastructure;
+using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
 using CriaCerto.Modules.Maternity.Application;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
@@ -31,6 +36,7 @@ var connectionString = builder.Configuration.GetConnectionString("SqlServer")
 // Register Building Blocks and Tenancy Infrastructure
 builder.Services.AddBuildingBlocksInfrastructure(connectionString);
 builder.Services.AddTenancyInfrastructure(builder.Configuration);
+builder.Services.AddBreedingInfrastructure();
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
@@ -85,6 +91,79 @@ app.MapPost("/api/auth/select-tenant", async (SelectTenantCommand command, ISend
         : Results.Json(result.Error, statusCode: 400);
 });
 
+var breeding = app.MapGroup("/api/breeding")
+    .RequireAuthorization()
+    .WithTags("Breeding");
+
+breeding.MapGet("/sows", async (
+    ISender sender,
+    string? search,
+    ReproductiveStatus? status,
+    int page = 1,
+    int pageSize = 25) =>
+{
+    var result = await sender.Send(new ListSowsQuery(search, status, page, pageSize));
+    return ToHttpResult(result);
+});
+
+breeding.MapPost("/sows", async (CreateSowCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+breeding.MapGet("/sows/{id:guid}", async (Guid id, ISender sender) =>
+{
+    var result = await sender.Send(new GetSowQuery(id));
+    return ToHttpResult(result);
+});
+
+breeding.MapPut("/sows/{id:guid}", async (Guid id, UpdateSowCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command with { Id = id });
+    return ToHttpResult(result);
+});
+
+breeding.MapPost("/sows/{id:guid}/status", async (Guid id, ChangeLifecycleStatusRequest request, ISender sender) =>
+{
+    var result = await sender.Send(new ChangeSowStatusCommand(id, request.Status, request.EventDate, request.Notes));
+    return ToHttpResult(result);
+});
+
+breeding.MapGet("/boars", async (
+    ISender sender,
+    string? search,
+    int page = 1,
+    int pageSize = 25) =>
+{
+    var result = await sender.Send(new ListBoarsQuery(search, page, pageSize));
+    return ToHttpResult(result);
+});
+
+breeding.MapPost("/boars", async (CreateBoarCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+breeding.MapGet("/boars/{id:guid}", async (Guid id, ISender sender) =>
+{
+    var result = await sender.Send(new GetBoarQuery(id));
+    return ToHttpResult(result);
+});
+
+breeding.MapPut("/boars/{id:guid}", async (Guid id, UpdateBoarCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command with { Id = id });
+    return ToHttpResult(result);
+});
+
+breeding.MapPost("/boars/{id:guid}/status", async (Guid id, ChangeLifecycleStatusRequest request, ISender sender) =>
+{
+    var result = await sender.Send(new ChangeBoarStatusCommand(id, request.Status, request.EventDate, request.Notes));
+    return ToHttpResult(result);
+});
+
 app.Run();
 
 static void ApplyMigrations(WebApplication app)
@@ -96,7 +175,8 @@ static void ApplyMigrations(WebApplication app)
     var dbContexts = new DbContext[]
     {
         scope.ServiceProvider.GetRequiredService<FoundationDbContext>(),
-        scope.ServiceProvider.GetRequiredService<TenancyDbContext>()
+        scope.ServiceProvider.GetRequiredService<TenancyDbContext>(),
+        scope.ServiceProvider.GetRequiredService<BreedingDbContext>()
     };
 
     foreach (var dbContext in dbContexts)
@@ -113,3 +193,26 @@ static void ApplyMigrations(WebApplication app)
         }
     }
 }
+
+static IResult ToHttpResult<TValue>(Result<TValue> result, int successStatusCode = StatusCodes.Status200OK)
+{
+    if (result.IsSuccess)
+    {
+        return successStatusCode == StatusCodes.Status200OK
+            ? Results.Ok(result.Value)
+            : Results.Json(result.Value, statusCode: successStatusCode);
+    }
+
+    return Results.Json(result.Error, statusCode: ToStatusCode(result.Error.Type));
+}
+
+static int ToStatusCode(ErrorType errorType) => errorType switch
+{
+    ErrorType.Validation => StatusCodes.Status400BadRequest,
+    ErrorType.NotFound => StatusCodes.Status404NotFound,
+    ErrorType.Conflict => StatusCodes.Status409Conflict,
+    ErrorType.Unauthorized => StatusCodes.Status403Forbidden,
+    _ => StatusCodes.Status400BadRequest
+};
+
+public sealed record ChangeLifecycleStatusRequest(LifecycleStatus Status, DateOnly EventDate, string? Notes);

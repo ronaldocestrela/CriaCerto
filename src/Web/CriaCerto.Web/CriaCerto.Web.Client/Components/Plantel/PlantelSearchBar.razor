@@ -1,0 +1,22 @@
+<div class="plantel-search-row">
+    <label class="plantel-search" aria-label="Buscar no plantel">
+        <span class="material-symbols-outlined">search</span>
+        <input value="@Search" @oninput="OnSearchInput" placeholder="@Placeholder" />
+    </label>
+    <button type="button" class="plantel-scan-button" aria-label="Escanear brinco ou tag">
+        <span class="material-symbols-outlined">qr_code_scanner</span>
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public string? Search { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SearchChanged { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Buscar por Brinco/Tag...";
+
+    private Task OnSearchInput(ChangeEventArgs args) => SearchChanged.InvokeAsync(args.Value?.ToString());
+}

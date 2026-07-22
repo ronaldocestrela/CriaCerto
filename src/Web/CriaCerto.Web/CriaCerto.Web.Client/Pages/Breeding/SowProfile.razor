@@ -1,0 +1,146 @@
+@page "/breeding/sows/{Id:guid}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@attribute [Authorize]
+@using CriaCerto.Web.Client.Components.Plantel
+@using CriaCerto.Web.Client.Models
+@inject CriaCerto.Web.Client.Services.PlantelApiClient PlantelApi
+
+<PageTitle>Cria Certo - Perfil da Matriz</PageTitle>
+
+<ModuleGuard Module="Breeding">
+    @if (_sow is null)
+    {
+        <div class="plantel-loading">Carregando perfil do animal...</div>
+    }
+    else
+    {
+        <div class="plantel-profile-page">
+            <a class="profile-back" href="breeding/registry">
+                <span class="material-symbols-outlined">arrow_back</span>
+                VOLTAR PARA O PLANTEL
+            </a>
+
+            <section class="profile-main-card">
+                <div class="profile-photo" aria-hidden="true">
+                    <span class="material-symbols-outlined">pets</span>
+                </div>
+                <div class="profile-identity">
+                    <p>Animal Profile</p>
+                    <h1>@_sow.TagId</h1>
+                    <span class="profile-breed">@_sow.Breed</span>
+                    <span class="profile-location"><span class="material-symbols-outlined">location_on</span>@_sow.Location</span>
+                </div>
+                <div class="profile-actions">
+                    <button class="plantel-primary-action"><span class="material-symbols-outlined">edit</span>Editar Perfil</button>
+                    <button class="plantel-secondary-action" disabled><span class="material-symbols-outlined">event_note</span>Registrar Evento</button>
+                </div>
+            </section>
+
+            <section class="profile-layout">
+                <div class="profile-content">
+                    <div class="profile-kpis">
+                        <KpiStatCard Label="Total Partos (OP)" Value="@_sow.Parity.ToString("00")" Trend="Ciclos registrados" Icon="counter_5" />
+                        <KpiStatCard Label="DNP Acumulado" Value="@_sow.DnpDays.ToString()" Trend="dias" Icon="timer" IconClass="danger" TrendClass="trend-danger" />
+                        <KpiStatCard Label="Média Nasc. Vivos" Value="13.2" Trend="leitões por parto" Icon="child_care" />
+                        <KpiStatCard Label="Peso Atual" Value="@($"{_sow.CurrentWeightKg:0} kg")" Trend="última pesagem" Icon="monitor_weight" />
+                    </div>
+
+                    <div class="profile-detail-grid">
+                        <section class="profile-detail-card">
+                            <h2>Desempenho Reprodutivo</h2>
+                            <dl>
+                                <div><dt>Ciclo Atual</dt><dd>@GetReproductiveLabel(_sow.ReproductiveStatus)</dd></div>
+                                <div><dt>Prev. Desmame</dt><dd>24/10/2023</dd></div>
+                                <div><dt>Eficiência de Parto</dt><dd class="success-value">94%</dd></div>
+                            </dl>
+                        </section>
+
+                        <section class="profile-detail-card">
+                            <h2><span class="material-symbols-outlined">health_and_safety</span>Saúde e Manejo</h2>
+                            <dl>
+                                <div><dt>Última Vacina</dt><dd>Parvovirose (15/09)</dd></div>
+                                <div><dt>Score Corporal</dt><dd><span class="profile-score">@GetScoreLabel(_sow.BodyConditionScore)</span></dd></div>
+                                <div><dt>Restrição Alimentar</dt><dd>Nenhuma</dd></div>
+                            </dl>
+                        </section>
+                    </div>
+                </div>
+
+                <aside class="profile-side">
+                    <LifecycleTimeline Events="_sow.Events" />
+                    <button class="profile-danger-action">
+                        <span class="material-symbols-outlined">delete_forever</span>
+                        Solicitar Descarte
+                    </button>
+                </aside>
+            </section>
+        </div>
+    }
+</ModuleGuard>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private SowDetailDto? _sow;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            _sow = await PlantelApi.GetSowAsync(Id) ?? FallbackProfile();
+        }
+        catch
+        {
+            _sow = FallbackProfile();
+        }
+    }
+
+    private SowDetailDto FallbackProfile() => new(
+        Id,
+        "#BR-8042",
+        "Princesa",
+        "PBB-2023-8042",
+        "Landrace x Large White",
+        "Reposição interna",
+        new DateOnly(2021, 3, 18),
+        new DateOnly(2022, 1, 12),
+        136,
+        242,
+        0.72m,
+        "Duroc-88",
+        "#BR-3301",
+        BodyConditionScore.Ideal,
+        5,
+        14,
+        ReproductiveStatus.Lactating,
+        LifecycleStatus.Active,
+        "Galpão 02, Baia 14",
+        false,
+        new List<PlantelEventDto>
+        {
+            new("Farrowing", "Parto (12 leitões)", new DateOnly(2023, 10, 12), "Peso médio: 1.4kg. 11 Vivos, 1 Natimorto."),
+            new("Treatment", "Medicamento (Vacina A-12)", new DateOnly(2023, 9, 22), "Protocolo sanitário preventivo - Ciclo 05."),
+            new("Diagnosis", "Confirmação Prenhez (+)", new DateOnly(2023, 7, 5), "Ultrassom realizado por Vet. Carvalho."),
+            new("Breeding", "Inseminação (#302)", new DateOnly(2023, 6, 12), "Macho reprodutor: Duroc-88. Sêmen Fresco.")
+        });
+
+    private static string GetReproductiveLabel(ReproductiveStatus status) => status switch
+    {
+        ReproductiveStatus.Empty => "Vazia",
+        ReproductiveStatus.Bred => "Coberta",
+        ReproductiveStatus.Pregnant => "Gestante",
+        ReproductiveStatus.Lactating => "Lactação (Dia 12)",
+        _ => "Sem ciclo"
+    };
+
+    private static string GetScoreLabel(BodyConditionScore score) => score switch
+    {
+        BodyConditionScore.VeryThin => "MUITO MAGRA (1.0)",
+        BodyConditionScore.Thin => "MAGRA (2.0)",
+        BodyConditionScore.Ideal => "IDEAL (3.5)",
+        BodyConditionScore.Fat => "GORDA (4.0)",
+        BodyConditionScore.VeryFat => "MUITO GORDA (5.0)",
+        _ => "NÃO AVALIADO"
+    };
+}

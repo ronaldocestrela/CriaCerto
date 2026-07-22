@@ -1,0 +1,219 @@
+@page "/breeding/registry"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@attribute [Authorize]
+@using CriaCerto.Web.Client.Components.Plantel
+@using CriaCerto.Web.Client.Models
+@inject CriaCerto.Web.Client.Services.PlantelApiClient PlantelApi
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Cria Certo - Registro de Matrizes e Cachaços</PageTitle>
+
+<ModuleGuard Module="Breeding">
+    <div class="plantel-page">
+        <OfflineBanner Visible="@_offlineMode" />
+
+        <section class="plantel-hero">
+            <div>
+                <p class="plantel-breadcrumb">PLANTEL / BREEDING</p>
+                <h1>Registro de Matrizes e Cachaços</h1>
+                <p>Gestão operacional do plantel reprodutivo, otimizada para campo e escritório.</p>
+            </div>
+            <button type="button" class="plantel-primary-action">
+                <span class="material-symbols-outlined">add</span>
+                Add New Entry
+            </button>
+        </section>
+
+        <section class="plantel-tabs" aria-label="Plantel sections">
+            <button class="active">Matrizes (Sows)</button>
+            <button @onclick="() => _activeTab = PlantelTab.Boars" class="@(_activeTab == PlantelTab.Boars ? "active" : null)">Reprodutores (Boars)</button>
+            <button disabled>Lotes de Reposição</button>
+        </section>
+
+        <section class="plantel-kpi-grid">
+            <KpiStatCard Label="Total de Matrizes" Value="@_sows.Count.ToString("N0")" Trend="Ativas no plantel atual" Icon="groups" />
+            <KpiStatCard Label="DNP Médio" Value="@AverageDnp.ToString("0.0")" Trend="Dias Não Produtivos por ciclo" Icon="timer" IconClass="danger" TrendClass="trend-danger" />
+            <KpiStatCard Label="Taxa de Nascidos Vivos" Value="13.8" Trend="Leitões por parto (média móvel)" Icon="child_care" />
+        </section>
+
+        <section class="plantel-toolbar">
+            <PlantelSearchBar Search="@_search" SearchChanged="OnSearchChanged" Placeholder="Search Ear Tag ID..." />
+            <div class="plantel-filter-row">
+                <span>FILTRAR POR:</span>
+                <button class="@FilterClass(null)" @onclick="() => SetFilter(null)">Todas</button>
+                <button class="@FilterClass(ReproductiveStatus.Empty)" @onclick="() => SetFilter(ReproductiveStatus.Empty)">Vazia</button>
+                <button class="@FilterClass(ReproductiveStatus.Bred)" @onclick="() => SetFilter(ReproductiveStatus.Bred)">Coberta</button>
+                <button class="@FilterClass(ReproductiveStatus.Pregnant)" @onclick="() => SetFilter(ReproductiveStatus.Pregnant)">Gestante</button>
+                <button class="@FilterClass(ReproductiveStatus.Lactating)" @onclick="() => SetFilter(ReproductiveStatus.Lactating)">Lactante</button>
+            </div>
+        </section>
+
+        <section class="plantel-table-card">
+            <table class="plantel-table" aria-label="Matrizes cadastradas">
+                <thead>
+                    <tr>
+                        <th>Tag ID</th>
+                        <th>Status</th>
+                        <th>Parity (OP)</th>
+                        <th>DNP</th>
+                        <th>Last Event</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sow in FilteredSows)
+                    {
+                        <tr class="@(sow.RequiresAttention ? "attention-row" : null)">
+                            <td>
+                                <a class="plantel-tag" href="@($"breeding/sows/{sow.Id}")">@sow.TagId</a>
+                                <small>@sow.Breed</small>
+                            </td>
+                            <td><StatusChip ReproductiveStatus="sow.ReproductiveStatus" LifecycleStatus="sow.LifecycleStatus" Attention="sow.RequiresAttention" /></td>
+                            <td>@sow.Parity.ToString("00")</td>
+                            <td class="@(sow.DnpDays >= 28 ? "danger-value" : null)">@sow.DnpDays</td>
+                            <td>
+                                <strong>@sow.LastEventName</strong>
+                                <small>@sow.LastEventDate?.ToString("dd MMM yyyy")</small>
+                            </td>
+                            <td>@sow.Location</td>
+                            <td><span class="material-symbols-outlined">more_vert</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="plantel-mobile-list">
+                @foreach (var sow in FilteredSows)
+                {
+                    <a class="plantel-mobile-card @(sow.RequiresAttention ? "attention-card" : null)" href="@($"breeding/sows/{sow.Id}")">
+                        <div class="mobile-card-head">
+                            <span>Tag ID @(sow.RequiresAttention ? "(ALERTA)" : string.Empty)</span>
+                            <StatusChip ReproductiveStatus="sow.ReproductiveStatus" LifecycleStatus="sow.LifecycleStatus" Attention="sow.RequiresAttention" />
+                        </div>
+                        <strong>@sow.TagId</strong>
+                        <div class="mobile-card-data">
+                            <div><span>OP</span><b>@sow.Parity</b></div>
+                            <div><span>DNP</span><b class="@(sow.DnpDays >= 28 ? "danger-value" : null)">@sow.DnpDays Dias</b></div>
+                        </div>
+                    </a>
+                }
+            </div>
+
+            <footer class="plantel-table-footer">
+                <span>SHOWING @FilteredSows.Count() OF @_totalCount MATRIZES</span>
+                <span class="font-mono">1 2 3 ...</span>
+            </footer>
+        </section>
+
+        <button type="button" class="plantel-fab" aria-label="Adicionar animal">
+            <span class="material-symbols-outlined">add</span>
+        </button>
+    </div>
+</ModuleGuard>
+
+@code {
+    private readonly List<SowSummaryDto> _sows = new();
+    private string? _search;
+    private ReproductiveStatus? _status;
+    private bool _offlineMode;
+    private int _totalCount;
+    private PlantelTab _activeTab = PlantelTab.Sows;
+
+    private IEnumerable<SowSummaryDto> FilteredSows => _sows.Where(s =>
+        (!_status.HasValue || s.ReproductiveStatus == _status.Value) &&
+        (string.IsNullOrWhiteSpace(_search) || s.TagId.Contains(_search, StringComparison.OrdinalIgnoreCase) || (s.Nickname?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)));
+
+    private double AverageDnp => _sows.Count == 0 ? 0 : _sows.Average(s => s.DnpDays);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSowsAsync();
+    }
+
+    private async Task LoadSowsAsync()
+    {
+        try
+        {
+            var response = await PlantelApi.ListSowsAsync(_search, _status);
+            _sows.Clear();
+            if (response?.Items.Count > 0)
+            {
+                _sows.AddRange(response.Items);
+                _totalCount = response.TotalCount;
+                await JSRuntime.InvokeVoidAsync("plantelCache.saveSows", _sows);
+            }
+            else
+            {
+                SeedFallbackData();
+                await JSRuntime.InvokeVoidAsync("plantelCache.saveSows", _sows);
+            }
+
+            _offlineMode = false;
+        }
+        catch
+        {
+            var cached = await LoadCachedSowsAsync();
+            if (cached.Count > 0)
+            {
+                _sows.Clear();
+                _sows.AddRange(cached);
+                _totalCount = cached.Count;
+            }
+            else
+            {
+                SeedFallbackData();
+            }
+
+            _offlineMode = true;
+        }
+    }
+
+    private async Task OnSearchChanged(string? value)
+    {
+        _search = value;
+        await LoadSowsAsync();
+    }
+
+    private async Task SetFilter(ReproductiveStatus? status)
+    {
+        _status = status;
+        await LoadSowsAsync();
+    }
+
+    private string FilterClass(ReproductiveStatus? status) => _status == status ? "active" : string.Empty;
+
+    private async Task<List<SowSummaryDto>> LoadCachedSowsAsync()
+    {
+        try
+        {
+            var status = _status.HasValue ? ((int)_status.Value).ToString() : null;
+            var cached = await JSRuntime.InvokeAsync<List<SowSummaryDto>>("plantelCache.getSows", _search, status);
+            return cached ?? new List<SowSummaryDto>();
+        }
+        catch
+        {
+            return new List<SowSummaryDto>();
+        }
+    }
+
+    private void SeedFallbackData()
+    {
+        _sows.Clear();
+        _sows.AddRange(new[]
+        {
+            new SowSummaryDto(Guid.Parse("80420000-0000-0000-0000-000000000001"), "#BR-8042", "Princesa", "Landrace x Large White", ReproductiveStatus.Lactating, LifecycleStatus.Active, 5, 14, "Parto", new DateOnly(2023, 10, 12), "Galpão 02, Baia 14", false),
+            new SowSummaryDto(Guid.Parse("94820000-0000-0000-0000-000000000001"), "MT-9482", null, "F1", ReproductiveStatus.Pregnant, LifecycleStatus.Active, 4, 8, "Confirm. Prenhez", new DateOnly(2023, 10, 12), "Baia G-04", false),
+            new SowSummaryDto(Guid.Parse("81200000-0000-0000-0000-000000000001"), "MT-8120", null, "LWB", ReproductiveStatus.Empty, LifecycleStatus.Active, 2, 28, "Desmame", new DateOnly(2023, 9, 15), "Piquete 02", false),
+            new SowSummaryDto(Guid.Parse("00920000-0000-0000-0000-000000000001"), "#BR-0092", "Alerta", "F1", ReproductiveStatus.Empty, LifecycleStatus.Quarantine, 1, 45, "Sem cobertura", new DateOnly(2023, 10, 8), "Baia C-12", true),
+            new SowSummaryDto(Guid.Parse("95010000-0000-0000-0000-000000000001"), "MT-9501", null, "Duroc x LW", ReproductiveStatus.Bred, LifecycleStatus.Active, 1, 0, "Inseminação", new DateOnly(2023, 10, 22), "Baia C-12", false),
+        });
+        _totalCount = 1248;
+    }
+
+    private enum PlantelTab
+    {
+        Sows,
+        Boars
+    }
+}

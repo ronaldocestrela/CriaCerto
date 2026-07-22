@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cria Certo - Animal Profile #BR-8042</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..900&family=Work+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "tertiary-container": "#c5430f",
+                "on-secondary-fixed": "#111c2d",
+                "surface-tint": "#006d30",
+                "on-tertiary-fixed-variant": "#832600",
+                "on-surface": "#191c1e",
+                "on-tertiary-container": "#fff1ed",
+                "background": "#f7f9fb",
+                "on-primary-fixed-variant": "#005323",
+                "tertiary-fixed-dim": "#ffb59d",
+                "on-primary": "#ffffff",
+                "surface-container": "#eceef0",
+                "error": "#ba1a1a",
+                "surface-variant": "#e0e3e5",
+                "surface": "#f7f9fb",
+                "on-tertiary-fixed": "#390c00",
+                "on-tertiary": "#ffffff",
+                "secondary-fixed-dim": "#bcc7de",
+                "surface-container-lowest": "#ffffff",
+                "primary-fixed-dim": "#79db8d",
+                "on-error-container": "#93000a",
+                "tertiary-fixed": "#ffdbd0",
+                "on-secondary-container": "#586377",
+                "secondary": "#545f73",
+                "primary-container": "#15803d",
+                "on-primary-fixed": "#00210a",
+                "surface-dim": "#d8dadc",
+                "tertiary": "#9f3000",
+                "outline-variant": "#becabc",
+                "surface-container-low": "#f2f4f6",
+                "inverse-surface": "#2d3133",
+                "on-secondary-fixed-variant": "#3c475a",
+                "on-primary-container": "#d3ffd5",
+                "on-error": "#ffffff",
+                "primary": "#00652c",
+                "surface-container-high": "#e6e8ea",
+                "surface-bright": "#f7f9fb",
+                "secondary-container": "#d5e0f8",
+                "primary-fixed": "#95f8a7",
+                "error-container": "#ffdad6",
+                "on-background": "#191c1e",
+                "inverse-primary": "#79db8d",
+                "on-surface-variant": "#3f493f",
+                "secondary-fixed": "#d8e3fb",
+                "outline": "#6f7a6e",
+                "inverse-on-surface": "#eff1f3",
+                "on-secondary": "#ffffff",
+                "surface-container-highest": "#e0e3e5"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "unit": "4px",
+                "margin-mobile": "16px",
+                "touch-target-min": "48px",
+                "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                "data-table": ["Work Sans"],
+                "headline-lg": ["Work Sans"],
+                "label-bold": ["JetBrains Mono"],
+                "body-lg": ["Work Sans"],
+                "headline-lg-mobile": ["Work Sans"],
+                "headline-sm": ["Work Sans"],
+                "body-md": ["Work Sans"],
+                "headline-md": ["Work Sans"]
+            },
+            "fontSize": {
+                "data-table": ["15px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "label-bold": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Work Sans', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #becabc; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (Desktop Anchor) -->
+<aside class="hidden md:flex flex-col h-full w-64 bg-surface-container-low border-r border-outline-variant p-unit">
+<div class="flex flex-col gap-unit mb-8 px-4 py-6">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Cria Certo</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Swine Management</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl font-bold font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pets</span> Breeding
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">list_alt</span> Sow Registry
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">inventory_2</span> Inventory
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">analytics</span> Reports
+            </a>
+</nav>
+<button class="mb-6 mx-4 bg-primary text-on-primary py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span> Add New Entry
+        </button>
+<footer class="border-t border-outline-variant pt-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors font-label-bold text-label-bold" href="#">
+<span class="material-symbols-outlined">help</span> Support
+            </a>
+</footer>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-touch-target-min border-b border-outline-variant bg-surface sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Animal Profile</h2>
+</div>
+<div class="flex items-center gap-gutter">
+<div class="hidden md:flex items-center bg-surface-container rounded-full px-4 py-1.5 border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-48" placeholder="Search Herd..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-primary">
+<span class="material-symbols-outlined">signal_wifi_off</span>
+<span class="material-symbols-outlined">agriculture</span>
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Profile Canvas -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-gutter md:p-margin-desktop">
+<!-- Breadcrumbs / Back -->
+<div class="mb-6 flex items-center gap-2">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-label-bold text-label-bold">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    VOLTAR PARA O PLANTEL
+                </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Identity & KPIs -->
+<div class="lg:col-span-8 space-y-gutter">
+<!-- Header Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
+<div class="flex items-center gap-6">
+<div class="w-24 h-24 rounded-xl border-2 border-primary-container overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional, high-resolution close-up studio photograph of a healthy Landrace sow on a clean, minimalist agricultural background. The lighting is soft and even, highlighting the animal's texture and robust features. The aesthetic is corporate and functional, using a natural color palette with clean greens and whites to match an AgTech software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEGIwmsVec35hVp6Rkp5TjolxpYacXRHoOIuLFjBXsBX5HaQsv26Jkm-_FmO0AJEqawElHQxBj_3IX3gJGY0x41LzMNx8Eupugr6x8IAzzeSDeb32qumqIMcAYz97DU10T0pO5WFkq9462_oFoGxLASW5wzeQdnMAaiOdwK2huGic5wkbm8DCRruhZY_3XLPNbUzRePjEs2XfLG8R9V_nWdbPbWK09_gY9xqJCzeUcAC4js_qK3lG4"/>
+</div>
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-1">#BR-8042</h3>
+<div class="flex flex-wrap gap-2 items-center">
+<span class="px-3 py-1 bg-primary-container text-on-primary-container rounded-full font-label-bold text-[12px] uppercase">Landrace x Large White</span>
+<span class="flex items-center gap-1 text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-[18px]">location_on</span> Galpão 02, Baia 14
+                                    </span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto">
+<button class="w-full bg-primary text-on-primary px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">edit</span> Editar Perfil
+                            </button>
+<button class="w-full border border-outline text-primary px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-surface-container-high active:scale-95 transition-all">
+<span class="material-symbols-outlined">event_note</span> Registrar Evento
+                            </button>
+</div>
+</div>
+<!-- KPI Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl">
+<p class="text-on-surface-variant font-label-bold text-label-bold mb-2">Total Partos (OP)</p>
+<p class="text-headline-md font-headline-md text-primary">05</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl">
+<p class="text-on-surface-variant font-label-bold text-label-bold mb-2">DNP Acumulado</p>
+<p class="text-headline-md font-headline-md text-tertiary">14 <span class="text-body-md font-normal">dias</span></p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl">
+<p class="text-on-surface-variant font-label-bold text-label-bold mb-2">Média Nasc. Vivos</p>
+<p class="text-headline-md font-headline-md text-primary">13.2</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl">
+<p class="text-on-surface-variant font-label-bold text-label-bold mb-2">Peso Atual</p>
+<p class="text-headline-md font-headline-md text-on-surface">242 <span class="text-body-md font-normal">kg</span></p>
+</div>
+</div>
+<!-- Data Details (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl">
+<h4 class="font-headline-sm text-headline-sm mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span> Desempenho Reprodutivo
+                            </h4>
+<div class="space-y-4">
+<div class="flex justify-between border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant font-body-md">Ciclo Atual</span>
+<span class="font-bold text-on-surface">Lactação (Dia 12)</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant font-body-md">Prev. Desmame</span>
+<span class="font-bold text-on-surface">24/10/2023</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant font-body-md">Eficiência de Parto</span>
+<span class="font-bold text-primary">94%</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl">
+<h4 class="font-headline-sm text-headline-sm mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">health_and_safety</span> Saúde e Manejo
+                            </h4>
+<div class="space-y-4">
+<div class="flex justify-between border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant font-body-md">Última Vacina</span>
+<span class="font-bold text-on-surface">Parvovirose (15/09)</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant font-body-md">Score Corporal</span>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded text-[12px] font-bold">IDEAL (3.5)</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant font-body-md">Restrição Alimentar</span>
+<span class="font-bold text-on-surface">Nenhuma</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Timeline -->
+<div class="lg:col-span-4 h-full">
+<div class="bg-surface-container-low border border-outline-variant rounded-xl h-full flex flex-col">
+<div class="p-6 border-b border-outline-variant">
+<h4 class="font-headline-sm text-headline-sm flex items-center gap-2">
+<span class="material-symbols-outlined">history</span> Linha do Tempo de Vida
+                            </h4>
+</div>
+<div class="flex-1 p-6 overflow-y-auto space-y-8 relative">
+<!-- Timeline Line -->
+<div class="absolute left-[33px] top-6 bottom-6 w-0.5 bg-outline-variant"></div>
+<!-- Event: Parto -->
+<div class="relative flex gap-6">
+<div class="z-10 w-4 h-4 rounded-full bg-primary mt-1 border-4 border-surface ring-2 ring-primary-container"></div>
+<div class="flex-1">
+<p class="font-label-bold text-label-bold text-on-surface-variant">12 OUT 2023</p>
+<h5 class="font-bold text-on-surface">Parto (12 leitões)</h5>
+<p class="text-body-md text-on-surface-variant">Peso médio: 1.4kg. 11 Vivos, 1 Natimorto.</p>
+<div class="mt-2 flex gap-2">
+<span class="px-2 py-0.5 bg-primary-container/10 text-primary rounded text-[11px] font-bold">SUCESSO</span>
+</div>
+</div>
+</div>
+<!-- Event: Medicamento -->
+<div class="relative flex gap-6">
+<div class="z-10 w-4 h-4 rounded-full bg-tertiary mt-1 border-4 border-surface ring-2 ring-tertiary-fixed"></div>
+<div class="flex-1">
+<p class="font-label-bold text-label-bold text-on-surface-variant">22 SET 2023</p>
+<h5 class="font-bold text-on-surface">Medicamento (Vacina A-12)</h5>
+<p class="text-body-md text-on-surface-variant">Protocolo sanitário preventivo - Ciclo 05.</p>
+</div>
+</div>
+<!-- Event: Confirmação -->
+<div class="relative flex gap-6">
+<div class="z-10 w-4 h-4 rounded-full bg-secondary mt-1 border-4 border-surface ring-2 ring-secondary-container"></div>
+<div class="flex-1">
+<p class="font-label-bold text-label-bold text-on-surface-variant">05 JUL 2023</p>
+<h5 class="font-bold text-on-surface">Confirmação Prenhez (+)</h5>
+<p class="text-body-md text-on-surface-variant">Ultrassom realizado por Vet. Carvalho.</p>
+</div>
+</div>
+<!-- Event: Inseminação -->
+<div class="relative flex gap-6">
+<div class="z-10 w-4 h-4 rounded-full bg-primary mt-1 border-4 border-surface ring-2 ring-primary-container"></div>
+<div class="flex-1">
+<p class="font-label-bold text-label-bold text-on-surface-variant">12 JUN 2023</p>
+<h5 class="font-bold text-on-surface">Inseminação (#302)</h5>
+<p class="text-body-md text-on-surface-variant">Macho reprodutor: Duroc-88. Sêmen Fresco.</p>
+</div>
+</div>
+<!-- View All -->
+<div class="pt-4">
+<button class="w-full py-2 text-primary font-bold text-body-md hover:bg-surface-container-high rounded transition-colors">
+                                    Ver histórico completo
+                                </button>
+</div>
+</div>
+<div class="p-4 bg-error-container/20 rounded-b-xl border-t border-outline-variant">
+<button class="w-full text-error font-bold flex items-center justify-center gap-2 py-2 hover:bg-error-container/30 transition-colors rounded">
+<span class="material-symbols-outlined">delete_forever</span> Solicitar Descarte
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Mobile Anchor) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-surface border-t border-outline-variant pb-safe">
+<button class="flex flex-col items-center justify-center text-on-surface-variant font-label-bold text-[10px]">
+<span class="material-symbols-outlined">groups</span> Herd
+            </button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant font-label-bold text-[10px]">
+<span class="material-symbols-outlined">opacity</span> Inseminate
+            </button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant font-label-bold text-[10px]">
+<span class="material-symbols-outlined">task_alt</span> Tasks
+            </button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 font-label-bold text-[10px]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span> Home
+            </button>
+</nav>
+</main>
+<!-- Floating Action Button (Mobile Contextual) -->
+<button class="md:hidden fixed right-6 bottom-20 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center z-50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+<script>
+        // Simple Interaction logic for active state feeling
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.classList.add('scale-95');
+            });
+            el.addEventListener('mouseup', () => {
+                el.classList.remove('scale-95');
+            });
+            el.addEventListener('mouseleave', () => {
+                el.classList.remove('scale-95');
+            });
+        });
+    </script>
+</body></html>

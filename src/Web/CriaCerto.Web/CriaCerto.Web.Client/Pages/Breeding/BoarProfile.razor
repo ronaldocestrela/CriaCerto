@@ -1,0 +1,82 @@
+@page "/breeding/boars/{Id:guid}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@attribute [Authorize]
+@using CriaCerto.Web.Client.Components.Plantel
+@using CriaCerto.Web.Client.Models
+
+<PageTitle>Cria Certo - Perfil do Cachaço</PageTitle>
+
+<ModuleGuard Module="Breeding">
+    <div class="plantel-profile-page">
+        <a class="profile-back" href="breeding/registry">
+            <span class="material-symbols-outlined">arrow_back</span>
+            VOLTAR PARA O PLANTEL
+        </a>
+
+        <section class="profile-main-card">
+            <div class="profile-photo" aria-hidden="true">
+                <span class="material-symbols-outlined">pets</span>
+            </div>
+            <div class="profile-identity">
+                <p>Boar Profile</p>
+                <h1>BO-302</h1>
+                <span class="profile-breed">Duroc</span>
+                <span class="profile-location"><span class="material-symbols-outlined">location_on</span>Galpão Reprodutores, Baia 03</span>
+            </div>
+            <div class="profile-actions">
+                <button class="plantel-primary-action"><span class="material-symbols-outlined">edit</span>Editar Perfil</button>
+                <button class="plantel-secondary-action" disabled><span class="material-symbols-outlined">event_note</span>Registrar Evento</button>
+            </div>
+        </section>
+
+        <section class="profile-layout">
+            <div class="profile-content">
+                <div class="profile-kpis">
+                    <KpiStatCard Label="Peso Atual" Value="318 kg" Trend="última pesagem" Icon="monitor_weight" />
+                    <KpiStatCard Label="GPD" Value="0.82" Trend="kg/dia" Icon="speed" />
+                    <KpiStatCard Label="Coletas" Value="18" Trend="últimos 90 dias" Icon="opacity" />
+                    <KpiStatCard Label="Status" Value="Ativo" Trend="apto para reprodução" Icon="verified" />
+                </div>
+
+                <div class="profile-detail-grid">
+                    <section class="profile-detail-card">
+                        <h2>Dados Zootécnicos</h2>
+                        <dl>
+                            <div><dt>Raça</dt><dd>Duroc</dd></div>
+                            <div><dt>Registro PBB</dt><dd>PBB-BO-302</dd></div>
+                            <div><dt>Score Corporal</dt><dd><span class="profile-score">IDEAL (3.5)</span></dd></div>
+                        </dl>
+                    </section>
+
+                    <section class="profile-detail-card">
+                        <h2><span class="material-symbols-outlined">health_and_safety</span>Saúde e Manejo</h2>
+                        <dl>
+                            <div><dt>Última Vacina</dt><dd>Leptospirose (02/07)</dd></div>
+                            <div><dt>Restrição</dt><dd>Nenhuma</dd></div>
+                            <div><dt>Lifecycle</dt><dd>Active</dd></div>
+                        </dl>
+                    </section>
+                </div>
+            </div>
+
+            <aside class="profile-side">
+                <LifecycleTimeline Events="_events" />
+                <button class="profile-danger-action">
+                    <span class="material-symbols-outlined">delete_forever</span>
+                    Solicitar Descarte
+                </button>
+            </aside>
+        </section>
+    </div>
+</ModuleGuard>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private readonly List<PlantelEventDto> _events = new()
+    {
+        new("Registered", "Cadastro", new DateOnly(2023, 2, 8), "Cachaço registrado no plantel."),
+        new("StatusChanged", "Status alterado para Active", new DateOnly(2023, 7, 10), "Liberado após avaliação sanitária.")
+    };
+}
