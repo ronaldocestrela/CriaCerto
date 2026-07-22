@@ -1,0 +1,333 @@
+@page "/settings/subscription"
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Cria Certo - Planos e Assinatura</PageTitle>
+
+<div class="subscription-container font-headline">
+
+    <!-- Page Header & Navigation Breadcrumb -->
+    <div style="margin-bottom: 2rem;">
+        <nav style="display: flex; align-items: center; gap: 0.5rem; color: var(--cc-secondary); font-size: 12px; margin-bottom: 0.5rem;" class="font-mono">
+            <span style="text-transform: uppercase; tracking-wider: 0.05em; cursor: pointer;" @onclick="GoToSettings">CONFIGURAÇÕES</span>
+            <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
+            <span style="color: var(--cc-primary); text-transform: uppercase; tracking-wider: 0.05em;">ASSINATURA & PLANOS</span>
+        </nav>
+        <h2 class="font-headline text-[32px] font-bold" style="color: var(--cc-ink); margin: 0; line-height: 40px; letter-spacing: -0.02em;">
+            Assinatura e Planos
+        </h2>
+        <p style="color: var(--cc-ink-muted); margin: 0.25rem 0 0 0; font-size: 16px;">
+            Gerencie o plano da sua granja, acompanhe o uso de cotas e mude de categoria a qualquer momento.
+        </p>
+    </div>
+
+    <!-- Usage Limit Indicators (Stitch Mobile component styling) -->
+    <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2.5rem; box-shadow: var(--cc-shadow);">
+        <h3 class="font-mono text-[12px] font-bold text-secondary" style="margin: 0 0 1rem 0; text-transform: uppercase; tracking-wider: 0.05em;">Uso Atual das Cotas do Plano</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+            
+            <!-- Animals quota indicator -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 14px; font-weight: 600; color: var(--cc-ink);">Animais Cadastrados</span>
+                    <span class="font-mono" style="font-size: 14px; font-weight: bold; color: var(--cc-primary);">142 / @_maxAnimalsAllowed</span>
+                </div>
+                <div style="width: 100%; bg-color: var(--cc-canvas); background-color: var(--cc-canvas); height: 8px; border-radius: 99px; overflow: hidden; display: flex;">
+                    <div style="width: @(_animalsPercentage)%; height: 100%; background-color: @(_animalsPercentage > 90 ? "#ba1a1a" : "var(--cc-primary-container)"); border-radius: 99px;"></div>
+                </div>
+                @if (_animalsPercentage > 90)
+                {
+                    <p style="margin: 0.25rem 0 0 0; font-size: 11px; color: #ba1a1a; display: flex; align-items: center; gap: 0.25rem;" class="font-mono">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">warning</span> Limite da cota quase atingido!
+                    </p>
+                }
+            </div>
+
+            <!-- Reports quota indicator -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 14px; font-weight: 600; color: var(--cc-ink);">Relatórios Mensais</span>
+                    <span class="font-mono" style="font-size: 14px; font-weight: bold; color: var(--cc-ink);">5 / @_maxReportsAllowed</span>
+                </div>
+                <div style="width: 100%; background-color: var(--cc-canvas); height: 8px; border-radius: 99px; overflow: hidden; display: flex;">
+                    <div style="width: @(_reportsPercentage)%; height: 100%; background-color: var(--cc-secondary); border-radius: 99px;"></div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Pricing Toggle Switch -->
+    <section style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem;">
+        <div style="background-color: var(--cc-canvas); border: 1px solid var(--cc-border); border-radius: 99px; padding: 0.25rem; display: inline-flex;">
+            <button class="font-mono" @onclick="() => SetAnnual(false)"
+                    style="border: none; cursor: pointer; padding: 0.5rem 1.5rem; border-radius: 99px; font-size: 13px; font-weight: bold; transition: all 0.2s;
+                           background-color: @(!_isAnnual ? "var(--cc-primary)" : "transparent");
+                           color: @(!_isAnnual ? "white" : "var(--cc-ink-muted)");">
+                Mensal
+            </button>
+            <button class="font-mono" @onclick="() => SetAnnual(true)"
+                    style="border: none; cursor: pointer; padding: 0.5rem 1.5rem; border-radius: 99px; font-size: 13px; font-weight: bold; transition: all 0.2s;
+                           background-color: @(_isAnnual ? "var(--cc-primary)" : "transparent");
+                           color: @(_isAnnual ? "white" : "var(--cc-ink-muted)");">
+                Anual
+            </button>
+        </div>
+        <span style="background-color: #c5430f; color: white; font-size: 10px; font-weight: bold; padding: 0.25rem 0.75rem; border-radius: 99px; display: inline-flex; align-items: center; gap: 0.25rem;" class="font-mono">
+            <span class="material-symbols-outlined" style="font-size: 12px; font-variation-settings: 'FILL' 1;">auto_awesome</span>
+            ECONOMIZE 15% NO ANUAL
+        </span>
+    </section>
+
+    <!-- Bento Pricing Cards Matrix (Stitch Desktop Style) -->
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3.5rem; align-items: stretch;">
+        
+        <!-- Starter Card -->
+        <div style="background-color: white; border: @(IsActivePlan("Starter") ? "2px solid var(--cc-primary)" : "1px solid var(--cc-border)"); border-radius: 12px; padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; box-shadow: var(--cc-shadow);">
+            @if (IsActivePlan("Starter"))
+            {
+                <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: var(--cc-primary); color: white; padding: 0.25rem 1rem; border-radius: 99px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">
+                    Plano Ativo
+                </div>
+            }
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 22px; font-weight: bold; color: var(--cc-ink);">Starter</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--cc-ink-muted); line-height: 1.4;">Ideal para pequenos produtores iniciando a digitalização do plantel.</p>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <span style="font-size: 32px; font-weight: bold; color: var(--cc-ink);">R$ @(GetPrice("Starter"))</span>
+                <span style="font-size: 14px; color: var(--cc-ink-muted);">/mês</span>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0 0 2rem 0; flex: 1; display: flex; flex-direction: column; gap: 0.85rem; font-size: 14px; color: var(--cc-ink);">
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Até 150 Matrizes
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Controle de Lotes & Ciclos
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Registro Sanitário Básico
+                </li>
+            </ul>
+            <button class="cc-btn cc-btn-outline w-full pressed-effect" disabled="@IsActivePlan("Starter")" @onclick='() => ChangePlan("Starter")'
+                    style="width: 100%; border: 1px solid var(--cc-primary); border-radius: 8px; padding: 0.75rem; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer;">
+                @(IsActivePlan("Starter") ? "Plano Atual" : "Downgrade para Starter")
+            </button>
+        </div>
+
+        <!-- Pro Card (Most Popular - Highlighted) -->
+        <div style="background-color: white; border: 2px solid var(--cc-primary-container); border-radius: 12px; padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; box-shadow: var(--cc-shadow); transform: scale(1.03); z-index: 10;">
+            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: var(--cc-primary-container); color: white; padding: 0.25rem 1rem; border-radius: 99px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">
+                @(IsActivePlan("Pro") ? "Plano Ativo" : "Mais Popular")
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 22px; font-weight: bold; color: var(--cc-ink);">Pro</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--cc-ink-muted); line-height: 1.4;">Aumente a produtividade com formulação de rações e nutrição avançada.</p>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <span style="font-size: 32px; font-weight: bold; color: var(--cc-ink);">R$ @(GetPrice("Pro"))</span>
+                <span style="font-size: 14px; color: var(--cc-ink-muted);">/mês</span>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0 0 2rem 0; flex: 1; display: flex; flex-direction: column; gap: 0.85rem; font-size: 14px; color: var(--cc-ink);">
+                <li style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Até 1.000 Matrizes
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Módulo de Nutrição e Ração
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Previsão de CA e ADG com IA
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Multi-usuários (Até 5)
+                </li>
+            </ul>
+            <button class="cc-btn cc-btn-primary w-full pressed-effect" disabled="@IsActivePlan("Pro")" @onclick='() => ChangePlan("Pro")'
+                    style="width: 100%; border: none; background-color: var(--cc-primary-container); color: white; border-radius: 8px; padding: 0.75rem; font-weight: bold; cursor: pointer;">
+                @(IsActivePlan("Pro") ? "Plano Atual" : (IsActivePlan("Enterprise") ? "Downgrade para Pro" : "Fazer Upgrade para Pro"))
+            </button>
+        </div>
+
+        <!-- Enterprise Card -->
+        <div style="background-color: white; border: @(IsActivePlan("Enterprise") ? "2px solid var(--cc-primary)" : "1px solid var(--cc-border)"); border-radius: 12px; padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; box-shadow: var(--cc-shadow);">
+            @if (IsActivePlan("Enterprise"))
+            {
+                <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: var(--cc-primary); color: white; padding: 0.25rem 1rem; border-radius: 99px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">
+                    Plano Ativo
+                </div>
+            }
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 22px; font-weight: bold; color: var(--cc-ink);">Enterprise</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--cc-ink-muted); line-height: 1.4;">Para cooperativas e grandes operações integradas multi-granjas.</p>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <span style="font-size: 32px; font-weight: bold; color: var(--cc-ink);">Consultar</span>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0 0 2rem 0; flex: 1; display: flex; flex-direction: column; gap: 0.85rem; font-size: 14px; color: var(--cc-ink);">
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Matrizes Ilimitadas
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Business Intelligence Avançado
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    API de Integração Aberta
+                </li>
+                <li style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">check_circle</span>
+                    Suporte 24/7 com SLA
+                </li>
+            </ul>
+            <button class="cc-btn cc-btn-outline w-full pressed-effect" disabled="@IsActivePlan("Enterprise")" @onclick='() => ChangePlan("Enterprise")'
+                    style="width: 100%; border: 1px solid var(--cc-border); border-radius: 8px; padding: 0.75rem; font-weight: bold; background: white; color: var(--cc-ink-muted); cursor: pointer;">
+                @(IsActivePlan("Enterprise") ? "Plano Atual" : "Falar com Consultor")
+            </button>
+        </div>
+
+    </section>
+
+    <!-- Accordion Matrix for Comparison (Responsive desktop view table) -->
+    <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); margin-bottom: 3rem;">
+        <button @onclick="ToggleAccordion"
+                style="width: 100%; background: transparent; border: none; padding: 1.25rem 1.5rem; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: var(--cc-ink);">Comparativo de Funcionalidades</h3>
+            <span class="material-symbols-outlined text-outline transition-transform duration-300" 
+                  style="transform: rotate(@(_showAccordion ? "180deg" : "0deg"));">
+                expand_more
+            </span>
+        </button>
+
+        @if (_showAccordion)
+        {
+            <div style="border-top: 1px solid var(--cc-border); overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="background-color: var(--cc-canvas); color: var(--cc-ink-muted);" class="font-mono">
+                            <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Recurso</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: center;">Starter</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: center;">Pro</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: center;">Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: var(--cc-ink);">
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 1rem 1.5rem; font-weight: 600;">Limite de Lotes</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;">5</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;">Ilimitado</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;">Ilimitado</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e2e8f0; background-color: var(--cc-canvas);">
+                            <td style="padding: 1rem 1.5rem; font-weight: 600;">Rastreabilidade Animal</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;">Básica</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;">Completa</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;">Completa</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 1rem 1.5rem; font-weight: 600;">Módulo de Ração e Nutrição</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: #ba1a1a;">close</span></td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: var(--cc-primary);">check</span></td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: var(--cc-primary);">check</span></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e2e8f0; background-color: var(--cc-canvas);">
+                            <td style="padding: 1rem 1.5rem; font-weight: 600;">Exportação de Dados (PDF/XLS)</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: #ba1a1a;">close</span></td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: var(--cc-primary);">check</span></td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: var(--cc-primary);">check</span></td>
+                        </tr>
+                        <tr style="border-bottom: none;">
+                            <td style="padding: 1rem 1.5rem; font-weight: 600;">Integração API (Developer Webhooks)</td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: #ba1a1a;">close</span></td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: #ba1a1a;">close</span></td>
+                            <td style="padding: 1rem 1.5rem; text-align: center;"><span class="material-symbols-outlined" style="color: var(--cc-primary);">check</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+</div>
+
+@code {
+    private string _activePlan = "Starter";
+    private bool _isAnnual = false;
+    private bool _showAccordion = true;
+
+    // Usage limits
+    private int _maxAnimalsAllowed => _activePlan == "Starter" ? 150 : (_activePlan == "Pro" ? 1000 : 99999);
+    private int _maxReportsAllowed => _activePlan == "Starter" ? 10 : (_activePlan == "Pro" ? 50 : 999);
+    private int _animalsPercentage => (142 * 100) / _maxAnimalsAllowed;
+    private int _reportsPercentage => (5 * 100) / _maxReportsAllowed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var planClaim = user.FindFirst("SubscribedPlan")?.Value;
+            if (!string.IsNullOrEmpty(planClaim))
+            {
+                _activePlan = planClaim;
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("login");
+        }
+    }
+
+    private void SetAnnual(bool value)
+    {
+        _isAnnual = value;
+    }
+
+    private void ToggleAccordion()
+    {
+        _showAccordion = !_showAccordion;
+    }
+
+    private bool IsActivePlan(string planName)
+    {
+        return string.Equals(_activePlan, planName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private int GetPrice(string planName)
+    {
+        // 15% discount calculation matching mockup
+        if (planName.Equals("Starter", StringComparison.OrdinalIgnoreCase))
+        {
+            return _isAnnual ? 126 : 149;
+        }
+        if (planName.Equals("Pro", StringComparison.OrdinalIgnoreCase))
+        {
+            return _isAnnual ? 330 : 389;
+        }
+        return 0;
+    }
+
+    private void ChangePlan(string planName)
+    {
+        // In a real application this would make an API call to change the subscription plan.
+        // For demonstration, we simply update local state.
+        _activePlan = planName;
+    }
+
+    private void GoToSettings()
+    {
+        Navigation.NavigateTo("settings/organization");
+    }
+}

@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddMediatR(config => config.RegisterServicesFromAssemblies(assemblies));
         services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ModuleAccessBehavior<,>));
 
         return services;
     }

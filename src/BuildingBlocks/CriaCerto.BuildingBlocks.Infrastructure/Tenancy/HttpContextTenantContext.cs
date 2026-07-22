@@ -22,4 +22,13 @@ public sealed class HttpContextTenantContext : ITenantContext
             return Guid.TryParse(tenantClaim, out var tenantId) ? tenantId : null;
         }
     }
+
+    public string? SubscribedPlan
+    {
+        get
+        {
+            var user = _httpContextAccessor.HttpContext?.User;
+            return user?.FindFirst("SubscribedPlan")?.Value;
+        }
+    }
 }

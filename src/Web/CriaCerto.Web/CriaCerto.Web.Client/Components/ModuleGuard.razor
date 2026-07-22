@@ -1,0 +1,178 @@
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@using System.Security.Claims
+@using CriaCerto.BuildingBlocks.Abstractions.Licensing
+
+@if (_isChecking)
+{
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 200px;">
+        <span class="material-symbols-outlined animate-spin text-[32px]" style="color: var(--cc-primary);">sync</span>
+    </div>
+}
+else if (_hasAccess)
+{
+    @ChildContent
+}
+else
+{
+    <!-- High-fidelity block screen matching Stitch mockup 'bloqueio_modulo_upgrade.html' -->
+    <div style="max-w: 800px; margin: 2rem auto; padding: 0 1rem;">
+        <div style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); position: relative;">
+            
+            <!-- Dynamic header accent bar -->
+            <div style="height: 6px; background: linear-gradient(90deg, var(--cc-primary), var(--cc-tertiary-container, #c5430f), var(--cc-secondary));"></div>
+            
+            <div style="padding: 3rem 2rem; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                
+                <!-- Icon badge stack -->
+                <div style="position: relative; margin-bottom: 1.5rem;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--cc-canvas); border: 1px solid var(--cc-border); display: flex; align-items: center; justify-content: center;">
+                        <span class="material-symbols-outlined text-[40px]" style="color: var(--cc-ink-muted); font-variation-settings: 'wght' 200;">lock_open_right</span>
+                    </div>
+                    <div style="position: absolute; bottom: -4px; right: -4px; width: 32px; height: 32px; border-radius: 50%; background-color: #ffdbd0; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: #ba1a1a;">
+                        <span class="material-symbols-outlined text-[18px]">block</span>
+                    </div>
+                </div>
+
+                <!-- Title & Plan Info -->
+                <h2 class="font-headline text-[28px] font-bold" style="color: var(--cc-ink); margin: 0 0 0.5rem 0;">Módulo de @GetReadableModuleName(Module)</h2>
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; background-color: #ffdbd0; color: #832600; padding: 0.35rem 1rem; border-radius: 99px; font-size: 13.5px; font-weight: bold; margin-bottom: 1.5rem;" class="font-mono">
+                    <span class="material-symbols-outlined text-[16px]">info</span>
+                    Este módulo não está disponível no seu plano atual (@_subscribedPlan)
+                </div>
+
+                <!-- Value Proposition -->
+                <p style="color: var(--cc-ink-muted); font-size: 16px; max-width: 600px; margin: 0 0 2.5rem 0; line-height: 1.6;">
+                    @GetModuleValueProposition(Module)
+                </p>
+
+                <!-- Bento Feature Matrix -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; width: 100%; margin-bottom: 2.5rem;">
+                    @foreach (var feature in GetModuleFeatures(Module))
+                    {
+                        <div style="background-color: var(--cc-canvas); border: 1px solid var(--cc-border); border-radius: 12px; padding: 1.25rem; text-align: left; transition: background-color 0.2s;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background-color: @feature.BgColor; color: @feature.Color; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+                                <span class="material-symbols-outlined text-[20px]">@feature.Icon</span>
+                            </div>
+                            <h4 class="font-mono text-[13px] font-bold" style="margin: 0 0 0.25rem 0; color: var(--cc-ink); text-transform: uppercase;">@feature.Title</h4>
+                            <p style="margin: 0; font-size: 12px; color: var(--cc-ink-muted); line-height: 1.4;">@feature.Description</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- CTA buttons -->
+                <div style="display: flex; flex-direction: column; sm-flex-direction: row; gap: 1rem; justify-content: center; width: 100%;">
+                    <button class="pressed-effect" @onclick="GoToSubscription"
+                            style="padding: 0.85rem 2rem; background-color: var(--cc-primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined text-[20px]">upgrade</span> Fazer Upgrade de Plano
+                    </button>
+                    <button class="pressed-effect" 
+                            style="padding: 0.85rem 2rem; background: transparent; border: 1px solid var(--cc-border); color: var(--cc-ink); border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined text-[20px]">support_agent</span> Contatar Suporte Técnico
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Comparison Teaser -->
+            <div style="background-color: var(--cc-canvas); border-top: 1px solid var(--cc-border); padding: 1.5rem; text-align: center;">
+                <p style="font-size: 11px; text-transform: uppercase; color: var(--cc-ink-muted); margin: 0 0 0.75rem 0; font-weight: bold; tracking-wider: 0.05em;" class="font-mono">Compare Planos</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; font-size: 13.5px;">
+                    <div style="padding: 0.5rem 1rem; background-color: white; border: 1px solid var(--cc-border); border-radius: 8px;">
+                        <strong>Plano Starter</strong>: Gestão básica de matrizes
+                    </div>
+                    <div style="padding: 0.5rem 1rem; background-color: var(--cc-primary-soft); border: 1px solid var(--cc-primary-soft-border); border-radius: 8px; color: var(--cc-primary);">
+                        <strong>Plano Pro/Enterprise</strong>: Nutrição Avançada & BI
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Module { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool _isChecking = true;
+    private bool _hasAccess = false;
+    private string _subscribedPlan = "Starter";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isChecking = true;
+        
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var planClaim = user.FindFirst("SubscribedPlan")?.Value;
+            if (!string.IsNullOrEmpty(planClaim))
+            {
+                _subscribedPlan = planClaim;
+            }
+
+            _hasAccess = ModuleLicenseChecker.HasAccess(_subscribedPlan, Module);
+        }
+        else
+        {
+            _hasAccess = false;
+        }
+
+        _isChecking = false;
+    }
+
+    private void GoToSubscription()
+    {
+        Navigation.NavigateTo("settings/subscription");
+    }
+
+    // Helper functions styling/matching metadata for modules
+    private string GetReadableModuleName(string module)
+    {
+        return module.ToLower() switch
+        {
+            "nutrition" or "nutrição" => "Nutrição e Ração",
+            "breeding" or "reprodução" => "Reprodução e Plantel",
+            "maternity" or "maternidade" => "Farrowing e Maternidade",
+            "sanitary" or "sanidade" => "Sanidade e Vacinas",
+            _ => module
+        };
+    }
+
+    private string GetModuleValueProposition(string module)
+    {
+        return module.ToLower() switch
+        {
+            "nutrition" or "nutrição" => "Desbloqueie o controle total de formulação de rações, conversão alimentar e redução de custos por kg produzido. Otimize a performance do seu plantel com dados precisos.",
+            "sanitary" or "sanidade" => "Monitore o ciclo sanitário completo, registre tratamentos e gerencie planos vacinais automáticos com alertas de carência farmacológica para garantir conformidade sanitária.",
+            _ => "Acesse funcionalidades de BI, automações avançadas e relatórios dedicados assinando um de nossos planos superiores."
+        };
+    }
+
+    private List<FeatureItem> GetModuleFeatures(string module)
+    {
+        if (module.Equals("nutrition", StringComparison.OrdinalIgnoreCase))
+        {
+            return new List<FeatureItem>
+            {
+                new("Formulação Personalizada", "Crie misturas balanceadas específicas para cada fase de crescimento dos animais.", "maps_ar", "#eff7ef", "#2e5f46"),
+                new("Conversão Alimentar", "Analise a eficiência de consumo e identifique desvios de ganho de peso rapidamente.", "monitoring", "#ffdbd0", "#832600"),
+                new("Custo por Kg Produzido", "Mensure a rentabilidade real cruzando custos diretos de nutrição por animal.", "payments", "#d8e3fb", "#111c2d")
+            };
+        }
+        
+        return new List<FeatureItem>
+        {
+            new("Relatórios de BI", "Extraia inteligência zootécnica com gráficos de exportação em tempo real.", "analytics", "#eff7ef", "#2e5f46"),
+            new("Suporte Prioritário", "Atendimento técnico local 24/7 com nossa equipe veterinária especializada.", "support_agent", "#d8e3fb", "#111c2d")
+        };
+    }
+
+    public record FeatureItem(string Title, string Description, string Icon, string BgColor, string Color);
+}
