@@ -171,6 +171,8 @@ dotnet test tests/Unit/CriaCerto.BuildingBlocks.UnitTests/CriaCerto.BuildingBloc
 dotnet run --project src/Host/CriaCerto.Api/CriaCerto.Api.csproj
 ```
 
+Ao iniciar, a API aplica automaticamente as migrations pendentes de todos os `DbContext` registrados no host.
+
 Health check:
 
 - `GET /health`

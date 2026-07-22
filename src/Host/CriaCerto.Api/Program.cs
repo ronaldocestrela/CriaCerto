@@ -1,14 +1,17 @@
 using System.Text;
 using CriaCerto.BuildingBlocks.Application;
 using CriaCerto.BuildingBlocks.Infrastructure;
+using CriaCerto.BuildingBlocks.Infrastructure.Persistence;
 using CriaCerto.Modules.Breeding.Application;
 using CriaCerto.Modules.Maternity.Application;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
 using CriaCerto.Modules.Tenancy.Infrastructure;
+using CriaCerto.Modules.Tenancy.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +53,8 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+ApplyMigrations(app);
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -81,3 +86,30 @@ app.MapPost("/api/auth/select-tenant", async (SelectTenantCommand command, ISend
 });
 
 app.Run();
+
+static void ApplyMigrations(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("Startup.Migrations");
+
+    var dbContexts = new DbContext[]
+    {
+        scope.ServiceProvider.GetRequiredService<FoundationDbContext>(),
+        scope.ServiceProvider.GetRequiredService<TenancyDbContext>()
+    };
+
+    foreach (var dbContext in dbContexts)
+    {
+        try
+        {
+            dbContext.Database.Migrate();
+            logger.LogInformation("Migrations applied for DbContext {DbContextName}", dbContext.GetType().Name);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Failed to apply migrations for DbContext {DbContextName}", dbContext.GetType().Name);
+            throw;
+        }
+    }
+}
