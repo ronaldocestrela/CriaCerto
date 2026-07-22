@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\CriaCerto.BuildingBlocks.Application\CriaCerto.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CriaCerto.BuildingBlocks.Infrastructure\CriaCerto.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Breeding\CriaCerto.Modules.Breeding.Application\CriaCerto.Modules.Breeding.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Breeding\CriaCerto.Modules.Breeding.Infrastructure\CriaCerto.Modules.Breeding.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Maternity\CriaCerto.Modules.Maternity.Application\CriaCerto.Modules.Maternity.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Maternity\CriaCerto.Modules.Maternity.Infrastructure\CriaCerto.Modules.Maternity.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

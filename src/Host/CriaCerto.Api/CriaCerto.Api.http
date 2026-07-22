@@ -1,0 +1,6 @@
+@CriaCerto.Api_HostAddress = http://localhost:5274
+
+GET {{CriaCerto.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

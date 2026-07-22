@@ -1,21 +1,104 @@
 # CRRIA CERTO - MVP
 
+## Descrição
+
+Esse é um sistema para monitoramento de animais e criação, abrangendo tanto aves, caprinos, suinos e bovinos, nesse sistema você tem a o controle total da sua produção na palma da mão
+
 ## Funções
 
-    - Cadastro de animais
-        - Sexo
-        - Identificação
-        - Apelido `Opcional`
-        - Registro PBB `Opcional`
-        - Raça
-        - Origem `Opcional`
-        - Data Nascimento `Opcional`
-        - Data de entrada no plantel
-        - Peso de entrada no plantel
-        - GPD `Opcional`
-        - Pai `Opcional`
-        - Mãe `Opcional`
-        - Score corporal (Muito magro/Magro/Ideal/Gordo/Muito gordo)
-    
-    - Listagem de animais
-        
+### Cadastro de animais, contendo os seguintes campos:
+
+- Sexo (Fêmea/Macho)
+- Se for fêmea aparece uma caixa para marcar como Matriz e se for macho a caixa deve ter nome de Touro
+- Identificação
+- Apelido `Opcional`
+- Registro PBB `Opcional`
+- Raça
+- Origem `Opcional`
+- Data Nascimento `Opcional`
+- Data de entrada no plantel
+- Peso de entrada no plantel
+- GPD `Opcional`
+- Pai `Opcional`
+- Mãe `Opcional`
+- Score corporal (Muito magro/Magro/Ideal/Gordo/Muito gordo)
+
+### Listagem de animais, listagem simples com uma visão simplificado dos animais já registrados, contendo em uma tabela os seguintes campos:
+
+- Identidificador
+- Sexo
+- Raça
+- Peso atual
+
+### Visão detalhada do animal contendo os campos:
+
+- Sexo
+- Se é matiz ou touro
+- Identificação
+- Apelido `Opcional`
+- Registro PBB `Opcional`
+- Raça
+- Origem `Opcional`
+- Data Nascimento `Opcional`
+- Ideade `Calculado a partidir da data de nascimento`
+- Data de entrada no plantel
+- Tempo no plantel `Calculado apartir da data de entrada do plantel`
+- Peso de entrada no plantel
+- Peso Atual
+- GPD `Opcional`
+- Pai `Opcional`
+- Mãe `Opcional`
+- Score corporal (Muito magro/Magro/Ideal/Gordo/Muito gordo)
+
+### Edição do animal, sendo possível editar os seguintes campos:
+
+- Sexo
+- Se for fêmea aparece uma caixa para marcar como Matriz e se for macho a caixa deve ter nome de Touro
+- Identificação
+- Apelido `Opcional`
+- Registro PBB `Opcional`
+- Raça
+- Origem `Opcional`
+- Data Nascimento `Opcional`
+- Data de entrada no plantel
+- Peso de entrada no plantel
+- GPD `Opcional`
+- Pai `Opcional`
+- Mãe `Opcional`
+- Score corporal (Muito magro/Magro/Ideal/Gordo/Muito gordo)
+
+### Registro de um novo peso para o animal
+
+- Na tela de visão detalhada ter um botão para inserir uma nova pesagem para o animal
+- Na tela de listagem no lado diretito ter uma coluna onde tenha um botão para inserir uma nova peagem para o animal
+
+### Histórico de pesagem do animal
+
+- Na tela de visão detalhada ter um botão para ver o histórico de pesagem
+- Na tela de listagem no lado diretito ter uma coluna onde tenha um botão para ver o histórico de pesagem
+
+## Controle de matrizes
+
+Um painel onde contem todos os animais fêmeas que são matizes, aqui será possível identifiar de forma rapido se a matiz esta vazia, gestante ou lactante
+
+### Painel principal de controle
+
+- Lista de matrizes com destaques por core direfentes a depender do estado que ela esta
+- Possível filtro por status(Lactante/Gestante/Vazia), sendo possivel filtrar por mais de um
+- Buscar por código ou apelido
+
+### Detalhamento sobre matrizes
+
+- Ao clicar em uma matriz é possível ver os ciclos que ela passou, com periodo definido por data.
+- Na tela de talhamento terá um botão, ao clicar ele abrirá um modal para informar um novo ciclo.
+
+### Controle de lotes
+
+Controle de lotes se trada da parte de cadastro e manuteção dos lotes de animais que chegam ou nascem na fazenda
+
+- Listagem de lotes
+- Cadstro de lotes
+    - Tipo (Interno/Externo)
+    - Raça
+    - Data nascimento
+    - Peso 

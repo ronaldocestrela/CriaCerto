@@ -1,0 +1,93 @@
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+out/
+
+# Test artifacts
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+*.nupkg
+*.snupkg
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# IDE settings
+.vs/
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# NuGet
+*.nuget.props
+*.nuget.targets
+packages/
+!**/packages/build/
+
+# Rider
+*.sln.iml
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# DotCover
+*.dotCover
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# MSTest
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Coverlet / coverage outputs
+coverage/
+coverage-*/
+
+# Blazor/Web tooling
+wwwroot/dist/
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+
+# SQLite/local db files (if used in local tooling)
+*.db
+*.db-shm
+*.db-wal
+
+# Backup files
+*.bak
+*.orig
+*~

@@ -1,0 +1,32 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/CriaCerto.BuildingBlocks.Abstractions/CriaCerto.BuildingBlocks.Abstractions.csproj" />
+    <Project Path="src/BuildingBlocks/CriaCerto.BuildingBlocks.Application/CriaCerto.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/CriaCerto.BuildingBlocks.Infrastructure/CriaCerto.BuildingBlocks.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/CriaCerto.Api/CriaCerto.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Breeding/">
+    <Project Path="src/Modules/Breeding/CriaCerto.Modules.Breeding.Application/CriaCerto.Modules.Breeding.Application.csproj" />
+    <Project Path="src/Modules/Breeding/CriaCerto.Modules.Breeding.Infrastructure/CriaCerto.Modules.Breeding.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Maternity/">
+    <Project Path="src/Modules/Maternity/CriaCerto.Modules.Maternity.Application/CriaCerto.Modules.Maternity.Application.csproj" />
+    <Project Path="src/Modules/Maternity/CriaCerto.Modules.Maternity.Infrastructure/CriaCerto.Modules.Maternity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Web/" />
+  <Folder Name="/src/Web/CriaCerto.Web/">
+    <Project Path="src/Web/CriaCerto.Web/CriaCerto.Web.Client/CriaCerto.Web.Client.csproj" />
+    <Project Path="src/Web/CriaCerto.Web/CriaCerto.Web/CriaCerto.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Integration/">
+    <Project Path="tests/Integration/CriaCerto.Architecture.IntegrationTests/CriaCerto.Architecture.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Unit/">
+    <Project Path="tests/Unit/CriaCerto.BuildingBlocks.UnitTests/CriaCerto.BuildingBlocks.UnitTests.csproj" />
+  </Folder>
+</Solution>
