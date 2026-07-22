@@ -49,7 +49,7 @@ To ensure production-ready quality and prevent technical debt, this roadmap is s
 * **Backend (.NET 10):**
   * Create Modular Monolith solution setup (`src/BuildingBlocks`, `src/Modules/*`).
   * Implement base `Result`, `Result<T>`, and `Error` response types.
-  * Configure EF Core 10 base infrastructure, PostgreSQL connection pooling, and MediatR pipelines.
+  * Configure EF Core 10 base infrastructure, SQL Server connection pooling, and MediatR pipelines.
 * **Frontend (Blazor .NET 10):**
   * Create Blazor Web App with WebAssembly render mode setup.
   * Integrate PWA Service Worker manifest and offline caching shell.

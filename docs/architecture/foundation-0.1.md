@@ -26,7 +26,7 @@ Deliver Sub-phase 0.1 as the technical baseline for future business modules.
 
 ## Current Cross-Cutting Baseline
 1. Validation pipeline based on MediatR + FluentValidation.
-2. Base Postgres registration using EF Core 10 and connection pooling.
+2. Base SQL Server registration using EF Core 10 and connection pooling.
 3. Result Pattern as default command/query response contract.
 
 ## Out of Scope for 0.1

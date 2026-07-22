@@ -14,7 +14,7 @@ Sub-phase 0.1 requires a production-oriented foundation for a swine management S
 2. Use `src/BuildingBlocks` as shared kernel for Result Pattern, application behaviors, and infrastructure primitives.
 3. Keep domain modules under `src/Modules/*` with explicit references only to BuildingBlocks and no direct module-to-module persistence coupling.
 4. Use MediatR pipeline behaviors with FluentValidation to enforce command/query validation.
-5. Use EF Core 10 + Npgsql base infrastructure with connection pooling support.
+5. Use EF Core 10 + SQL Server base infrastructure with connection pooling support.
 6. Use Blazor Web App with interactive WebAssembly and PWA service worker foundation.
 
 ## Consequences

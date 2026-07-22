@@ -31,10 +31,10 @@ The platform optimizes swine farm operations across the entire lifecycle: Breedi
 * **Framework:** .NET 10 Web API / Modular Monolith Architecture.
 * **Language:** C# 14.
 * **Domain & CQRS:** MediatR / In-Memory Channel Bus.
-* **Data Access:** Entity Framework Core 10, PostgreSQL with strict database-per-tenant isolation (one logical database per tenant) and per-tenant connection resolution.
+* **Data Access:** Entity Framework Core 10, SQL Server with strict database-per-tenant isolation (one logical database per tenant) and per-tenant connection resolution.
 * **Functional Error Handling:** Custom or CSharpFunctionalExtensions `Result<T>` / `Result<T, Error>`.
 * **Validation:** FluentValidation integrated into MediatR pipeline.
-* **Testing Stack:** xUnit, FluentAssertions, NSubstitute / Moq, Testcontainers (PostgreSQL integration tests).
+* **Testing Stack:** xUnit, FluentAssertions, NSubstitute / Moq, Testcontainers (SQL Server integration tests).
 
 ### 3.2 Frontend (Blazor .NET 10)
 * **Framework:** Blazor Web App / WASM .NET 10 with PWA offline caching strategy.

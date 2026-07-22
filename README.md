@@ -23,7 +23,7 @@ Nesta fase inicial (Sub-phase 0.1), o foco esta na fundacao tecnica: arquitetura
 - MediatR
 - FluentValidation
 - Entity Framework Core 10
-- PostgreSQL (Npgsql)
+- SQL Server (Microsoft.Data.SqlClient / EF Core SqlServer)
 - Result Pattern customizado
 
 ### Frontend
@@ -100,7 +100,7 @@ Implementado:
 - Solucao monorepo em `CriaCerto.slnx`
 - BuildingBlocks base (Abstractions, Application, Infrastructure)
 - Pipeline de validacao MediatR + FluentValidation
-- Registro base EF Core + PostgreSQL com retry
+- Registro base EF Core + SQL Server com retry
 - API host com endpoint de health check
 - Blazor Web App + WASM interativo
 - PWA baseline com service worker e manifest
@@ -116,7 +116,7 @@ Em andamento/Proximas fases:
 ## 6. Requisitos de Ambiente
 
 - .NET SDK 10.x
-- PostgreSQL 15+ (recomendado)
+- SQL Server 2022+ (recomendado)
 - Git
 
 Opcional:
@@ -135,10 +135,10 @@ dotnet restore CriaCerto.slnx
 
 ### 7.2 Connection string
 
-A API usa `ConnectionStrings:PostgreSql` em configuracao. Se ausente, cai no fallback local:
+A API usa `ConnectionStrings:SqlServer` em configuracao. Se ausente, cai no fallback local:
 
 ```text
-Host=localhost;Port=5432;Database=criacerto_foundation;Username=postgres;Password=postgres
+Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=CriaCerto@123;TrustServerCertificate=True;Encrypt=False
 ```
 
 Recomendacao: definir a connection string em `appsettings.Development.json` da API ou via variavel de ambiente.

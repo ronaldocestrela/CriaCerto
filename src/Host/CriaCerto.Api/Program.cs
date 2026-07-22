@@ -12,8 +12,8 @@ builder.Services.AddBuildingBlocksApplication(
     typeof(BreedingAssemblyMarker).Assembly,
     typeof(MaternityAssemblyMarker).Assembly);
 
-var connectionString = builder.Configuration.GetConnectionString("PostgreSql")
-    ?? "Host=localhost;Port=5432;Database=criacerto_foundation;Username=postgres;Password=postgres";
+var connectionString = builder.Configuration.GetConnectionString("SqlServer")
+    ?? "Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=CriaCerto@123;TrustServerCertificate=True;Encrypt=False";
 
 builder.Services.AddBuildingBlocksInfrastructure(connectionString);
 

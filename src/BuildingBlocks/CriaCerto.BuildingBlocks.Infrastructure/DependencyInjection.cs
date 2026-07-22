@@ -12,9 +12,9 @@ public static class DependencyInjection
     {
         services.AddDbContextPool<FoundationDbContext>(options =>
         {
-            options.UseNpgsql(connectionString, npgsqlOptions =>
+            options.UseSqlServer(connectionString, sqlServerOptions =>
             {
-                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+                sqlServerOptions.EnableRetryOnFailure(maxRetryCount: 3);
             });
 
             options.EnableDetailedErrors();
