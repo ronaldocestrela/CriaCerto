@@ -1,19 +1,32 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<div class="shell-page">
+    <aside class="shell-sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <main class="shell-main">
+        <header class="shell-header">
+            <div>
+                <p class="shell-kicker">Cria Certo</p>
+                <h1 class="shell-title">Swine Breeding Dashboard</h1>
+            </div>
+            <div class="shell-status">
+                <span class="status-dot"></span>
+                Offline-ready
+            </div>
+        </header>
 
-        <article class="content px-4">
+        <article class="shell-content">
             @Body
         </article>
     </main>
+
+    <nav class="mobile-tabs" aria-label="Mobile navigation">
+        <NavLink href="" Match="NavLinkMatch.All">Dashboard</NavLink>
+        <NavLink href="weather">Maternity</NavLink>
+        <NavLink href="counter">Growth</NavLink>
+    </nav>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>

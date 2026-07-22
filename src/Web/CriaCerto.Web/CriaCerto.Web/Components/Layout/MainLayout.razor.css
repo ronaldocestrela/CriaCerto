@@ -1,78 +1,129 @@
-.page {
-    position: relative;
+.shell-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    background:
+        radial-gradient(circle at 20% 0%, rgba(224, 237, 220, 0.9), transparent 45%),
+        radial-gradient(circle at 90% 10%, rgba(195, 227, 209, 0.8), transparent 35%),
+        var(--cc-canvas);
+}
+
+.shell-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    border-right: 1px solid var(--cc-border);
+    background: linear-gradient(180deg, var(--cc-sidebar-top), var(--cc-sidebar-bottom));
+    padding: 1rem 1rem 1.5rem;
+}
+
+.shell-main {
+    min-width: 0;
     display: flex;
     flex-direction: column;
+    padding: 1.4rem 1.4rem 2.2rem;
 }
 
-main {
-    flex: 1;
-}
-
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
-}
-
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.shell-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.3rem;
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
+.shell-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    font-size: 0.72rem;
+    color: var(--cc-ink-muted);
+    font-weight: 700;
+}
+
+.shell-title {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+    font-weight: 700;
+    color: var(--cc-ink);
+}
+
+.shell-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--cc-border);
+    color: var(--cc-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.45rem 0.7rem;
+}
+
+.status-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: #2cb36d;
+    box-shadow: 0 0 0 6px rgba(44, 179, 109, 0.15);
+}
+
+.shell-content {
+    min-width: 0;
+}
+
+.mobile-tabs {
+    display: none;
+}
+
+@media (max-width: 880px) {
+    .shell-page {
+        grid-template-columns: 1fr;
+    }
+
+    .shell-sidebar {
+        display: none;
+    }
+
+    .shell-main {
+        padding: 1rem 1rem 5.6rem;
+    }
+
+    .shell-status {
+        display: none;
+    }
+
+    .mobile-tabs {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.35rem;
+        padding: 0.7rem;
+        border-top: 1px solid var(--cc-border);
+        backdrop-filter: blur(10px);
+        background: rgba(249, 251, 247, 0.9);
+    }
+
+    .mobile-tabs ::deep a {
+        text-align: center;
         text-decoration: none;
+        border-radius: 0.9rem;
+        border: 1px solid transparent;
+        color: var(--cc-ink-muted);
+        font-weight: 600;
+        font-size: 0.86rem;
+        padding: 0.56rem 0.45rem;
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+    .mobile-tabs ::deep a.active {
+        background: var(--cc-primary-soft);
+        border-color: var(--cc-primary-soft-border);
+        color: var(--cc-primary);
     }
 }
 

@@ -1,7 +1,111 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Cria Certo Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<section id="kpis" class="dashboard-grid">
+	<article class="kpi-card kpi-liveborn">
+		<p class="kpi-label">Live Born / Sow / Cycle</p>
+		<p class="kpi-value">@LiveBornPerCycle</p>
+		<p class="kpi-trend">+@LiveBornTrend% vs previous cycle</p>
+	</article>
 
-Welcome to your new app.
+	<article class="kpi-card">
+		<p class="kpi-label">Pre-Weaning Mortality</p>
+		<p class="kpi-value">@MortalityRate%</p>
+		<p class="kpi-trend neutral">Target: below 8.5%</p>
+	</article>
+
+	<article class="kpi-card">
+		<p class="kpi-label">ADG (Nursery Batch)</p>
+		<p class="kpi-value">@AdgKgPerDay kg/day</p>
+		<p class="kpi-trend">+@AdgTrend% this week</p>
+	</article>
+
+	<article class="kpi-card">
+		<p class="kpi-label">Feed Conversion (FCR)</p>
+		<p class="kpi-value">@FcrRatio</p>
+		<p class="kpi-trend warning">Watch threshold: 2.55</p>
+	</article>
+</section>
+
+<section class="panel-grid">
+	<article class="panel-card">
+		<header class="panel-header">
+			<h2>Today's Farrowing Queue</h2>
+			<span class="chip">@FarrowingQueue.Count pending</span>
+		</header>
+		<table class="cc-table">
+			<thead>
+				<tr>
+					<th>Sow</th>
+					<th>Parity</th>
+					<th>Expected</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var row in FarrowingQueue)
+				{
+					<tr>
+						<td>@row.SowCode</td>
+						<td>@row.Parity</td>
+						<td>@row.ExpectedDate</td>
+						<td><span class="badge @row.StatusClass">@row.Status</span></td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</article>
+
+	<article id="components" class="panel-card">
+		<header class="panel-header">
+			<h2>Component Library Preview</h2>
+			<span class="chip">Desktop + Mobile</span>
+		</header>
+
+		<div class="component-row">
+			<button class="cc-btn cc-btn-primary">Register Farrowing</button>
+			<button class="cc-btn cc-btn-outline">Record Weighing</button>
+			<button class="cc-btn cc-btn-ghost">Open Batch Transfer</button>
+		</div>
+
+		<div class="component-row component-row-inputs">
+			<label class="cc-field">
+				<span>Sow ID</span>
+				<input type="text" value="SOW-0217" readonly />
+			</label>
+			<label class="cc-field">
+				<span>Event Type</span>
+				<select>
+					<option>Natural Service</option>
+					<option>AI</option>
+					<option>IATF</option>
+				</select>
+			</label>
+		</div>
+
+		<div class="component-row">
+			<div class="alert-box">
+				Withdrawal lock active for Batch B-44 until 2026-08-03.
+			</div>
+		</div>
+	</article>
+</section>
+
+@code {
+	private static decimal LiveBornPerCycle => 12.8m;
+	private static decimal LiveBornTrend => 6.4m;
+	private static decimal MortalityRate => 7.2m;
+	private static decimal AdgKgPerDay => 0.43m;
+	private static decimal AdgTrend => 2.1m;
+	private static decimal FcrRatio => 2.46m;
+
+	private static IReadOnlyList<FarrowingRow> FarrowingQueue { get; } =
+	[
+		new("SOW-0217", 4, "2026-07-22", "In progress", "badge-live"),
+		new("SOW-0142", 3, "2026-07-22", "Waiting", "badge-wait"),
+		new("SOW-0331", 5, "2026-07-23", "Prepared", "badge-ready")
+	];
+
+	private sealed record FarrowingRow(string SowCode, int Parity, string ExpectedDate, string Status, string StatusClass);
+}
