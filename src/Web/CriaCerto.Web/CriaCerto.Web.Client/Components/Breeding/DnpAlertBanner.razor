@@ -1,0 +1,21 @@
+@if (Count > 0)
+{
+    <section class="dnp-alert-banner">
+        <div class="dnp-alert-icon">
+            <span class="material-symbols-outlined">warning</span>
+        </div>
+        <div>
+            <p class="dnp-alert-label">Alerta de DNP</p>
+            <p class="dnp-alert-title">@Count Matriz@(Count == 1 ? "" : "es") &gt; @Threshold Dias</p>
+            <p class="dnp-alert-text">Dias Não Produtivos excedidos. Requer atenção imediata.</p>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public int Count { get; set; }
+
+    [Parameter]
+    public int Threshold { get; set; } = 12;
+}

@@ -28,4 +28,10 @@ public sealed class PlantelEvent
 
     public static PlantelEvent StatusChanged(Guid animalId, string status, DateOnly eventDate, string? notes) =>
         new(animalId, "StatusChanged", $"Status alterado para {status}", eventDate, notes);
+
+    public static PlantelEvent Breeding(Guid animalId, string method, DateOnly eventDate, string? notes) =>
+        new(animalId, "Breeding", $"Cobrição ({method})", eventDate, notes);
+
+    public static PlantelEvent Diagnosis(Guid animalId, string result, DateOnly eventDate, string? notes) =>
+        new(animalId, "Diagnosis", $"Diagnóstico: {result}", eventDate, notes);
 }

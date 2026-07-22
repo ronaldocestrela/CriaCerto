@@ -1,0 +1,25 @@
+<div class="ecc-stepper">
+    <button type="button" class="ecc-btn" @onclick="Decrement" aria-label="Diminuir ECC">-</button>
+    <span class="ecc-value">@Value.ToString("0.#")</span>
+    <button type="button" class="ecc-btn" @onclick="Increment" aria-label="Aumentar ECC">+</button>
+</div>
+
+@code {
+    [Parameter]
+    public decimal Value { get; set; } = 3.5m;
+
+    [Parameter]
+    public EventCallback<decimal> ValueChanged { get; set; }
+
+    private async Task Decrement()
+    {
+        Value = Math.Max(1m, Value - 0.5m);
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task Increment()
+    {
+        Value = Math.Min(5m, Value + 0.5m);
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

@@ -4,6 +4,7 @@
 @using CriaCerto.Web.Client.Components.Plantel
 @using CriaCerto.Web.Client.Models
 @inject CriaCerto.Web.Client.Services.PlantelApiClient PlantelApi
+@inject NavigationManager Navigation
 
 <PageTitle>Cria Certo - Perfil da Matriz</PageTitle>
 
@@ -32,7 +33,7 @@
                 </div>
                 <div class="profile-actions">
                     <button class="plantel-primary-action"><span class="material-symbols-outlined">edit</span>Editar Perfil</button>
-                    <button class="plantel-secondary-action" disabled><span class="material-symbols-outlined">event_note</span>Registrar Evento</button>
+                    <button class="plantel-secondary-action" @onclick="GoToBreedingEntry"><span class="material-symbols-outlined">event_note</span>Registrar Evento</button>
                 </div>
             </section>
 
@@ -143,4 +144,10 @@
         BodyConditionScore.VeryFat => "MUITO GORDA (5.0)",
         _ => "NÃO AVALIADO"
     };
+
+    private void GoToBreedingEntry()
+    {
+        if (_sow is null) return;
+        Navigation.NavigateTo($"breeding/cobertura?tag={Uri.EscapeDataString(_sow.TagId)}");
+    }
 }

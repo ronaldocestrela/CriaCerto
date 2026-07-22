@@ -144,4 +144,83 @@ public sealed class Sow
         _events.Add(PlantelEvent.StatusChanged(Id, status.ToString(), eventDate, notes));
         return Result.Success();
     }
+
+    public Result RegisterBreeding(
+        DateOnly eventDate,
+        BreedingMethod method,
+        string? boarOrSemenRef,
+        string? technician,
+        BodyConditionScore? bodyConditionScoreAtBreeding)
+    {
+        if (LifecycleStatus == LifecycleStatus.Culled)
+        {
+            return Result.Failure(Error.Conflict("Sow.Culled", "Matrizes descartadas não podem receber cobrição."));
+        }
+
+        if (ReproductiveStatus == ReproductiveStatus.Pregnant)
+        {
+            return Result.Failure(Error.Conflict("Sow.AlreadyPregnant", "Matrizes gestantes não podem ser cobertas novamente."));
+        }
+
+        if (ReproductiveStatus == ReproductiveStatus.Lactating)
+        {
+            return Result.Failure(Error.Conflict("Sow.InvalidBreedingState", "Matrizes lactantes não podem receber cobrição."));
+        }
+
+        ReproductiveStatus = ReproductiveStatus.Bred;
+        if (bodyConditionScoreAtBreeding.HasValue)
+        {
+            BodyConditionScore = bodyConditionScoreAtBreeding.Value;
+        }
+
+        LastEventName = "Cobrição";
+        LastEventDate = eventDate;
+        var methodLabel = method switch
+        {
+            BreedingMethod.ArtificialInsemination => "IA",
+            BreedingMethod.TimedArtificialInsemination => "IATF",
+            BreedingMethod.NaturalService => "Monta Natural",
+            _ => method.ToString()
+        };
+
+        var notes = string.Join(" | ", new[]
+        {
+            technician is not null ? $"Técnico: {technician}" : null,
+            boarOrSemenRef is not null ? $"Ref: {boarOrSemenRef}" : null
+        }.Where(x => x is not null));
+
+        _events.Add(PlantelEvent.Breeding(Id, methodLabel, eventDate, notes));
+        return Result.Success();
+    }
+
+    public Result ApplyPregnancyDiagnosis(DateOnly diagnosisDate, PregnancyDiagnosisResult result)
+    {
+        if (ReproductiveStatus != ReproductiveStatus.Bred)
+        {
+            return Result.Failure(Error.Conflict("Sow.NotBred", "Diagnóstico só pode ser registrado para matrizes cobertas."));
+        }
+
+        ReproductiveStatus = result == PregnancyDiagnosisResult.Pregnant
+            ? ReproductiveStatus.Pregnant
+            : ReproductiveStatus.Empty;
+
+        var resultLabel = result switch
+        {
+            PregnancyDiagnosisResult.Pregnant => "Prenhe",
+            PregnancyDiagnosisResult.Empty => "Vazia",
+            PregnancyDiagnosisResult.ReturnToEstrus => "Retorno ao Cio",
+            PregnancyDiagnosisResult.AbortOrDoubt => "Aborto/Dúvida",
+            _ => result.ToString()
+        };
+
+        LastEventName = "Diagnóstico";
+        LastEventDate = diagnosisDate;
+        _events.Add(PlantelEvent.Diagnosis(Id, resultLabel, diagnosisDate, null));
+        return Result.Success();
+    }
+
+    public void SetDnpDays(int dnpDays)
+    {
+        DnpDays = Math.Max(0, dnpDays);
+    }
 }

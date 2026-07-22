@@ -1,0 +1,20 @@
+<div class="sync-status-chip @CssClass">
+    <span class="material-symbols-outlined">@Icon</span>
+    <span>@Label</span>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsOnline { get; set; } = true;
+
+    [Parameter]
+    public int PendingCount { get; set; }
+
+    private string Label => PendingCount > 0
+        ? $"{PendingCount} pendente(s)"
+        : IsOnline ? "Sincronizado" : "IndexedDB";
+
+    private string Icon => PendingCount > 0 ? "sync_problem" : IsOnline ? "sync" : "database";
+
+    private string CssClass => PendingCount > 0 ? "sync-pending" : IsOnline ? "sync-ok" : "sync-offline";
+}

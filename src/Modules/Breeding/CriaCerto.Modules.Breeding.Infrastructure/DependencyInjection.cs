@@ -1,5 +1,6 @@
 using CriaCerto.BuildingBlocks.Abstractions.Tenancy;
 using CriaCerto.Modules.Breeding.Application.Abstractions;
+using CriaCerto.Modules.Breeding.Application.Domain.Services;
 using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IBreedingDbContext>(sp => sp.GetRequiredService<BreedingDbContext>());
+        services.AddSingleton<IDnpCalculator, DnpCalculator>();
         return services;
     }
 }

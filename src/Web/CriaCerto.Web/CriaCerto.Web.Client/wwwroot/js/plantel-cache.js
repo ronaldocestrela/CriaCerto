@@ -1,7 +1,8 @@
 window.plantelCache = (() => {
   const dbName = 'criacerto-plantel';
-  const dbVersion = 1;
+  const dbVersion = 2;
   const sowStore = 'sows';
+  const pendingStore = 'pendingOps';
 
   function openDb() {
     return new Promise((resolve, reject) => {
@@ -12,6 +13,11 @@ window.plantelCache = (() => {
           const store = db.createObjectStore(sowStore, { keyPath: 'id' });
           store.createIndex('tagId', 'tagId', { unique: false });
           store.createIndex('reproductiveStatus', 'reproductiveStatus', { unique: false });
+        }
+        if (!db.objectStoreNames.contains(pendingStore)) {
+          const pending = db.createObjectStore(pendingStore, { keyPath: 'id' });
+          pending.createIndex('type', 'type', { unique: false });
+          pending.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
       request.onsuccess = () => resolve(request.result);
@@ -48,6 +54,45 @@ window.plantelCache = (() => {
     });
   }
 
+  async function enqueueOp(type, payload) {
+    const db = await openDb();
+    const tx = db.transaction(pendingStore, 'readwrite');
+    tx.objectStore(pendingStore).add({
+      id: crypto.randomUUID(),
+      type,
+      payload,
+      createdAt: new Date().toISOString()
+    });
+    await waitForTransaction(tx);
+    db.close();
+  }
+
+  async function getPendingOps() {
+    const db = await openDb();
+    const tx = db.transaction(pendingStore, 'readonly');
+    const request = tx.objectStore(pendingStore).getAll();
+    const rows = await waitForRequest(request);
+    db.close();
+    return rows.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  }
+
+  async function getPendingOpsCount() {
+    const rows = await getPendingOps();
+    return rows.length;
+  }
+
+  async function removeOp(id) {
+    const db = await openDb();
+    const tx = db.transaction(pendingStore, 'readwrite');
+    tx.objectStore(pendingStore).delete(id);
+    await waitForTransaction(tx);
+    db.close();
+  }
+
+  function isOnline() {
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  }
+
   function waitForRequest(request) {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result || []);
@@ -63,5 +108,13 @@ window.plantelCache = (() => {
     });
   }
 
-  return { saveSows, getSows };
+  return {
+    saveSows,
+    getSows,
+    enqueueOp,
+    getPendingOps,
+    getPendingOpsCount,
+    removeOp,
+    isOnline
+  };
 })();

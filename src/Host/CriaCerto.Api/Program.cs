@@ -5,7 +5,9 @@ using CriaCerto.BuildingBlocks.Infrastructure;
 using CriaCerto.BuildingBlocks.Infrastructure.Persistence;
 using CriaCerto.Modules.Breeding.Application;
 using CriaCerto.Modules.Breeding.Application.Domain;
+using CriaCerto.Modules.Breeding.Application.Contracts;
 using CriaCerto.Modules.Breeding.Application.Features.Plantel;
+using CriaCerto.Modules.Breeding.Application.Features.BreedingOps;
 using CriaCerto.Modules.Breeding.Infrastructure;
 using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
 using CriaCerto.Modules.Maternity.Application;
@@ -161,6 +163,33 @@ breeding.MapPut("/boars/{id:guid}", async (Guid id, UpdateBoarCommand command, I
 breeding.MapPost("/boars/{id:guid}/status", async (Guid id, ChangeLifecycleStatusRequest request, ISender sender) =>
 {
     var result = await sender.Send(new ChangeBoarStatusCommand(id, request.Status, request.EventDate, request.Notes));
+    return ToHttpResult(result);
+});
+
+breeding.MapPost("/events/batch", async (RegisterBreedingBatchRequest request, ISender sender) =>
+{
+    var result = await sender.Send(new RegisterBreedingBatchCommand(request.EventDate, request.Lines));
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+breeding.MapPost("/diagnoses", async (RegisterPregnancyDiagnosisRequest request, ISender sender) =>
+{
+    var result = await sender.Send(new RegisterPregnancyDiagnosisCommand(
+        request.SowId,
+        request.DiagnosisDate,
+        request.Method,
+        request.Result,
+        request.Notes));
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+breeding.MapGet("/pregnancy-checks", async (
+    ISender sender,
+    string? search,
+    int page = 1,
+    int pageSize = 25) =>
+{
+    var result = await sender.Send(new ListPregnancyCheckTasksQuery(search, page, pageSize));
     return ToHttpResult(result);
 });
 

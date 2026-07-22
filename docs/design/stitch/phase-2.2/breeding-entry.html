@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PigFlow Pro - Lote de Cobrição</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#00210a",
+                    "outline-variant": "#becabc",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "inverse-primary": "#79db8d",
+                    "surface-container-low": "#f2f4f6",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#ffb59d",
+                    "surface-variant": "#e0e3e5",
+                    "tertiary": "#9f3000",
+                    "primary-fixed-dim": "#79db8d",
+                    "background": "#f7f9fb",
+                    "surface-container": "#eceef0",
+                    "primary": "#00652c",
+                    "on-primary-container": "#d3ffd5",
+                    "secondary-container": "#d5e0f8",
+                    "on-background": "#191c1e",
+                    "tertiary-fixed": "#ffdbd0",
+                    "primary-fixed": "#95f8a7",
+                    "on-primary-fixed-variant": "#005323",
+                    "on-surface": "#191c1e",
+                    "on-secondary-container": "#586377",
+                    "tertiary-container": "#c5430f",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "on-tertiary-fixed": "#390c00",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "secondary-fixed": "#d8e3fb",
+                    "on-tertiary-fixed-variant": "#832600",
+                    "on-secondary-fixed": "#111c2d",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#006d30",
+                    "surface-dim": "#d8dadc",
+                    "surface-bright": "#f7f9fb",
+                    "surface": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e0e3e5",
+                    "outline": "#6f7a6e",
+                    "on-primary": "#ffffff",
+                    "secondary": "#545f73",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e6e8ea",
+                    "primary-container": "#15803d",
+                    "on-surface-variant": "#3f493f",
+                    "on-tertiary-container": "#fff1ed",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "touch-target-min": "48px",
+                    "margin-desktop": "32px",
+                    "unit": "4px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Work Sans"],
+                    "headline-sm": ["Work Sans"],
+                    "data-table": ["Work Sans"],
+                    "headline-lg": ["Work Sans"],
+                    "label-bold": ["JetBrains Mono"],
+                    "headline-md": ["Work Sans"],
+                    "headline-lg-mobile": ["Work Sans"],
+                    "body-md": ["Work Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "data-table": ["15px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-bold": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        
+        input:focus, select:focus {
+            outline: 2px solid #00652c;
+            outline-offset: -2px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile h-touch-target-min w-full fixed top-0 z-50 bg-surface dark:bg-on-background border-b border-outline-variant dark:border-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="agriculture">agriculture</span>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">PigFlow Pro</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px] text-primary" data-icon="database">database</span>
+<span class="font-label-bold text-[10px] uppercase tracking-tighter text-on-surface-variant">IndexedDB</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant dark:text-surface-variant" data-icon="wifi_off">wifi_off</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-16 px-margin-mobile">
+<!-- Header Info -->
+<section class="mt-4 mb-6">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">Setor de Cobrição</h2>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="font-body-md">Galpão 02 - Lote de Cobrição</span>
+</div>
+</section>
+<!-- Dynamic Entry List -->
+<form class="space-y-gutter" id="breeding-batch-form">
+<!-- Entry Card 1 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-margin-mobile shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Sow ID -->
+<div class="col-span-2">
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-1 block">BRINCO DA MATRIZ</label>
+<div class="relative flex items-center">
+<input class="w-full h-touch-target-min bg-surface border border-outline rounded-lg px-4 font-label-bold text-lg uppercase focus:ring-primary focus:border-primary" placeholder="000-000" type="text"/>
+<button class="absolute right-2 h-10 w-10 flex items-center justify-center bg-surface-container-high rounded-md active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-on-surface" data-icon="barcode_scanner">barcode_scanner</span>
+</button>
+</div>
+</div>
+<!-- Breeding Type -->
+<div class="col-span-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-1 block">TIPO</label>
+<select class="w-full h-touch-target-min bg-surface border border-outline rounded-lg px-2 font-body-md appearance-none">
+<option>IA</option>
+<option>IATF</option>
+<option>Monta Natural</option>
+</select>
+</div>
+<!-- Boar ID -->
+<div class="col-span-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-1 block">CACHAXO/SÊMEN</label>
+<input class="w-full h-touch-target-min bg-surface border border-outline rounded-lg px-3 font-body-md uppercase" placeholder="ID Lote" type="text"/>
+</div>
+<!-- Technician -->
+<div class="col-span-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-1 block">TÉCNICO</label>
+<select class="w-full h-touch-target-min bg-surface border border-outline rounded-lg px-2 font-body-md">
+<option>Ricardo S.</option>
+<option>Marcos V.</option>
+<option>Elena G.</option>
+</select>
+</div>
+<!-- Body Condition Score -->
+<div class="col-span-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-1 block">ECC (1-5)</label>
+<div class="flex justify-between items-center bg-surface border border-outline rounded-lg h-touch-target-min px-1">
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-high font-bold" type="button">-</button>
+<span class="font-label-bold text-headline-sm">3.5</span>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-high font-bold" type="button">+</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Entry Card 2 (Incomplete State) -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-margin-mobile shadow-sm">
+<div class="grid grid-cols-2 gap-4 opacity-60 grayscale-[0.5]">
+<div class="col-span-2">
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-1 block">BRINCO DA MATRIZ</label>
+<input class="w-full h-touch-target-min bg-surface-container border border-outline-variant rounded-lg px-4 font-label-bold text-lg uppercase" placeholder="000-000" type="text"/>
+</div>
+</div>
+<div class="mt-4 flex justify-center">
+<button class="flex items-center gap-2 text-primary font-label-bold py-2 px-4 rounded-full bg-primary-fixed" type="button">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        ADICIONAR MATRIZ
+                    </button>
+</div>
+</article>
+</form>
+<!-- Summary Widget (Floating Action context) -->
+<div class="mt-8 mb-4 p-4 bg-secondary-container rounded-xl border border-outline-variant">
+<div class="flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-label-bold text-on-secondary-container text-xs uppercase">Resumo do Lote</span>
+<span class="font-headline-sm text-on-secondary-fixed">01/12 Inseminações</span>
+</div>
+<div class="flex gap-2">
+<div class="w-10 h-10 rounded-full bg-on-secondary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="science">science</span>
+</div>
+</div>
+</div>
+<div class="mt-3 w-full bg-surface-container-lowest rounded-full h-2">
+<div class="bg-primary h-2 rounded-full w-[8%]"></div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions Container -->
+<div class="fixed bottom-0 w-full z-[60] bg-surface-container-lowest p-margin-mobile border-t border-outline-variant shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+<button class="w-full h-touch-target-min bg-primary text-on-primary font-headline-sm rounded-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-transform" form="breeding-batch-form" type="submit">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+            Confirmar Lote de Cobrição
+        </button>
+</div>
+<!-- BottomNavBar (Hidden on transaction focus as per instructions, but here for structural completeness if navigated) -->
+<!-- Note: instructions say suppress on task-focused sub-pages. This is a task-focused quick entry. Navigation is handled by TopBar/Bottom Confirmation. -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-unit py-2 bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant dark:border-on-surface-variant rounded-t-xl hidden">
+<div class="flex flex-col items-center justify-center text-on-secondary-container dark:text-secondary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-bold text-label-bold">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-secondary-container dark:text-secondary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="Groups">video_file</span>
+<span class="font-label-bold text-label-bold">Herd</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full px-4 py-1">
+<span class="material-symbols-outlined" data-icon="science">science</span>
+<span class="font-label-bold text-label-bold">Inseminate</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-secondary-container dark:text-secondary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span class="font-label-bold text-label-bold">Tasks</span>
+</div>
+</nav>
+<!-- Background Pattern/Atmosphere -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[-1]">
+<svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="40" id="grid" patternunits="userSpaceOnUse" width="40">
+<path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<script>
+        // Simple Micro-interactions
+        document.querySelectorAll('article').forEach(card => {
+            card.addEventListener('click', () => {
+                // Focus interaction placeholder
+            });
+        });
+
+        // Offline storage simulation feedback
+        console.log("System initialized: Local IndexedDB ready for batch cache.");
+    </script>
+</body></html>

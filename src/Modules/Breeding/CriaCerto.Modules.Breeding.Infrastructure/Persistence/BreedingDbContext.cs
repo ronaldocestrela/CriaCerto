@@ -13,6 +13,8 @@ public sealed class BreedingDbContext : DbContext, IBreedingDbContext
 
     public DbSet<Sow> Sows => Set<Sow>();
     public DbSet<Boar> Boars => Set<Boar>();
+    public DbSet<BreedingEvent> BreedingEvents => Set<BreedingEvent>();
+    public DbSet<PregnancyDiagnosis> PregnancyDiagnoses => Set<PregnancyDiagnosis>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +85,31 @@ public sealed class BreedingDbContext : DbContext, IBreedingDbContext
                 eventsBuilder.Property(e => e.Title).HasMaxLength(160).IsRequired();
                 eventsBuilder.Property(e => e.Notes).HasMaxLength(500);
             });
+        });
+
+        modelBuilder.Entity<BreedingEvent>(builder =>
+        {
+            builder.ToTable("BreedingEvents");
+            builder.HasKey(e => e.Id);
+            builder.HasIndex(e => e.SowId);
+            builder.HasIndex(e => e.EventDate);
+            builder.Property(e => e.BoarOrSemenRef).HasMaxLength(80);
+            builder.Property(e => e.Technician).HasMaxLength(120);
+            builder.Property(e => e.Location).HasMaxLength(120);
+            builder.Property(e => e.Notes).HasMaxLength(500);
+            builder.Property(e => e.Method).HasConversion<string>().HasMaxLength(40);
+            builder.Property(e => e.BodyConditionScoreAtBreeding).HasConversion<string>().HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<PregnancyDiagnosis>(builder =>
+        {
+            builder.ToTable("PregnancyDiagnoses");
+            builder.HasKey(d => d.Id);
+            builder.HasIndex(d => d.SowId);
+            builder.HasIndex(d => d.DiagnosisDate);
+            builder.Property(d => d.Notes).HasMaxLength(500);
+            builder.Property(d => d.Method).HasConversion<string>().HasMaxLength(40);
+            builder.Property(d => d.Result).HasConversion<string>().HasMaxLength(40);
         });
     }
 }
