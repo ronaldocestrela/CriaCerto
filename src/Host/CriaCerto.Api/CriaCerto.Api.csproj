@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
   </ItemGroup>
 
@@ -17,6 +18,8 @@
     <ProjectReference Include="..\..\Modules\Breeding\CriaCerto.Modules.Breeding.Infrastructure\CriaCerto.Modules.Breeding.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Maternity\CriaCerto.Modules.Maternity.Application\CriaCerto.Modules.Maternity.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Maternity\CriaCerto.Modules.Maternity.Infrastructure\CriaCerto.Modules.Maternity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\CriaCerto.Modules.Tenancy.Application\CriaCerto.Modules.Tenancy.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\CriaCerto.Modules.Tenancy.Infrastructure\CriaCerto.Modules.Tenancy.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

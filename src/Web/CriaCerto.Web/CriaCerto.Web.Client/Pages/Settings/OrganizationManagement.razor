@@ -1,0 +1,248 @@
+@page "/settings/organization"
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Cria Certo - Organização & Unidades</PageTitle>
+
+<div class="org-container font-headline">
+    
+    <!-- Page Header -->
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+            <nav style="display: flex; align-items: center; gap: 0.5rem; color: var(--cc-secondary); font-size: 12px; margin-bottom: 0.5rem;" class="font-mono">
+                <span style="text-transform: uppercase; tracking-wider: 0.05em;">CONFIGURAÇÕES</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
+                <span style="color: var(--cc-primary); text-transform: uppercase; tracking-wider: 0.05em;">PERFIL DA GRANJA</span>
+            </nav>
+            <h2 class="font-headline text-[32px] font-bold" style="color: var(--cc-ink); margin: 0; line-height: 40px; letter-spacing: -0.02em;">
+                Organização & Unidades
+            </h2>
+            <p style="color: var(--cc-ink-muted); margin: 0.25rem 0 0 0; font-size: 16px;">
+                Gerencie a identidade da sua granja, unidades produtivas e protocolos de isolamento de dados.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+            <button class="cc-btn cc-btn-outline" style="border: 1px solid var(--cc-outline); padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer;">
+                Editar Perfil
+            </button>
+            <button class="cc-btn cc-btn-primary" style="background: var(--cc-primary); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Nova Unidade
+            </button>
+        </div>
+    </div>
+
+    <!-- Bento Grid Container -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        
+        <!-- Primary Identity Card (Bento style) -->
+        <section style="background-color: var(--cc-brand-surface-lowest, #ffffff); border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); display: flex; flex-direction: column;">
+            <div style="height: 180px; position: relative; background: linear-gradient(135deg, #005323, #15803d); display: flex; align-items: flex-end; padding: 1.5rem;">
+                <div style="position: absolute; top: 1.5rem; right: 1.5rem; background-color: var(--cc-primary-container); color: white; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">
+                    @_subscribedPlan Plan
+                </div>
+                <div style="color: white; z-index: 10;">
+                    <span style="font-size: 11px; font-weight: bold; text-transform: uppercase; background-color: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem;" class="font-mono">Active Tenant</span>
+                    <h3 style="margin: 0; font-size: 24px; font-weight: bold;">@_tenantName</h3>
+                </div>
+            </div>
+            <div style="padding: 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; flex: 1;">
+                <div>
+                    <span style="font-size: 11px; color: var(--cc-ink-muted); text-transform: uppercase; font-weight: bold;" class="font-mono">CNPJ</span>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 16px; font-weight: 600; color: var(--cc-ink);">12.345.678/0001-99</p>
+                </div>
+                <div>
+                    <span style="font-size: 11px; color: var(--cc-ink-muted); text-transform: uppercase; font-weight: bold;" class="font-mono">Capacidade Total</span>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 16px; font-weight: 600; color: var(--cc-ink);">12.500 Cabeças</p>
+                </div>
+                <div style="grid-column: span 2; border-top: 1px solid var(--cc-border); padding-top: 1rem;">
+                    <span style="font-size: 11px; color: var(--cc-ink-muted); text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 0.25rem;" class="font-mono">Localização</span>
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: var(--cc-primary); font-size: 18px;">location_on</span>
+                        <span style="font-size: 14px; color: var(--cc-ink);">Rodovia BR-163, KM 450, Distrito Industrial - Sorriso, MT</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tenant Isolation Widget (Glassmorphism layout) -->
+        <section style="background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-container)); color: white; border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--cc-shadow); position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -2rem; right: -2rem; width: 120px; height: 120px; background-color: rgba(255,255,255,0.08); border-radius: 50%; filter: blur(20px);"></div>
+            
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h4 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;" class="font-mono">Privacidade de Dados</h4>
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+                </div>
+                <p style="font-size: 20px; font-weight: bold; margin: 0 0 0.5rem 0;">Isolamento: SEGURO</p>
+                <p style="font-size: 13.5px; opacity: 0.9; margin: 0; line-height: 1.5;">
+                    Isolamento de banco de dados ativo. Suas informações são criptografadas e separadas logicamente das outras organizações na nuvem Cria Certo.
+                </p>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="background-color: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 11px; font-weight: bold;" class="font-mono">BANCO DE DADOS</span>
+                    <span style="font-size: 11px; font-family: monospace;">CC_TEN_@(_tenantId?.ToString("N")[..8].ToUpper() ?? "DEFAULT")</span>
+                </div>
+                <div style="background-color: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 11px; font-weight: bold;" class="font-mono">CRIPTOGRAFIA</span>
+                    <span style="font-size: 11px; font-family: monospace;">AES-256-GCM</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Production Units Table section -->
+    <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); margin-bottom: 2rem;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--cc-border); background-color: var(--cc-canvas); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: var(--cc-ink);">Unidades de Produção</h3>
+            <span style="font-size: 12px; color: var(--cc-secondary); font-weight: 600;">3 Unidades Ativas</span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background-color: var(--cc-canvas); color: var(--cc-ink-muted); border-bottom: 1px solid var(--cc-border);" class="font-mono">
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Nome da Unidade</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Tipo</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Status</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: right;">Ocupação</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody style="color: var(--cc-ink);">
+                    <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.15s;">
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 15px;">Unidade Matriz 01</span>
+                                <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: UN-001-SFE</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <span style="background-color: #d8e3fb; color: #111c2d; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">Gestação</span>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-primary-container);"></span>
+                                <span style="font-size: 12px; font-weight: bold; color: var(--cc-primary); text-transform: uppercase;" class="font-mono">Operação Normal</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                                <span style="font-size: 13px; font-weight: 600;">82%</span>
+                                <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
+                                    <div style="width: 82%; height: 100%; background-color: var(--cc-primary-container);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <button style="border: none; background: transparent; color: var(--cc-secondary); cursor: pointer;">
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.15s;">
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 15px;">Crechário Sul</span>
+                                <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: UN-002-SFE</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <span style="background-color: #ffdbd0; color: #832600; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">Creche</span>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-primary-container);"></span>
+                                <span style="font-size: 12px; font-weight: bold; color: var(--cc-primary); text-transform: uppercase;" class="font-mono">Ativo</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                                <span style="font-size: 13px; font-weight: 600;">94%</span>
+                                <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
+                                    <div style="width: 94%; height: 100%; background-color: var(--cc-primary-container);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <button style="border: none; background: transparent; color: var(--cc-secondary); cursor: pointer;">
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: none; transition: background-color 0.15s;">
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 15px;">Unidade de Engorda 04</span>
+                                <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: UN-004-SFE</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <span style="background-color: #f7f9fb; color: var(--cc-ink-muted); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid var(--cc-border);" class="font-mono">Terminação</span>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-error);"></span>
+                                <span style="font-size: 12px; font-weight: bold; color: var(--cc-error); text-transform: uppercase;" class="font-mono">Manutenção</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                                <span style="font-size: 13px; font-weight: 600;">0%</span>
+                                <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
+                                    <div style="width: 0%; height: 100%; background-color: var(--cc-error);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <button style="border: none; background: transparent; color: var(--cc-secondary); cursor: pointer;">
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+@code {
+    private string _tenantName = "Fazenda Santa Fé - Matriz";
+    private string _subscribedPlan = "Enterprise";
+    private Guid? _tenantId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var tenantClaim = user.FindFirst("TenantName")?.Value;
+            if (!string.IsNullOrEmpty(tenantClaim))
+            {
+                _tenantName = tenantClaim;
+            }
+
+            var planClaim = user.FindFirst("SubscribedPlan")?.Value;
+            if (!string.IsNullOrEmpty(planClaim))
+            {
+                _subscribedPlan = planClaim;
+            }
+
+            var idClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(idClaim, out var tenantId))
+            {
+                _tenantId = tenantId;
+            }
+        }
+        else
+        {
+            // Redirect to login if not authenticated
+            Navigation.NavigateTo("login");
+        }
+    }
+}

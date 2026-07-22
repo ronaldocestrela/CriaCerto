@@ -1,0 +1,314 @@
+@page "/login"
+@layout EmptyLayout
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject Auth.CustomAuthStateProvider AuthStateProvider
+
+<PageTitle>Cria Certo - Login</PageTitle>
+
+<div class="min-h-screen flex flex-col items-center justify-center p-4" style="background-color: var(--cc-canvas);">
+    <main class="w-full max-w-[480px]">
+        
+        <!-- Login Card -->
+        <div class="login-card bg-white rounded-xl p-8 md:p-10 relative overflow-hidden" id="login-container">
+            
+            @if (_currentStep == Step.Credentials)
+            {
+                <!-- Step 1: Login Credentials -->
+                <div class="step-transition">
+                    <div class="flex flex-col items-center mb-8 text-center" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem;">
+                        <!-- Custom branding header matching the Stitch mockup -->
+                        <span class="material-symbols-outlined text-[64px] mb-3" style="color: var(--cc-primary); font-variation-settings: 'FILL' 1;">warehouse</span>
+                        <h2 class="font-headline text-[24px] font-bold" style="color: var(--cc-ink); margin: 0;">Cria Certo</h2>
+                        <p class="font-mono text-[11px] uppercase tracking-widest text-secondary mt-1" style="color: var(--cc-ink-muted); margin: 0.25rem 0 0 0;">
+                            Gestão Suinícola Inteligente e de Alta Performance
+                        </p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert-box mb-6" style="margin-bottom: 1.5rem;">
+                            @_errorMessage
+                        </div>
+                    }
+
+                    <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin" class="space-y-6">
+                        <DataAnnotationsValidator />
+                        
+                        <div style="margin-bottom: 1.25rem;">
+                            <label class="font-mono text-[12px] font-bold text-on-surface-variant block" style="display: block; margin-bottom: 0.5rem; text-transform: uppercase;">E-MAIL</label>
+                            <InputText @bind-Value="_loginModel.Email" class="w-full h-[48px] px-4 rounded-lg border border-outline-variant font-headline text-on-surface input-focus-ring transition-all" style="width: 100%; height: 48px; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--cc-border); background-color: var(--cc-canvas);" placeholder="usuario@agro.com.br" type="email" />
+                            <ValidationMessage For="@(() => _loginModel.Email)" class="text-xs text-error mt-1" />
+                        </div>
+
+                        <div style="margin-bottom: 1.25rem;">
+                            <label class="font-mono text-[12px] font-bold text-on-surface-variant block" style="display: block; margin-bottom: 0.5rem; text-transform: uppercase;">SENHA</label>
+                            <InputText @bind-Value="_loginModel.Password" class="w-full h-[48px] px-4 rounded-lg border border-outline-variant font-headline text-on-surface input-focus-ring transition-all" style="width: 100%; height: 48px; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--cc-border); background-color: var(--cc-canvas);" placeholder="••••••••" type="password" />
+                            <ValidationMessage For="@(() => _loginModel.Password)" class="text-xs text-error mt-1" />
+                        </div>
+
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" style="width: 18px; height: 18px; border-radius: 4px; accent-color: var(--cc-primary);" />
+                                <span style="font-size: 14px; color: var(--cc-secondary);">Lembrar deste dispositivo</span>
+                            </label>
+                        </div>
+
+                        <button class="w-full h-[48px] text-white font-mono text-[14px] rounded-lg uppercase tracking-wider transition-all" 
+                                style="width: 100%; height: 48px; background-color: var(--cc-primary); border: none; border-radius: 8px; font-weight: bold; cursor: pointer;"
+                                type="submit" disabled="@_isLoading">
+                            @if (_isLoading)
+                            {
+                                <span>Verificando...</span>
+                            }
+                            else
+                            {
+                                <span>Acessar Sistema</span>
+                            }
+                        </button>
+                        
+                        <button class="w-full text-center text-sm hover:underline pt-2" style="width: 100%; border: none; background: transparent; color: var(--cc-primary); font-size: 14px; text-align: center; margin-top: 0.5rem; cursor: pointer;" type="button">
+                            Esqueceu sua senha?
+                        </button>
+                    </EditForm>
+                </div>
+            }
+            else if (_currentStep == Step.FarmSelection)
+            {
+                <!-- Step 2: Farm Selection (Multi-tenant selection cards) -->
+                <div class="step-transition">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" 
+                                style="background: transparent; border: none; border-radius: 50%; cursor: pointer;"
+                                @onclick="BackToCredentials">
+                            <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+                        </button>
+                        <h2 class="font-headline text-[20px] font-semibold" style="margin: 0; color: var(--cc-ink);">Selecionar Granja</h2>
+                    </div>
+
+                    <p class="font-headline text-[14px] text-secondary mb-6" style="margin-bottom: 1.5rem; color: var(--cc-secondary);">
+                        Sua conta está associada a múltiplas unidades. Escolha qual deseja gerenciar agora:
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert-box mb-6" style="margin-bottom: 1.5rem;">
+                            @_errorMessage
+                        </div>
+                    }
+
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 320px; overflow-y: auto; padding-right: 0.5rem;" class="custom-scrollbar">
+                        @foreach (var tenant in _availableTenants)
+                        {
+                            <button class="farm-selection-item w-full flex items-center p-4 rounded-xl border transition-all text-left" 
+                                    style="width: 100%; display: flex; align-items: center; padding: 1rem; border-radius: 12px; border: 1px solid var(--cc-border); background-color: var(--cc-canvas); text-align: left; cursor: pointer;"
+                                    @onclick="() => HandleSelectTenant(tenant.Id)" disabled="@_isLoading">
+                                
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center" 
+                                     style="width: 48px; height: 48px; border-radius: 8px; background-color: @GetTenantBgColor(tenant.Type); color: @GetTenantTextColor(tenant.Type); display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-outlined">@GetTenantIcon(tenant.Type)</span>
+                                </div>
+                                <div style="margin-left: 1rem; flex: 1;">
+                                    <h3 class="font-mono text-[14px] font-bold text-on-surface" style="margin: 0; color: var(--cc-ink);">@tenant.Name</h3>
+                                    <p class="text-xs text-secondary" style="margin: 0; font-size: 12px; color: var(--cc-secondary);">@tenant.Type - @tenant.State</p>
+                                </div>
+                                <span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <!-- Footer Security Badges -->
+        <footer class="mt-8 flex flex-col items-center gap-4" style="display: flex; flex-direction: column; align-items: center; margin-top: 2rem; gap: 1rem;">
+            <div style="display: flex; gap: 1.5rem; justify-content: center; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; opacity: 0.6;">
+                    <span class="material-symbols-outlined text-[20px]">lock</span>
+                    <span class="font-mono text-[11px] uppercase tracking-tighter">SSL Encrypted</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; opacity: 0.6;">
+                    <span class="material-symbols-outlined text-[20px]">verified_user</span>
+                    <span class="font-mono text-[11px] uppercase tracking-tighter">ISO 27001</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; opacity: 0.6;">
+                    <span class="material-symbols-outlined text-[20px]">shield</span>
+                    <span class="font-mono text-[11px] uppercase tracking-tighter">Data Isolated</span>
+                </div>
+            </div>
+            <p class="font-headline text-[12px] text-secondary opacity-50" style="margin: 0; opacity: 0.5; font-size: 12px; color: var(--cc-secondary);">
+                © @DateTime.Now.Year Cria Certo v4.2.0. Todos os direitos reservados.
+            </p>
+        </footer>
+
+    </main>
+</div>
+
+@code {
+    private LoginModel _loginModel = new();
+    private bool _isLoading;
+    private string? _errorMessage;
+    private Step _currentStep = Step.Credentials;
+    private List<TenantDto> _availableTenants = new();
+    private Guid _userId;
+    private string _userFullName = "";
+    private string _userEmail = "";
+
+    private enum Step
+    {
+        Credentials,
+        FarmSelection
+    }
+
+    private class LoginModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "O e-mail é obrigatório.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "A senha é obrigatória.")]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    // Tenant DTO matching the API Contracts
+    public record TenantDto(Guid Id, string Name, string State, string Type);
+    
+    // AuthResponse matching the API Contracts
+    public record AuthResponseDto(
+        string? Token,
+        bool RequiresTenantSelection,
+        List<TenantDto> AvailableTenants,
+        Guid UserId,
+        string FullName,
+        string Email
+    );
+
+    private async Task HandleLogin()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/auth/login", _loginModel);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+                if (result != null)
+                {
+                    _userId = result.UserId;
+                    _userFullName = result.FullName;
+                    _userEmail = result.Email;
+
+                    if (result.RequiresTenantSelection)
+                    {
+                        _availableTenants = result.AvailableTenants;
+                        _currentStep = Step.FarmSelection;
+                    }
+                    else if (!string.IsNullOrEmpty(result.Token))
+                    {
+                        await AuthStateProvider.MarkUserAsAuthenticated(result.Token);
+                        Navigation.NavigateTo("");
+                    }
+                }
+            }
+            else
+            {
+                // Try reading error details
+                try
+                {
+                    var err = await response.Content.ReadFromJsonAsync<CriaCerto.BuildingBlocks.Abstractions.Results.Error>();
+                    _errorMessage = err?.Message ?? "Erro ao realizar login.";
+                }
+                catch
+                {
+                    _errorMessage = "E-mail ou senha incorretos.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Ocorreu um erro de rede: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task HandleSelectTenant(Guid tenantId)
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var requestPayload = new { UserId = _userId, TenantId = tenantId };
+            var response = await Http.PostAsJsonAsync("/api/auth/select-tenant", requestPayload);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+                if (result != null && !string.IsNullOrEmpty(result.Token))
+                {
+                    await AuthStateProvider.MarkUserAsAuthenticated(result.Token);
+                    Navigation.NavigateTo("");
+                }
+                else
+                {
+                    _errorMessage = "Erro ao autenticar o acesso à granja.";
+                }
+            }
+            else
+            {
+                _errorMessage = "Erro ao selecionar granja.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erro de conexão: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void BackToCredentials()
+    {
+        _currentStep = Step.Credentials;
+        _errorMessage = null;
+    }
+
+    // Helper functions styling the tenant cards matching Stitch icons/colors
+    private string GetTenantIcon(string type)
+    {
+        return type.ToLower() switch
+        {
+            var t when t.Contains("gestação") || t.Contains("matriz") => "warehouse",
+            var t when t.Contains("creche") || t.Contains("recria") => "analytics",
+            _ => "agriculture"
+        };
+    }
+
+    private string GetTenantBgColor(string type)
+    {
+        // Hex colors corresponding to colors loaded in app.css or brand standards
+        return type.ToLower() switch
+        {
+            var t when t.Contains("gestação") || t.Contains("matriz") => "#d3ffd5", // primary-container/light soft green
+            var t when t.Contains("creche") || t.Contains("recria") => "#ffdbd0", // tertiary-fixed/light peach
+            _ => "#d8e3fb" // secondary-fixed/light blue
+        };
+    }
+
+    private string GetTenantTextColor(string type)
+    {
+        return type.ToLower() switch
+        {
+            var t when t.Contains("gestação") || t.Contains("matriz") => "#005323",
+            var t when t.Contains("creche") || t.Contains("recria") => "#832600",
+            _ => "#111c2d"
+        };
+    }
+}

@@ -1,0 +1,76 @@
+using CriaCerto.BuildingBlocks.Abstractions.Results;
+using CriaCerto.Modules.Tenancy.Application.Abstractions;
+using CriaCerto.Modules.Tenancy.Application.Contracts;
+using CriaCerto.Modules.Tenancy.Application.Domain;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace CriaCerto.Modules.Tenancy.Application.Features.Login;
+
+public record LoginCommand(string Email, string Password) : IRequest<Result<AuthResponse>>;
+
+public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResponse>>
+{
+    private readonly ITenancyDbContext _dbContext;
+    private readonly IJwtService _jwtService;
+
+    public LoginCommandHandler(ITenancyDbContext dbContext, IJwtService jwtService)
+    {
+        _dbContext = dbContext;
+        _jwtService = jwtService;
+    }
+
+    public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _dbContext.Users
+            .Include(u => u.UserTenants)
+            .ThenInclude(ut => ut.Tenant)
+            .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+
+        if (user == null || !PasswordHasher.Verify(request.Password, user.PasswordHash))
+        {
+            return Result.Failure<AuthResponse>(
+                Error.Unauthorized("Auth.InvalidCredentials", "E-mail ou senha inválidos."));
+        }
+
+        var userTenants = user.UserTenants;
+        if (userTenants.Count == 0)
+        {
+            return Result.Failure<AuthResponse>(
+                Error.Failure("Auth.NoTenantAssociation", "Sua conta não está associada a nenhuma granja."));
+        }
+
+        // Check if there is only 1 tenant
+        if (userTenants.Count == 1)
+        {
+            var singleTenant = userTenants[0].Tenant!;
+            var token = _jwtService.GenerateToken(user, singleTenant);
+            return Result.Success(new AuthResponse(
+                Token: token,
+                RequiresTenantSelection: false,
+                AvailableTenants: new List<TenantDto>(),
+                UserId: user.Id,
+                FullName: user.FullName,
+                Email: user.Email
+            ));
+        }
+
+        // Multiple tenants require selection
+        var availableTenants = userTenants
+            .Select(ut => new TenantDto(
+                ut.Tenant!.Id,
+                ut.Tenant.Name,
+                ut.Tenant.State,
+                ut.Tenant.Type))
+            .ToList();
+
+        return Result.Success(new AuthResponse(
+            Token: null,
+            RequiresTenantSelection: true,
+            AvailableTenants: availableTenants,
+            UserId: user.Id,
+            FullName: user.FullName,
+            Email: user.Email
+        ));
+    }
+}

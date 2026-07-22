@@ -17,6 +17,10 @@
     <Project Path="src/Modules/Maternity/CriaCerto.Modules.Maternity.Application/CriaCerto.Modules.Maternity.Application.csproj" />
     <Project Path="src/Modules/Maternity/CriaCerto.Modules.Maternity.Infrastructure/CriaCerto.Modules.Maternity.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Tenancy/">
+    <Project Path="src/Modules/Tenancy/CriaCerto.Modules.Tenancy.Application/CriaCerto.Modules.Tenancy.Application.csproj" />
+    <Project Path="src/Modules/Tenancy/CriaCerto.Modules.Tenancy.Infrastructure/CriaCerto.Modules.Tenancy.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Web/" />
   <Folder Name="/src/Web/CriaCerto.Web/">
     <Project Path="src/Web/CriaCerto.Web/CriaCerto.Web.Client/CriaCerto.Web.Client.csproj" />
