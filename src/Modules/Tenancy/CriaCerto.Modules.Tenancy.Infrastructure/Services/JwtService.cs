@@ -21,7 +21,7 @@ public sealed class JwtService : IJwtService
         _audience = configuration["Jwt:Audience"] ?? "CriaCertoClient";
     }
 
-    public string GenerateToken(User user, Tenant tenant)
+    public string GenerateToken(User user, Tenant tenant, UserRole role = UserRole.Admin)
     {
         var claims = new[]
         {
@@ -30,7 +30,9 @@ public sealed class JwtService : IJwtService
             new Claim("FullName", user.FullName),
             new Claim("TenantId", tenant.Id.ToString()),
             new Claim("TenantName", tenant.Name),
-            new Claim("SubscribedPlan", tenant.SubscribedPlan)
+            new Claim("SubscribedPlan", tenant.SubscribedPlan),
+            new Claim(ClaimTypes.Role, role.ToString()),
+            new Claim("Role", role.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

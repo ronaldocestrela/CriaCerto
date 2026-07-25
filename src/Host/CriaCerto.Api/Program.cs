@@ -36,6 +36,12 @@ using CriaCerto.Modules.Tenancy.Application.Features.UpdateTenantProfile;
 using CriaCerto.Modules.Tenancy.Application.Features.GetProductionUnits;
 using CriaCerto.Modules.Tenancy.Application.Features.CreateProductionUnit;
 using CriaCerto.Modules.Tenancy.Application.Features.UpdateProductionUnit;
+using CriaCerto.Modules.Tenancy.Application.Features.InviteTeamMember;
+using CriaCerto.Modules.Tenancy.Application.Features.GetTeamMembers;
+using CriaCerto.Modules.Tenancy.Application.Features.AcceptTeamInvite;
+using CriaCerto.Modules.Tenancy.Application.Features.RevokeTeamInvite;
+using CriaCerto.Modules.Tenancy.Application.Features.RemoveTeamMember;
+using CriaCerto.Modules.Tenancy.Application.Domain;
 using CriaCerto.Modules.Tenancy.Infrastructure;
 
 using CriaCerto.Modules.Tenancy.Infrastructure.Persistence;
@@ -93,7 +99,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole(UserRole.Admin.ToString()));
+    options.AddPolicy("ZootecniaOrAdmin", policy => policy.RequireRole(UserRole.Admin.ToString(), UserRole.Zootecnista.ToString()));
+    options.AddPolicy("CurralAccess", policy => policy.RequireRole(UserRole.Admin.ToString(), UserRole.Zootecnista.ToString(), UserRole.Veterinario.ToString(), UserRole.OperadorCurral.ToString()));
+});
 
 var app = builder.Build();
 
@@ -198,6 +209,37 @@ app.MapPut("/api/v1/tenancy/production-units/{id:guid}", async (Guid id, UpdateP
     var result = await sender.Send(command with { Id = id });
     return ToHttpResult(result);
 }).RequireAuthorization().WithTags("Tenancy");
+
+// Team & RBAC Endpoints
+app.MapGet("/api/v1/tenancy/members", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetTeamMembersQuery(tenantId));
+    return ToHttpResult(result);
+}).RequireAuthorization().WithTags("Tenancy");
+
+app.MapPost("/api/v1/tenancy/invites", async (InviteTeamMemberCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+}).RequireAuthorization("AdminOnly").WithTags("Tenancy");
+
+app.MapPost("/api/v1/tenancy/invites/accept", async (AcceptTeamInviteCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result);
+}).AllowAnonymous().WithTags("Tenancy");
+
+app.MapDelete("/api/v1/tenancy/invites/{inviteId:guid}", async (Guid inviteId, Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new RevokeTeamInviteCommand(tenantId, inviteId));
+    return ToHttpResult(result);
+}).RequireAuthorization("AdminOnly").WithTags("Tenancy");
+
+app.MapDelete("/api/v1/tenancy/members/{userId:guid}", async (Guid userId, Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new RemoveTeamMemberCommand(tenantId, userId));
+    return ToHttpResult(result);
+}).RequireAuthorization("AdminOnly").WithTags("Tenancy");
 
 
 // Cattle Breeding Endpoints

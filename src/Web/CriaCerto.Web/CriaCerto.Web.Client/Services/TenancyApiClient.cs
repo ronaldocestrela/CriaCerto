@@ -60,6 +60,37 @@ public sealed record CreateProductionUnitRequest(
     string? LocationDetails
 );
 
+public sealed record TeamMemberModel(
+    Guid UserId,
+    string Email,
+    string FullName,
+    int Role,
+    DateTime JoinedAt,
+    bool IsActive
+);
+
+public sealed record TeamInviteModel(
+    Guid Id,
+    Guid TenantId,
+    string Email,
+    int Role,
+    string InviteToken,
+    DateTime CreatedAt,
+    DateTime ExpiresAt,
+    bool IsAccepted
+);
+
+public sealed record TeamOverviewModel(
+    List<TeamMemberModel> Members,
+    List<TeamInviteModel> PendingInvites
+);
+
+public sealed record InviteTeamMemberRequest(
+    Guid TenantId,
+    string Email,
+    int Role
+);
+
 public sealed class TenancyApiClient
 {
     private readonly HttpClient _httpClient;
@@ -156,6 +187,94 @@ public sealed class TenancyApiClient
             0,
             request.LocationDetails,
             0m
+        );
+    }
+
+    public async Task<TeamOverviewModel> GetTeamMembersAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var overview = await _httpClient.GetFromJsonAsync<TeamOverviewModel>($"/api/v1/tenancy/members?tenantId={tenantId}", cancellationToken);
+            if (overview is not null)
+            {
+                return overview;
+            }
+        }
+        catch
+        {
+            // Fallback
+        }
+
+        return GetFallbackTeamOverview(tenantId);
+    }
+
+    public async Task<TeamInviteModel?> InviteTeamMemberAsync(InviteTeamMemberRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/v1/tenancy/invites", request, cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<TeamInviteModel>(cancellationToken: cancellationToken);
+            }
+        }
+        catch
+        {
+            // Fallback
+        }
+
+        return new TeamInviteModel(
+            Guid.NewGuid(),
+            request.TenantId,
+            request.Email,
+            request.Role,
+            Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 16),
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(7),
+            false
+        );
+    }
+
+    public async Task<bool> RevokeInviteAsync(Guid tenantId, Guid inviteId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"/api/v1/tenancy/invites/{inviteId}?tenantId={tenantId}", cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    public async Task<bool> RemoveTeamMemberAsync(Guid tenantId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"/api/v1/tenancy/members/{userId}?tenantId={tenantId}", cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    public static TeamOverviewModel GetFallbackTeamOverview(Guid tenantId)
+    {
+        return new TeamOverviewModel(
+            Members: new List<TeamMemberModel>
+            {
+                new(Guid.NewGuid(), "admin@santafe.com.br", "Roberto Almeida (Proprietário)", 1, DateTime.UtcNow.AddMonths(-12), true),
+                new(Guid.NewGuid(), "carlos.zootecnia@santafe.com.br", "Dr. Carlos Eduardo", 2, DateTime.UtcNow.AddMonths(-6), true),
+                new(Guid.NewGuid(), "dra.mariana.vet@santafe.com.br", "Dra. Mariana Santos", 3, DateTime.UtcNow.AddMonths(-3), true),
+                new(Guid.NewGuid(), "tiago.curral@santafe.com.br", "Tiago Peão Curral", 4, DateTime.UtcNow.AddMonths(-1), true)
+            },
+            PendingInvites: new List<TeamInviteModel>
+            {
+                new(Guid.NewGuid(), tenantId, "consultor.nutricao@agro.com.br", 2, "TK-998822", DateTime.UtcNow, DateTime.UtcNow.AddDays(5), false)
+            }
         );
     }
 

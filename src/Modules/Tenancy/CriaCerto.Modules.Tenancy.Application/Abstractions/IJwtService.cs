@@ -4,5 +4,5 @@ namespace CriaCerto.Modules.Tenancy.Application.Abstractions;
 
 public interface IJwtService
 {
-    string GenerateToken(User user, Tenant tenant);
+    string GenerateToken(User user, Tenant tenant, UserRole role = UserRole.Admin);
 }

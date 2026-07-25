@@ -7,7 +7,7 @@
 @inject TenancyApiClient TenancyApi
 
 
-<PageTitle>Cria Certo - Organização & Unidades</PageTitle>
+<PageTitle>Cria Certo - Organização & Equipe</PageTitle>
 
 <div class="org-container font-headline">
     
@@ -17,21 +17,24 @@
             <nav style="display: flex; align-items: center; gap: 0.5rem; color: var(--cc-secondary); font-size: 12px; margin-bottom: 0.5rem;" class="font-mono">
                 <span style="text-transform: uppercase; tracking-wider: 0.05em;">CONFIGURAÇÕES</span>
                 <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
-                <span style="color: var(--cc-primary); text-transform: uppercase; tracking-wider: 0.05em;">PERFIL DA GRANJA</span>
+                <span style="color: var(--cc-primary); text-transform: uppercase; tracking-wider: 0.05em;">PERFIL DA GRANJA & EQUIPE</span>
             </nav>
             <h2 class="font-headline text-[32px] font-bold" style="color: var(--cc-ink); margin: 0; line-height: 40px; letter-spacing: -0.02em;">
-                Organização & Unidades
+                Organização & Permissões (RBAC)
             </h2>
             <p style="color: var(--cc-ink-muted); margin: 0.25rem 0 0 0; font-size: 16px;">
-                Gerencie a identidade da sua granja, unidades produtivas e protocolos de isolamento de dados.
+                Gerencie a identidade da sua granja, unidades produtivas, equipe de colaboradores e papéis de acesso.
             </p>
         </div>
-        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
-            <button @onclick="OpenEditProfile" class="cc-btn cc-btn-outline" style="border: 1px solid var(--cc-outline); padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer;">
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap;">
+            <button @onclick="OpenEditProfile" class="cc-btn cc-btn-outline" style="border: 1px solid var(--cc-outline); padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer;">
                 Editar Perfil
             </button>
-            <button @onclick="OpenCreateUnit" class="cc-btn cc-btn-primary" style="background: var(--cc-primary); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <button @onclick="OpenCreateUnit" class="cc-btn cc-btn-outline" style="border: 1px solid var(--cc-primary); padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
                 <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Nova Unidade
+            </button>
+            <button @onclick="OpenInviteModal" class="cc-btn cc-btn-primary" style="background: var(--cc-primary); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">person_add</span> Convidar Membro
             </button>
         </div>
     </div>
@@ -75,28 +78,127 @@
             
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h4 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;" class="font-mono">Privacidade de Dados</h4>
+                    <h4 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;" class="font-mono">Privacidade & RBAC</h4>
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
                 </div>
-                <p style="font-size: 20px; font-weight: bold; margin: 0 0 0.5rem 0;">Isolamento: SEGURO</p>
+                <p style="font-size: 20px; font-weight: bold; margin: 0 0 0.5rem 0;">Isolamento & RBAC Ativos</p>
                 <p style="font-size: 13.5px; opacity: 0.9; margin: 0; line-height: 1.5;">
-                    Isolamento de banco de dados ativo. Suas informações são criptografadas e separadas logicamente das outras organizações na nuvem Cria Certo.
+                    Permissões por papel (Admin, Zootecnista, Veterinário, Operador) ativas com criptografia e isolamento lógico por tenant.
                 </p>
             </div>
 
             <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
                 <div style="background-color: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 11px; font-weight: bold;" class="font-mono">BANCO DE DADOS</span>
-                    <span style="font-size: 11px; font-family: monospace;">CC_TEN_@(_tenantId?.ToString("N")[..8].ToUpper() ?? "DEFAULT")</span>
+                    <span style="font-size: 11px; font-weight: bold;" class="font-mono">MEMBROS ATIVOS</span>
+                    <span style="font-size: 11px; font-family: monospace;">@(_teamOverview?.Members.Count ?? 0) Colaboradores</span>
                 </div>
                 <div style="background-color: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 11px; font-weight: bold;" class="font-mono">CRIPTOGRAFIA</span>
-                    <span style="font-size: 11px; font-family: monospace;">AES-256-GCM</span>
+                    <span style="font-size: 11px; font-weight: bold;" class="font-mono">CONVITES PENDENTES</span>
+                    <span style="font-size: 11px; font-family: monospace;">@(_teamOverview?.PendingInvites.Count ?? 0) Convites</span>
                 </div>
             </div>
         </section>
 
     </div>
+
+    <!-- Team Members Table section -->
+    <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); margin-bottom: 2rem;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--cc-border); background-color: var(--cc-canvas); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: var(--cc-ink);">Equipe da Fazenda & Controle de Acesso (RBAC)</h3>
+                <p style="margin: 0.25rem 0 0 0; font-size: 13px; color: var(--cc-ink-muted);">Membros ativos e convites pendentes de associação.</p>
+            </div>
+            <button @onclick="OpenInviteModal" style="background: var(--cc-primary); color: white; border: none; padding: 0.4rem 1rem; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Convidar
+            </button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background-color: var(--cc-canvas); color: var(--cc-ink-muted); border-bottom: 1px solid var(--cc-border);" class="font-mono">
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Membro / E-mail</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Perfil de Acesso (Role)</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Status</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody style="color: var(--cc-ink);">
+                    @if (_teamOverview?.Members.Count == 0 && _teamOverview?.PendingInvites.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4" style="padding: 2rem; text-align: center; color: var(--cc-ink-muted);">
+                                Nenhum membro cadastrado. Clique em "Convidar Membro" para adicionar colaboradores.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @if (_teamOverview?.Members is not null)
+                        {
+                            @foreach (var member in _teamOverview.Members)
+                            {
+                                <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.15s;">
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: 600; font-size: 15px;">@member.FullName</span>
+                                            <span style="font-size: 12px; color: var(--cc-ink-muted);">@member.Email</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <span style="background-color: @GetRoleBgColor(member.Role); color: @GetRoleTextColor(member.Role); padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;" class="font-mono">
+                                            @GetRoleLabel(member.Role)
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-primary-container);"></span>
+                                            <span style="font-size: 12px; font-weight: bold; color: var(--cc-primary); text-transform: uppercase;" class="font-mono">Ativo</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                                        <button @onclick="() => RemoveMemberAsync(member.UserId)" style="background: transparent; border: 1px solid var(--cc-border); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 12px; color: var(--cc-error); cursor: pointer;">
+                                            Remover
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                        @if (_teamOverview?.PendingInvites is not null)
+                        {
+                            @foreach (var invite in _teamOverview.PendingInvites)
+                            {
+                                <tr style="border-bottom: 1px solid #e2e8f0; background-color: #fafafa;">
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: 600; font-size: 15px;">@invite.Email</span>
+                                            <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">Token: @invite.InviteToken</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <span style="background-color: @GetRoleBgColor(invite.Role); color: @GetRoleTextColor(invite.Role); padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;" class="font-mono">
+                                            @GetRoleLabel(invite.Role)
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background-color: #f59e0b;"></span>
+                                            <span style="font-size: 12px; font-weight: bold; color: #b45309; text-transform: uppercase;" class="font-mono">Convite Pendente</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                                        <button @onclick="() => RevokeInviteAsync(invite.Id)" style="background: transparent; border: 1px solid var(--cc-border); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 12px; color: var(--cc-ink-muted); cursor: pointer;">
+                                            Cancelar Convite
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 
     <!-- Production Units Table section -->
     <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); margin-bottom: 2rem;">
@@ -173,6 +275,11 @@
     TenantId="_tenantId ?? Guid.Empty"
     OnCreated="HandleUnitCreated" />
 
+<CriaCerto.Web.Client.Components.Settings.InviteTeamMemberModal
+    @bind-IsOpen="_isInviteModalOpen"
+    TenantId="_tenantId ?? Guid.Empty"
+    OnInvited="HandleMemberInvited" />
+
 @code {
     private string _tenantName = "Fazenda Santa Fé - Matriz";
     private string _subscribedPlan = "Enterprise";
@@ -180,9 +287,11 @@
 
     private TenantProfileModel? _profile;
     private List<ProductionUnitModel> _units = new();
+    private TeamOverviewModel? _teamOverview;
 
     private bool _isEditProfileOpen;
     private bool _isCreateUnitOpen;
+    private bool _isInviteModalOpen;
 
     protected override async Task OnInitializedAsync()
     {
@@ -214,6 +323,7 @@
 
         _profile = await TenancyApi.GetTenantProfileAsync(_tenantId.Value);
         _units = await TenancyApi.GetProductionUnitsAsync(_tenantId.Value);
+        _teamOverview = await TenancyApi.GetTeamMembersAsync(_tenantId.Value);
     }
 
     private void OpenEditProfile()
@@ -226,6 +336,11 @@
         _isCreateUnitOpen = true;
     }
 
+    private void OpenInviteModal()
+    {
+        _isInviteModalOpen = true;
+    }
+
     private void HandleProfileSaved(TenantProfileModel updated)
     {
         _profile = updated;
@@ -235,4 +350,56 @@
     {
         _units.Add(newUnit);
     }
+
+    private void HandleMemberInvited(TeamInviteModel invite)
+    {
+        _teamOverview?.PendingInvites.Add(invite);
+    }
+
+    private async Task RevokeInviteAsync(Guid inviteId)
+    {
+        if (_tenantId is null) return;
+        var ok = await TenancyApi.RevokeInviteAsync(_tenantId.Value, inviteId);
+        if (ok && _teamOverview is not null)
+        {
+            _teamOverview.PendingInvites.RemoveAll(i => i.Id == inviteId);
+        }
+    }
+
+    private async Task RemoveMemberAsync(Guid userId)
+    {
+        if (_tenantId is null) return;
+        var ok = await TenancyApi.RemoveTeamMemberAsync(_tenantId.Value, userId);
+        if (ok && _teamOverview is not null)
+        {
+            _teamOverview.Members.RemoveAll(m => m.UserId == userId);
+        }
+    }
+
+    private string GetRoleLabel(int role) => role switch
+    {
+        1 => "Admin",
+        2 => "Zootecnista",
+        3 => "Veterinário",
+        4 => "Operador Curral",
+        _ => "Membro"
+    };
+
+    private string GetRoleBgColor(int role) => role switch
+    {
+        1 => "#dbeafe",
+        2 => "#dcfce7",
+        3 => "#fef3c7",
+        4 => "#f3e8ff",
+        _ => "#f1f5f9"
+    };
+
+    private string GetRoleTextColor(int role) => role switch
+    {
+        1 => "#1e40af",
+        2 => "#166534",
+        3 => "#92400e",
+        4 => "#6b21a8",
+        _ => "#475569"
+    };
 }

@@ -114,6 +114,6 @@ public class CreateTenantCommandHandlerTests : IDisposable
     {
         private readonly string _token;
         public TestJwtService(string token) => _token = token;
-        public string GenerateToken(User user, Tenant tenant) => _token;
+        public string GenerateToken(User user, Tenant tenant, UserRole role = UserRole.Admin) => _token;
     }
 }

@@ -44,7 +44,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<A
         if (userTenants.Count == 1)
         {
             var singleTenant = userTenants[0].Tenant!;
-            var token = _jwtService.GenerateToken(user, singleTenant);
+            var token = _jwtService.GenerateToken(user, singleTenant, userTenants[0].Role);
             return Result.Success(new AuthResponse(
                 Token: token,
                 RequiresTenantSelection: false,

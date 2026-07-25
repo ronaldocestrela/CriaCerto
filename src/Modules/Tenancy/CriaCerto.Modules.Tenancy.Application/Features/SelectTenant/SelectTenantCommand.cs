@@ -40,7 +40,7 @@ public sealed class SelectTenantCommandHandler : IRequestHandler<SelectTenantCom
         }
 
         var tenant = userTenant.Tenant!;
-        var token = _jwtService.GenerateToken(user, tenant);
+        var token = _jwtService.GenerateToken(user, tenant, userTenant.Role);
 
         return Result.Success(new AuthResponse(
             Token: token,

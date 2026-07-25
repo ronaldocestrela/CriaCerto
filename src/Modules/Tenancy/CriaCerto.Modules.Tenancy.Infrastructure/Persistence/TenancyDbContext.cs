@@ -15,6 +15,7 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<UserTenant> UserTenants => Set<UserTenant>();
     public DbSet<ProductionUnit> ProductionUnits => Set<ProductionUnit>();
+    public DbSet<TeamInvite> TeamInvites => Set<TeamInvite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,6 +53,8 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
         {
             builder.ToTable("UserTenants");
             builder.HasKey(ut => new { ut.UserId, ut.TenantId });
+            builder.Property(ut => ut.Role).HasConversion<int>().IsRequired();
+            builder.Property(ut => ut.JoinedAt).IsRequired();
 
             builder.HasOne(ut => ut.User)
                 .WithMany(u => u.UserTenants)
@@ -77,6 +80,23 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
             builder.HasOne(pu => pu.Tenant)
                 .WithMany(t => t.ProductionUnits)
                 .HasForeignKey(pu => pu.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TeamInvite>(builder =>
+        {
+            builder.ToTable("TeamInvites");
+            builder.HasKey(ti => ti.Id);
+            builder.Property(ti => ti.Email).HasMaxLength(150).IsRequired();
+            builder.Property(ti => ti.Role).HasConversion<int>().IsRequired();
+            builder.Property(ti => ti.InviteToken).HasMaxLength(100).IsRequired();
+            builder.Property(ti => ti.CreatedAt).IsRequired();
+            builder.Property(ti => ti.ExpiresAt).IsRequired();
+            builder.Property(ti => ti.IsAccepted).IsRequired();
+
+            builder.HasOne(ti => ti.Tenant)
+                .WithMany()
+                .HasForeignKey(ti => ti.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

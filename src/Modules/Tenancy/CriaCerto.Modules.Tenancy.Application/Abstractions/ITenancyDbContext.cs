@@ -9,6 +9,7 @@ public interface ITenancyDbContext
     DbSet<Tenant> Tenants { get; }
     DbSet<UserTenant> UserTenants { get; }
     DbSet<ProductionUnit> ProductionUnits { get; }
+    DbSet<TeamInvite> TeamInvites { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
 }

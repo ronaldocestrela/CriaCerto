@@ -6,4 +6,6 @@ public sealed class UserTenant
     public User? User { get; set; }
     public Guid TenantId { get; set; }
     public Tenant? Tenant { get; set; }
+    public UserRole Role { get; set; } = UserRole.Admin;
+    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 }

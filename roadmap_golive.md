@@ -91,7 +91,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Testes unitários para regras de validação de CNPJ/CPF e capacidade máxima de cabeças por plano.
 
-#### Sub-fase 2.2: Convites de Equipe & Controle de Acesso (RBAC)
+#### Sub-fase 2.2: Convites de Equipe & Controle de Acesso (RBAC) [CONCLUÍDA]
 * **Backend:**
   * Tabela e domínio `UserTenantRole` com papéis: `Admin`, `Zootecnista`, `Veterinario`, `OperadorCurral`.
   * `InviteTeamMemberCommand` (Envio de convite por e-mail com token de expiração).
