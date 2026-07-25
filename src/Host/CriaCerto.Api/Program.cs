@@ -25,6 +25,9 @@ using CriaCerto.Modules.Nutrition.Infrastructure;
 using CriaCerto.Modules.Nutrition.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
+using CriaCerto.Modules.Tenancy.Application.Features.RegisterUser;
+using CriaCerto.Modules.Tenancy.Application.Features.ForgotPassword;
+using CriaCerto.Modules.Tenancy.Application.Features.ResetPassword;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
 using CriaCerto.Modules.Tenancy.Application.Features.GetSubscriptionPlans;
 using CriaCerto.Modules.Tenancy.Infrastructure;
@@ -110,6 +113,30 @@ app.MapPost("/api/auth/login", async (LoginCommand command, ISender sender) =>
         ? Results.Ok(result.Value) 
         : Results.Json(result.Error, statusCode: 401);
 });
+
+app.MapPost("/api/auth/register", async (RegisterUserCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return result.IsSuccess
+        ? Results.Json(result.Value, statusCode: StatusCodes.Status201Created)
+        : Results.Json(result.Error, statusCode: ToStatusCode(result.Error.Type));
+}).AllowAnonymous().WithTags("Auth");
+
+app.MapPost("/api/auth/forgot-password", async (ForgotPasswordCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return result.IsSuccess
+        ? Results.Ok(new { token = result.Value, message = "Se o e-mail estiver cadastrado, as instruções para redefinição foram geradas com sucesso." })
+        : Results.Json(result.Error, statusCode: ToStatusCode(result.Error.Type));
+}).AllowAnonymous().WithTags("Auth");
+
+app.MapPost("/api/auth/reset-password", async (ResetPasswordCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return result.IsSuccess
+        ? Results.Ok(new { message = "Senha redefinida com sucesso." })
+        : Results.Json(result.Error, statusCode: ToStatusCode(result.Error.Type));
+}).AllowAnonymous().WithTags("Auth");
 
 app.MapPost("/api/auth/select-tenant", async (SelectTenantCommand command, ISender sender) =>
 {

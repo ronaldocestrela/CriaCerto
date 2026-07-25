@@ -27,6 +27,9 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
             builder.Property(u => u.Email).HasMaxLength(150).IsRequired();
             builder.Property(u => u.FullName).HasMaxLength(150).IsRequired();
             builder.Property(u => u.PasswordHash).HasMaxLength(255).IsRequired();
+            builder.Property(u => u.PhoneNumber).HasMaxLength(30);
+            builder.Property(u => u.PasswordResetToken).HasMaxLength(100);
+            builder.Property(u => u.PasswordResetTokenExpiresAt);
         });
 
         modelBuilder.Entity<Tenant>(builder =>

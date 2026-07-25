@@ -68,9 +68,15 @@
                             }
                         </button>
                         
-                        <button class="w-full text-center text-sm hover:underline pt-2" style="width: 100%; border: none; background: transparent; color: var(--cc-primary); font-size: 14px; text-align: center; margin-top: 0.5rem; cursor: pointer;" type="button">
+                        <button class="w-full text-center text-sm hover:underline pt-2" style="width: 100%; border: none; background: transparent; color: var(--cc-primary); font-size: 14px; text-align: center; margin-top: 0.5rem; cursor: pointer;" type="button" @onclick='() => Navigation.NavigateTo("/forgot-password")'>
                             Esqueceu sua senha?
                         </button>
+                        
+                        <div class="text-center pt-2" style="text-align: center; margin-top: 0.5rem;">
+                            <a href="/register" class="text-sm font-semibold hover:underline" style="color: var(--cc-primary); font-size: 14px; text-decoration: none;">
+                                Ainda não possui uma conta? Cadastre-se grátis
+                            </a>
+                        </div>
                     </EditForm>
                 </div>
             }
