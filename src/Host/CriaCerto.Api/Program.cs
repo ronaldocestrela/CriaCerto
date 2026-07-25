@@ -12,6 +12,9 @@ using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
 using CriaCerto.Modules.Calving.Application.Contracts;
 using CriaCerto.Modules.Calving.Infrastructure;
 using CriaCerto.Modules.Calving.Infrastructure.Persistence;
+using CriaCerto.Modules.Growth.Application.Contracts;
+using CriaCerto.Modules.Growth.Infrastructure;
+using CriaCerto.Modules.Growth.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
@@ -31,6 +34,7 @@ builder.Services.AddBuildingBlocksApplication(
     typeof(Program).Assembly,
     typeof(CriaCerto.Modules.Breeding.Application.BreedingAssemblyMarker).Assembly,
     typeof(CriaCerto.Modules.Calving.Application.Contracts.CalvingDto).Assembly,
+    typeof(CriaCerto.Modules.Growth.Application.Contracts.PaddockDto).Assembly,
     typeof(TenancyAssemblyMarker).Assembly);
 
 var connectionString = builder.Configuration.GetConnectionString("SqlServer")
@@ -41,6 +45,7 @@ builder.Services.AddBuildingBlocksInfrastructure(connectionString);
 builder.Services.AddTenancyInfrastructure(builder.Configuration);
 builder.Services.AddBreedingInfrastructure();
 builder.Services.AddCalvingInfrastructure();
+builder.Services.AddGrowthInfrastructure();
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
@@ -152,6 +157,47 @@ calving.MapPost("/weanings", async (RegisterWeaningCommand command, ISender send
     return ToHttpResult(result, StatusCodes.Status201Created);
 });
 
+// Growth & Pasture Management Endpoints
+var growth = app.MapGroup("/api/growth")
+    .RequireAuthorization()
+    .WithTags("Growth");
+
+growth.MapGet("/paddocks", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetPaddocksWithStockingRateQuery(tenantId));
+    return ToHttpResult(result);
+});
+
+growth.MapPost("/paddocks", async (CreatePaddockCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+growth.MapGet("/lots", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetLotsQuery(tenantId));
+    return ToHttpResult(result);
+});
+
+growth.MapPost("/lots", async (CreateLotCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+growth.MapPost("/lots/move", async (MoveLotToPaddockCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status200OK);
+});
+
+growth.MapPost("/lots/{id:guid}/close", async (Guid id, Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new CloseLotCommand(id, tenantId));
+    return ToHttpResult(result, StatusCodes.Status200OK);
+});
+
 app.Run();
 
 static void ApplyMigrations(WebApplication app)
@@ -165,7 +211,8 @@ static void ApplyMigrations(WebApplication app)
         scope.ServiceProvider.GetRequiredService<FoundationDbContext>(),
         scope.ServiceProvider.GetRequiredService<TenancyDbContext>(),
         scope.ServiceProvider.GetRequiredService<BreedingDbContext>(),
-        scope.ServiceProvider.GetRequiredService<CalvingDbContext>()
+        scope.ServiceProvider.GetRequiredService<CalvingDbContext>(),
+        scope.ServiceProvider.GetRequiredService<GrowthDbContext>()
     };
 
     foreach (var dbContext in dbContexts)

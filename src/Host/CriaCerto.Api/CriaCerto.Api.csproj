@@ -18,6 +18,8 @@
     <ProjectReference Include="..\..\Modules\Breeding\CriaCerto.Modules.Breeding.Infrastructure\CriaCerto.Modules.Breeding.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Calving\CriaCerto.Modules.Calving.Application\CriaCerto.Modules.Calving.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Calving\CriaCerto.Modules.Calving.Infrastructure\CriaCerto.Modules.Calving.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Growth\CriaCerto.Modules.Growth.Application\CriaCerto.Modules.Growth.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Growth\CriaCerto.Modules.Growth.Infrastructure\CriaCerto.Modules.Growth.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Tenancy\CriaCerto.Modules.Tenancy.Application\CriaCerto.Modules.Tenancy.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Tenancy\CriaCerto.Modules.Tenancy.Infrastructure\CriaCerto.Modules.Tenancy.Infrastructure.csproj" />
   </ItemGroup>

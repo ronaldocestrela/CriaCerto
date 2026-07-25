@@ -7,7 +7,32 @@ public enum ReproductiveStatus
     Inseminated = 3,
     Pregnant = 4,
     Culled = 5,
-    Sold = 6
+    Sold = 6,
+    Empty = 7,
+    Bred = 8,
+    Lactating = 9
+}
+
+public enum LifecycleStatus
+{
+    Active = 1,
+    InIatf = 2,
+    Pregnant = 3,
+    Open = 4,
+    Culled = 5,
+    Sold = 6,
+    Quarantine = 7
+}
+
+public enum BodyConditionScore
+{
+    VeryThin = 1,
+    Thin = 2,
+    Moderate = 3,
+    Good = 4,
+    Fat = 5,
+    Ideal = 6,
+    VeryFat = 7
 }
 
 public enum DiagnosisMethod
@@ -28,6 +53,21 @@ public enum BirthCondition
     Live = 1,
     Stillborn = 2
 }
+
+public sealed record PlantelEventDto(
+    Guid Id,
+    string EventType,
+    string Title,
+    string Description,
+    DateTime Date,
+    string? Notes = null)
+{
+    public DateTime EventDate => Date;
+}
+
+public sealed record DnpAlertBannerDto(
+    int AlertCount,
+    string Message);
 
 public sealed record CattleListResponse<TAnimal>(List<TAnimal> Items, int TotalCount, int Page, int PageSize);
 
