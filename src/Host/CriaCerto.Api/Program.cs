@@ -12,6 +12,9 @@ using CriaCerto.Modules.Breeding.Infrastructure;
 using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
 using CriaCerto.Modules.Maternity.Application;
 using CriaCerto.Modules.Maternity.Application.Features.Farrowing;
+using CriaCerto.Modules.Maternity.Application.Features.CrossFostering;
+using CriaCerto.Modules.Maternity.Application.Features.Weaning;
+using CriaCerto.Modules.Maternity.Application.Features.Metrics;
 using CriaCerto.Modules.Maternity.Infrastructure;
 using CriaCerto.Modules.Maternity.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
@@ -218,6 +221,37 @@ maternity.MapGet("/farrowings", async (Guid? sowId, string? maternityRoomId, ISe
     var result = await sender.Send(new ListFarrowingsQuery(sowId, maternityRoomId));
     return ToHttpResult(result);
 });
+
+maternity.MapPost("/transfers", async (TransferPigletCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+maternity.MapGet("/transfers", async (Guid? farrowingId, ISender sender) =>
+{
+    var result = await sender.Send(new ListPigletTransfersQuery(farrowingId));
+    return ToHttpResult(result);
+});
+
+maternity.MapPost("/weanings", async (RegisterWeaningCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+maternity.MapGet("/weanings", async (Guid? sowId, ISender sender) =>
+{
+    var result = await sender.Send(new ListWeaningsQuery(sowId));
+    return ToHttpResult(result);
+});
+
+maternity.MapGet("/metrics", async (DateTime? startDate, DateTime? endDate, ISender sender) =>
+{
+    var result = await sender.Send(new GetMaternityMetricsQuery(startDate, endDate));
+    return ToHttpResult(result);
+});
+
 
 app.Run();
 

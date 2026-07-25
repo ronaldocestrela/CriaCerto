@@ -189,6 +189,126 @@ public sealed class MaternityApiClient
         }
     }
 
+    public async Task<PigletTransferClientDto?> TransferPigletAsync(
+        TransferPigletRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await AttachTokenAsync();
+            var response = await _httpClient.PostAsJsonAsync("api/maternity/transfers", request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<PigletTransferClientDto>(cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<List<PigletTransferClientDto>> GetTransfersAsync(
+        Guid? farrowingId = null,
+        CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        var url = "api/maternity/transfers";
+        if (farrowingId.HasValue && farrowingId.Value != Guid.Empty)
+        {
+            url += $"?farrowingId={farrowingId.Value}";
+        }
+
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<PigletTransferClientDto>>(url, cancellationToken);
+            return result ?? new List<PigletTransferClientDto>();
+        }
+        catch
+        {
+            return new List<PigletTransferClientDto>();
+        }
+    }
+
+    public async Task<WeaningClientDto?> RegisterWeaningAsync(
+        RegisterWeaningRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await AttachTokenAsync();
+            var response = await _httpClient.PostAsJsonAsync("api/maternity/weanings", request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<WeaningClientDto>(cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<List<WeaningClientDto>> GetWeaningsAsync(
+        Guid? sowId = null,
+        CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        var url = "api/maternity/weanings";
+        if (sowId.HasValue && sowId.Value != Guid.Empty)
+        {
+            url += $"?sowId={sowId.Value}";
+        }
+
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<WeaningClientDto>>(url, cancellationToken);
+            return result ?? new List<WeaningClientDto>();
+        }
+        catch
+        {
+            return new List<WeaningClientDto>();
+        }
+    }
+
+    public async Task<MaternityMetricsClientDto?> GetMetricsAsync(
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        var queryParams = new List<string>();
+
+        if (startDate.HasValue)
+        {
+            queryParams.Add($"startDate={startDate.Value:o}");
+        }
+
+        if (endDate.HasValue)
+        {
+            queryParams.Add($"endDate={endDate.Value:o}");
+        }
+
+        var url = "api/maternity/metrics";
+        if (queryParams.Count > 0)
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<MaternityMetricsClientDto>(url, cancellationToken);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private async Task AttachTokenAsync()
     {
         try
@@ -205,3 +325,4 @@ public sealed class MaternityApiClient
         }
     }
 }
+

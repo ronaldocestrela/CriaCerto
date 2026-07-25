@@ -15,6 +15,8 @@ public sealed class MaternityDbContext : DbContext
     }
 
     public DbSet<Farrowing> Farrowings => Set<Farrowing>();
+    public DbSet<PigletTransfer> PigletTransfers => Set<PigletTransfer>();
+    public DbSet<Weaning> Weanings => Set<Weaning>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +26,13 @@ public sealed class MaternityDbContext : DbContext
         modelBuilder.Entity<Farrowing>()
             .HasQueryFilter(f => f.TenantId == _tenantContext.TenantId);
 
+        modelBuilder.Entity<PigletTransfer>()
+            .HasQueryFilter(t => t.TenantId == _tenantContext.TenantId);
+
+        modelBuilder.Entity<Weaning>()
+            .HasQueryFilter(w => w.TenantId == _tenantContext.TenantId);
+
         base.OnModelCreating(modelBuilder);
     }
+
 }

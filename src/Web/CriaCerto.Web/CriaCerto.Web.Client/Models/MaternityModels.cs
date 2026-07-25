@@ -36,3 +36,51 @@ public sealed record FarrowingSummaryClientDto(
     int TotalBorn,
     decimal LitterWeightKg,
     string? MaternityRoomId);
+
+public sealed record TransferPigletRequest(
+    Guid SourceFarrowingId,
+    Guid TargetFarrowingId,
+    int Quantity,
+    DateTime TransferDate,
+    string? Notes);
+
+public sealed record PigletTransferClientDto(
+    Guid Id,
+    Guid TenantId,
+    Guid SourceFarrowingId,
+    Guid SourceSowId,
+    Guid TargetFarrowingId,
+    Guid TargetSowId,
+    int Quantity,
+    DateTime TransferDate,
+    string? Notes);
+
+public sealed record RegisterWeaningRequest(
+    Guid FarrowingId,
+    DateTime WeaningDate,
+    int WeanedCount,
+    decimal TotalWeanedWeightKg,
+    string DestinationPenOrBatch,
+    string? Notes);
+
+public sealed record WeaningClientDto(
+    Guid Id,
+    Guid TenantId,
+    Guid FarrowingId,
+    Guid SowId,
+    DateTime WeaningDate,
+    int WeanedCount,
+    decimal TotalWeanedWeightKg,
+    decimal AverageWeanedWeightKg,
+    string DestinationPenOrBatch,
+    string? Notes);
+
+public sealed record MaternityMetricsClientDto(
+    decimal Nvma,
+    decimal Dma,
+    decimal PreWeaningMortalityRate,
+    int TotalActiveSows,
+    int TotalLiveBornInPeriod,
+    int TotalWeanedInPeriod,
+    int TotalTransferredInPeriod);
+

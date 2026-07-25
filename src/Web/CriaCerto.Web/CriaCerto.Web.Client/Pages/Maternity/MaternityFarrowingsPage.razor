@@ -7,7 +7,7 @@
 @inject CriaCerto.Web.Client.Services.MaternityApiClient MaternityApi
 @inject NavigationManager Navigation
 
-<PageTitle>Cria Certo - Registo de Partos da Maternidade</PageTitle>
+<PageTitle>Cria Certo - Registo de Partos e Maternidade</PageTitle>
 
 <ModuleGuard Module="Maternity">
     <div class="maternity-page-container">
@@ -16,7 +16,7 @@
                 <span class="material-symbols-outlined header-icon">maternity</span>
                 <div>
                     <h1>Maternidade & Partos</h1>
-                    <p class="subtitle">Gestão zootécnica de nascimentos e acompanhamento de ninhadas</p>
+                    <p class="subtitle">Gestão zootécnica de nascimentos, adoções, desmame e indicadores NVMA/DMA</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -28,12 +28,57 @@
                         <span class="pending-chip">@_pendingOfflineCount pendente(s)</span>
                     }
                 </div>
-                <button type="button" class="btn-new-farrowing" @onclick="OpenModal">
+                <button type="button" class="btn-secondary" @onclick="OpenTransferModal">
+                    <span class="material-symbols-outlined">swap_horiz</span>
+                    <span>Adoção / Transferência</span>
+                </button>
+                <button type="button" class="btn-new-farrowing" @onclick="OpenFarrowingModal">
                     <span class="material-symbols-outlined">add_circle</span>
                     <span>Novo Parto</span>
                 </button>
             </div>
         </header>
+
+        @if (_metrics is not null)
+        {
+            <section class="maternity-kpi-grid">
+                <div class="kpi-card nvma">
+                    <div class="kpi-icon"><span class="material-symbols-outlined">numbers</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">NVMA</span>
+                        <strong class="kpi-value">@_metrics.Nvma.ToString("F2")</strong>
+                        <span class="kpi-subtext">Nascidos Vivos / Matriz / Ano</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card dma">
+                    <div class="kpi-icon"><span class="material-symbols-outlined">output</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">DMA</span>
+                        <strong class="kpi-value">@_metrics.Dma.ToString("F2")</strong>
+                        <span class="kpi-subtext">Desmamados / Matriz / Ano</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card mortality">
+                    <div class="kpi-icon"><span class="material-symbols-outlined">show_chart</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Mortalidade Pré-Desmame</span>
+                        <strong class="kpi-value">@_metrics.PreWeaningMortalityRate.ToString("F1")%</strong>
+                        <span class="kpi-subtext">Leitões mortos antes do desmame</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card sows">
+                    <div class="kpi-icon"><span class="material-symbols-outlined">pets</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Matrizes Ativas</span>
+                        <strong class="kpi-value">@_metrics.TotalActiveSows</strong>
+                        <span class="kpi-subtext">@_metrics.TotalWeanedInPeriod desmamados no período</span>
+                    </div>
+                </div>
+            </section>
+        }
 
         <section class="maternity-filter-bar">
             <div class="filter-group">
@@ -112,8 +157,14 @@
                                 </div>
                             </div>
 
-                            <footer class="card-footer">
-                                <span>Peso da Ninhada: <strong>@item.LitterWeightKg.ToString("F1") kg</strong></span>
+                            <footer class="card-footer-actions">
+                                <span class="litter-weight">Peso: <strong>@item.LitterWeightKg.ToString("F1") kg</strong></span>
+                                <div class="action-buttons">
+                                    <button type="button" class="btn-card-action" title="Registrar Desmame" @onclick="() => OpenWeaningModal(item)">
+                                        <span class="material-symbols-outlined">output</span>
+                                        <span>Desmamar</span>
+                                    </button>
+                                </div>
                             </footer>
                         </article>
                     }
@@ -121,17 +172,25 @@
             }
         </main>
 
-        <FarrowingEntryModal @bind-IsOpen="_isModalOpen" OnSubmit="HandleFarrowingSubmit" />
+        <FarrowingEntryModal @bind-IsOpen="_isFarrowingModalOpen" OnSubmit="HandleFarrowingSubmit" />
+        <PigletTransferModal @bind-IsOpen="_isTransferModalOpen" AvailableFarrowings="_farrowings" OnSubmit="HandleTransferSubmit" />
+        <WeaningModal @bind-IsOpen="_isWeaningModalOpen" SelectedFarrowing="_selectedFarrowingForWeaning" OnSubmit="HandleWeaningSubmit" />
     </div>
 </ModuleGuard>
 
 @code {
     private List<FarrowingSummaryClientDto> _farrowings = new();
+    private MaternityMetricsClientDto? _metrics;
     private bool _isLoading = true;
     private bool _isOnline = true;
     private int _pendingOfflineCount = 0;
     private string _maternityRoomFilter = string.Empty;
-    private bool _isModalOpen = false;
+
+    private bool _isFarrowingModalOpen = false;
+    private bool _isTransferModalOpen = false;
+    private bool _isWeaningModalOpen = false;
+    private FarrowingSummaryClientDto? _selectedFarrowingForWeaning;
+
     private string? _feedbackMessage;
 
     protected override async Task OnInitializedAsync()
@@ -145,6 +204,7 @@
         _isOnline = await MaternityApi.IsOnlineAsync();
         _pendingOfflineCount = await MaternityApi.GetPendingOfflineCountAsync();
         _farrowings = await MaternityApi.GetFarrowingsAsync(maternityRoomId: string.IsNullOrWhiteSpace(_maternityRoomFilter) ? null : _maternityRoomFilter);
+        _metrics = await MaternityApi.GetMetricsAsync();
         _isLoading = false;
     }
 
@@ -153,9 +213,20 @@
         await RefreshDataAsync();
     }
 
-    private void OpenModal()
+    private void OpenFarrowingModal()
     {
-        _isModalOpen = true;
+        _isFarrowingModalOpen = true;
+    }
+
+    private void OpenTransferModal()
+    {
+        _isTransferModalOpen = true;
+    }
+
+    private void OpenWeaningModal(FarrowingSummaryClientDto farrowing)
+    {
+        _selectedFarrowingForWeaning = farrowing;
+        _isWeaningModalOpen = true;
     }
 
     private async Task HandleFarrowingSubmit(RegisterFarrowingRequest request)
@@ -168,6 +239,36 @@
         else
         {
             _feedbackMessage = "Parto salvo offline no dispositivo. Será sincronizado quando a conexão retornar.";
+        }
+
+        await RefreshDataAsync();
+    }
+
+    private async Task HandleTransferSubmit(TransferPigletRequest request)
+    {
+        var result = await MaternityApi.TransferPigletAsync(request);
+        if (result is not null)
+        {
+            _feedbackMessage = "Adoção/Transferência registrada com sucesso!";
+        }
+        else
+        {
+            _feedbackMessage = "Falha ao registrar adoção. Verifique o saldo da matriz doadora.";
+        }
+
+        await RefreshDataAsync();
+    }
+
+    private async Task HandleWeaningSubmit(RegisterWeaningRequest request)
+    {
+        var result = await MaternityApi.RegisterWeaningAsync(request);
+        if (result is not null)
+        {
+            _feedbackMessage = "Desmame registrado com sucesso! Leitões prontos para transferência para a Creche.";
+        }
+        else
+        {
+            _feedbackMessage = "Falha ao registrar desmame. Verifique se o parto já possui desmame registrado.";
         }
 
         await RefreshDataAsync();

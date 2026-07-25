@@ -23,6 +23,9 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IFarrowingRepository, FarrowingRepository>();
+        services.AddScoped<IPigletTransferRepository, PigletTransferRepository>();
+        services.AddScoped<IWeaningRepository, WeaningRepository>();
         return services;
     }
+
 }

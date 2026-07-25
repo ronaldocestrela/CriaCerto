@@ -1,0 +1,137 @@
+@using CriaCerto.Web.Client.Models
+
+@if (IsOpen)
+{
+    <div class="maternity-modal-backdrop" @onclick="Close">
+        <div class="maternity-modal-card" @onclick:stopPropagation="true">
+            <header class="maternity-modal-header">
+                <div class="modal-title">
+                    <span class="material-symbols-outlined header-icon">swap_horizontal_circle</span>
+                    <h3>Adoção / Transferência de Leitões</h3>
+                </div>
+                <button type="button" class="close-btn" @onclick="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+
+            <div class="maternity-modal-body">
+                <div class="form-group">
+                    <label class="form-label">Parto de Origem (Matriz Doadora) *</label>
+                    <select class="form-input" @bind="_sourceFarrowingIdInput">
+                        <option value="">-- Selecione o Parto de Origem --</option>
+                        @foreach (var f in AvailableFarrowings)
+                        {
+                            <option value="@f.Id">Matriz: @f.SowId | Nasc. Vivos: @f.LiveBorn | Sala: @(f.MaternityRoomId ?? "N/A")</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Parto de Destino (Matriz Receptora) *</label>
+                    <select class="form-input" @bind="_targetFarrowingIdInput">
+                        <option value="">-- Selecione o Parto de Destino --</option>
+                        @foreach (var f in AvailableFarrowings)
+                        {
+                            <option value="@f.Id">Matriz: @f.SowId | Nasc. Vivos: @f.LiveBorn | Sala: @(f.MaternityRoomId ?? "N/A")</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label class="form-label">Quantidade de Leitões *</label>
+                        <div class="counter-controls compact">
+                            <button type="button" class="touch-btn" @onclick="DecrementQuantity">-</button>
+                            <span class="counter-value">@_quantity</span>
+                            <button type="button" class="touch-btn" @onclick="IncrementQuantity">+</button>
+                        </div>
+                    </div>
+                    <div class="form-group half">
+                        <label class="form-label">Data da Transferência</label>
+                        <input type="datetime-local" class="form-input" @bind="_transferDate" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações / Motivo da Adoção</label>
+                    <textarea class="form-textarea" @bind="_notes" placeholder="Ex: Nivelamento de ninhada, mãe com mastite..."></textarea>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="modal-error-alert">
+                        <span class="material-symbols-outlined">error</span>
+                        <span>@ErrorMessage</span>
+                    </div>
+                }
+            </div>
+
+            <footer class="maternity-modal-footer">
+                <button type="button" class="btn-secondary" @onclick="Close">Cancelar</button>
+                <button type="button" class="btn-primary" disabled="@(!IsValid || IsSubmitting)" @onclick="Submit">
+                    <span class="material-symbols-outlined">swap_horiz</span>
+                    <span>Confirmar Adoção</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public List<FarrowingSummaryClientDto> AvailableFarrowings { get; set; } = new();
+    [Parameter] public EventCallback<TransferPigletRequest> OnSubmit { get; set; }
+
+    private string _sourceFarrowingIdInput = string.Empty;
+    private string _targetFarrowingIdInput = string.Empty;
+    private int _quantity = 1;
+    private DateTime _transferDate = DateTime.Now;
+    private string _notes = string.Empty;
+
+    public string? ErrorMessage { get; set; }
+    public bool IsSubmitting { get; set; }
+
+    private bool IsValid => !string.IsNullOrWhiteSpace(_sourceFarrowingIdInput)
+                         && !string.IsNullOrWhiteSpace(_targetFarrowingIdInput)
+                         && _sourceFarrowingIdInput != _targetFarrowingIdInput
+                         && _quantity > 0;
+
+    private void IncrementQuantity() => _quantity++;
+    private void DecrementQuantity() { if (_quantity > 1) _quantity--; }
+
+    private async Task Close()
+    {
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(false);
+    }
+
+    private async Task Submit()
+    {
+        if (!Guid.TryParse(_sourceFarrowingIdInput, out var sourceId) || !Guid.TryParse(_targetFarrowingIdInput, out var targetId))
+        {
+            ErrorMessage = "Selecione partos válidos para a transferência.";
+            return;
+        }
+
+        if (sourceId == targetId)
+        {
+            ErrorMessage = "O parto de origem e de destino não podem ser o mesmo.";
+            return;
+        }
+
+        ErrorMessage = null;
+        IsSubmitting = true;
+
+        var request = new TransferPigletRequest(
+            sourceId,
+            targetId,
+            _quantity,
+            _transferDate,
+            string.IsNullOrWhiteSpace(_notes) ? null : _notes);
+
+        await OnSubmit.InvokeAsync(request);
+        IsSubmitting = false;
+        await Close();
+    }
+}

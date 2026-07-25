@@ -27,4 +27,33 @@ public static class FarrowingErrors
     public static readonly Error SowNotEligible = Error.Conflict(
         "Farrowing.SowNotEligible",
         "A matriz não está elegível para registo de parto.");
+
+    public static readonly Error SameSourceAndTarget = Error.Validation(
+        "PigletTransfer.SameSourceAndTarget",
+        "A matriz de origem e destino da adoção não podem ser a mesma.");
+
+    public static readonly Error InvalidTransferQuantity = Error.Validation(
+        "PigletTransfer.InvalidQuantity",
+        "A quantidade de leitões a transferir deve ser maior que zero.");
+
+    public static readonly Error InsufficientPigletsInLitter = Error.Conflict(
+        "PigletTransfer.InsufficientPiglets",
+        "A ninhada de origem não possui leitões vivos suficientes para esta transferência.");
+
+    public static readonly Error InvalidWeaningCount = Error.Validation(
+        "Weaning.InvalidCount",
+        "A quantidade de leitões desmamados deve ser maior que zero.");
+
+    public static readonly Error InvalidWeanedWeight = Error.Validation(
+        "Weaning.InvalidWeight",
+        "O peso total desmamado deve ser maior que zero.");
+
+    public static readonly Error UnrealisticWeanedWeight = Error.Validation(
+        "Weaning.UnrealisticWeanedWeight",
+        "O peso médio por leitão desmamado deve estar entre 4.0 kg e 12.0 kg.");
+
+    public static readonly Error FarrowingAlreadyWeaned = Error.Conflict(
+        "Weaning.AlreadyWeaned",
+        "Este parto já possui registro de desmame concluído.");
 }
+
