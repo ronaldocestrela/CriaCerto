@@ -37,6 +37,7 @@ public class RecordSupplementationCommandHandler : IRequestHandler<RecordSupplem
     public async Task<Result<PastureSupplementationDto>> Handle(RecordSupplementationCommand request, CancellationToken cancellationToken)
     {
         var ration = await _dbContext.FeedRations
+            .Include(r => r.Items)
             .FirstOrDefaultAsync(r => r.Id == request.FeedRationId && r.TenantId == request.TenantId, cancellationToken);
 
         if (ration == null)
@@ -53,6 +54,27 @@ public class RecordSupplementationCommandHandler : IRequestHandler<RecordSupplem
 
         if (result.IsFailure)
             return Result.Failure<PastureSupplementationDto>(result.Error);
+
+        // Deduzir dos silos componentes da receita de suplementação
+        if (ration.Items.Any())
+        {
+            var siloIds = ration.Items.Select(i => i.FeedItemId).ToList();
+            var silos = await _dbContext.SiloStocks
+                .Where(s => siloIds.Contains(s.Id) && s.TenantId == request.TenantId)
+                .ToListAsync(cancellationToken);
+
+            foreach (var item in ration.Items)
+            {
+                var silo = silos.FirstOrDefault(s => s.Id == item.FeedItemId);
+                if (silo == null)
+                    return Result.Failure<PastureSupplementationDto>(Error.NotFound("SiloStock.NotFound", $"Insumo '{item.FeedItemName}' não encontrado no estoque do silo."));
+
+                decimal requiredKg = Math.Round((item.Percentage / 100m) * request.QuantityKg, 2);
+                var consumeResult = silo.ConsumeStock(requiredKg);
+                if (consumeResult.IsFailure)
+                    return Result.Failure<PastureSupplementationDto>(consumeResult.Error);
+            }
+        }
 
         var entity = result.Value;
         _dbContext.PastureSupplementations.Add(entity);
@@ -83,6 +105,7 @@ public class RecordFeedlotTmrCommandHandler : IRequestHandler<RecordFeedlotTmrCo
     public async Task<Result<DailyFeedBatchDto>> Handle(RecordFeedlotTmrCommand request, CancellationToken cancellationToken)
     {
         var ration = await _dbContext.FeedRations
+            .Include(r => r.Items)
             .FirstOrDefaultAsync(r => r.Id == request.FeedRationId && r.TenantId == request.TenantId, cancellationToken);
 
         if (ration == null)
@@ -100,6 +123,27 @@ public class RecordFeedlotTmrCommandHandler : IRequestHandler<RecordFeedlotTmrCo
 
         if (result.IsFailure)
             return Result.Failure<DailyFeedBatchDto>(result.Error);
+
+        // Deduzir dos silos componentes da receita de trato
+        if (ration.Items.Any())
+        {
+            var siloIds = ration.Items.Select(i => i.FeedItemId).ToList();
+            var silos = await _dbContext.SiloStocks
+                .Where(s => siloIds.Contains(s.Id) && s.TenantId == request.TenantId)
+                .ToListAsync(cancellationToken);
+
+            foreach (var item in ration.Items)
+            {
+                var silo = silos.FirstOrDefault(s => s.Id == item.FeedItemId);
+                if (silo == null)
+                    return Result.Failure<DailyFeedBatchDto>(Error.NotFound("SiloStock.NotFound", $"Insumo '{item.FeedItemName}' não encontrado no estoque do silo."));
+
+                decimal requiredKg = Math.Round((item.Percentage / 100m) * request.OfferedAsFedKg, 2);
+                var consumeResult = silo.ConsumeStock(requiredKg);
+                if (consumeResult.IsFailure)
+                    return Result.Failure<DailyFeedBatchDto>(consumeResult.Error);
+            }
+        }
 
         var batch = result.Value;
         _dbContext.DailyFeedBatches.Add(batch);

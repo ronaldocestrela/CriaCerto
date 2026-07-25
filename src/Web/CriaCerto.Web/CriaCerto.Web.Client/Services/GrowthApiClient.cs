@@ -102,6 +102,25 @@ public sealed class GrowthApiClient
         return null;
     }
 
+    public async Task<SlaughterEligibilityDto?> ValidateSlaughterEligibilityAsync(Guid animalId, CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<SlaughterEligibilityDto>($"api/sanitary/slaughter-validation/{animalId}", cancellationToken);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<HttpResponseMessage> DispatchAnimalAsync(DispatchAnimalCommand command, CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        return await _httpClient.PostAsJsonAsync("api/growth/dispatch/animal", command, cancellationToken);
+    }
+
     private async Task AttachTokenAsync()
     {
         var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");

@@ -33,6 +33,19 @@
     }
     else
     {
+        @if (silos.Any(s => s.IsStockLow))
+        {
+            <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center mb-4 rounded-3 p-3">
+                <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-danger"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Atenção: Nível Crítico de Estoque Detectado!</h6>
+                    <p class="mb-0 text-muted small">
+                        @(silos.Count(s => s.IsStockLow)) insumo(s) estão com saldo abaixo do ponto mínimo de reposição. Realize a entrada de nota ou reabastecimento para não interromper a distribuição de tratos.
+                    </p>
+                </div>
+            </div>
+        }
+
         <div class="row g-4">
             @foreach (var silo in silos)
             {

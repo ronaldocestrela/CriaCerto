@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Modules\Nutrition\CriaCerto.Modules.Nutrition.Application\CriaCerto.Modules.Nutrition.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Nutrition\CriaCerto.Modules.Nutrition.Infrastructure\CriaCerto.Modules.Nutrition.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

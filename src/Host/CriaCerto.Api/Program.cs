@@ -13,6 +13,7 @@ using CriaCerto.Modules.Calving.Application.Contracts;
 using CriaCerto.Modules.Calving.Infrastructure;
 using CriaCerto.Modules.Calving.Infrastructure.Persistence;
 using CriaCerto.Modules.Growth.Application.Contracts;
+using CriaCerto.Modules.Growth.Application.Features.DispatchFeatures;
 using CriaCerto.Modules.Growth.Infrastructure;
 using CriaCerto.Modules.Growth.Infrastructure.Persistence;
 using CriaCerto.Modules.Nutrition.Application;
@@ -346,6 +347,18 @@ growth.MapPost("/lots/move", async (MoveLotToPaddockCommand command, ISender sen
 growth.MapPost("/lots/{id:guid}/close", async (Guid id, Guid tenantId, ISender sender) =>
 {
     var result = await sender.Send(new CloseLotCommand(id, tenantId));
+    return ToHttpResult(result, StatusCodes.Status200OK);
+});
+
+growth.MapPost("/dispatch/animal", async (DispatchAnimalCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status200OK);
+});
+
+growth.MapPost("/dispatch/lot", async (DispatchLotCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
     return ToHttpResult(result, StatusCodes.Status200OK);
 });
 

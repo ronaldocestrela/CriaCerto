@@ -2,6 +2,7 @@
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @attribute [Authorize]
 @using CriaCerto.Web.Client.Components.Plantel
+@using CriaCerto.Web.Client.Components.Sanitary
 @using CriaCerto.Web.Client.Models
 @inject CriaCerto.Web.Client.Services.PlantelApiClient PlantelApi
 @inject NavigationManager Navigation
@@ -91,6 +92,9 @@
                                 <button type="button" class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true" @onclick="() => NavigateToDetail(cow.Id)">
                                     Ficha Completa
                                 </button>
+                                <button type="button" class="btn btn-sm btn-outline-success ms-1" @onclick:stopPropagation="true" @onclick="() => OpenDispatchModal(cow)">
+                                    <i class="bi bi-truck me-1"></i>Despacho
+                                </button>
                             </td>
                         </tr>
                     }
@@ -99,6 +103,16 @@
         </section>
     </div>
 </ModuleGuard>
+
+@if (_showDispatchModal && _selectedCow != null)
+{
+    <DispatchAnimalModal 
+        TenantId="@Guid.Parse("00000000-0000-0000-0000-000000000001")"
+        AnimalId="@_selectedCow.Id"
+        AnimalEarTag="@_selectedCow.EarTag"
+        OnClose="CloseDispatchModal"
+        OnDispatched="HandleAnimalDispatched" />
+}
 
 @if (_showCreateModal)
 {
@@ -204,11 +218,31 @@
     private ReproductiveStatus? _status;
     private bool _offlineMode;
     private bool _showCreateModal;
+    private bool _showDispatchModal;
+    private CowSummaryDto? _selectedCow;
     private bool _isSaving;
     private string? _errorMessage;
     private string? _successMessage;
 
     private CreateAnimalRequest _createRequest = new();
+
+    private void OpenDispatchModal(CowSummaryDto cow)
+    {
+        _selectedCow = cow;
+        _showDispatchModal = true;
+    }
+
+    private void CloseDispatchModal()
+    {
+        _showDispatchModal = false;
+        _selectedCow = null;
+    }
+
+    private async Task HandleAnimalDispatched()
+    {
+        _successMessage = $"Despacho do animal {_selectedCow?.EarTag} realizado com sucesso!";
+        await LoadCowsAsync();
+    }
 
     private IEnumerable<CowSummaryDto> FilteredCows => _cows.Where(c =>
         (!_status.HasValue || c.Status == _status.Value) &&

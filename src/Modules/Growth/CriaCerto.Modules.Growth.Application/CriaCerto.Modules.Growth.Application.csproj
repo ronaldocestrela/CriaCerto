@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\CriaCerto.BuildingBlocks.Application\CriaCerto.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\Sanitary\CriaCerto.Modules.Sanitary.Application\CriaCerto.Modules.Sanitary.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

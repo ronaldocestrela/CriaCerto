@@ -124,7 +124,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Testes unitários com arquivos de pesagem sintéticos de múltiplos modelos de balança.
 
-#### Sub-fase 3.3: Integridade de Estoque & Trava Sanitária de Abate
+#### Sub-fase 3.3: Integridade de Estoque & Trava Sanitária de Abate [CONCLUÍDA]
 * **Backend:**
   * Handler de evento para baixa automática no `SiloStock` ao registrar trato (`DailyFeedBatch`) ou suplementação mineral (`PastureSupplementation`).
   * Regra de bloqueio em `DispatchAnimalCommand` que impede emissão de lote para abate se houver animal em Período de Carência Medicamentosa.

@@ -112,3 +112,29 @@ public sealed record ImportWeighingFileResultDto(
     int ErrorCount,
     int AnomaliesDetectedCount,
     List<WeighingImportRowResultDto> RowResults);
+
+public sealed record SlaughterEligibilityDto(
+    Guid AnimalId,
+    bool IsEligibleForSlaughter,
+    int RemainingWithdrawalDays,
+    string? BlockingTreatmentName,
+    DateTime? ActiveWithdrawalEndsAtUtc);
+
+public sealed record DispatchAnimalCommand(
+    Guid TenantId,
+    Guid AnimalId,
+    string AnimalEarTag,
+    string Destination,
+    DateTime DispatchDate,
+    bool IsSlaughter);
+
+public sealed record AnimalDispatchResultDto(
+    Guid DispatchId,
+    Guid TenantId,
+    Guid? AnimalId,
+    Guid? LotId,
+    string EarTagOrLotCode,
+    string Destination,
+    DateTime DispatchDate,
+    bool IsSlaughter,
+    string Status);
