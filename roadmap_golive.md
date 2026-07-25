@@ -173,7 +173,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Verificação de segurança de cabeçalhos e validação de inicialização da API em modo de produção.
 
-#### Sub-fase 5.3: Containerização & Esteira de Deploy CI/CD
+#### Sub-fase 5.3: Containerização & Esteira de Deploy CI/CD [CONCLUÍDA]
 * **DevOps:**
   * Criar `Dockerfile` otimizado em múltiplos estágios para `CriaCerto.Api` e `CriaCerto.Web`.
   * Atualizar o `docker-compose.yml` de produção incluindo PostgreSQL, Redis e containers da aplicação.
