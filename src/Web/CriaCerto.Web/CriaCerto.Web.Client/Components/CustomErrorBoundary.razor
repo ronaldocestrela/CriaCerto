@@ -1,0 +1,114 @@
+@using Microsoft.AspNetCore.Components.Web
+@inherits ErrorBoundary
+@inject NavigationManager Navigation
+
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else
+{
+    <div class="error-boundary-card">
+        <div class="error-boundary-icon">
+            <span class="material-symbols-outlined">warning</span>
+        </div>
+        <h3 class="error-boundary-title">Ops! Ocorreu um erro inesperado</h3>
+        <p class="error-boundary-message">
+            Desculpe o transtorno. Ocorreu uma falha imprevista durante a exibição desta seção da página.
+        </p>
+        <details class="error-boundary-details">
+            <summary>Detalhes do erro</summary>
+            <pre>@CurrentException.Message</pre>
+        </details>
+        <div class="error-boundary-actions">
+            <button class="btn btn-outline-primary" @onclick="HandleRecover">
+                <span class="material-symbols-outlined">refresh</span> Tentar Novamente
+            </button>
+            <button class="btn btn-primary" @onclick="ReloadPage">
+                <span class="material-symbols-outlined">restart_alt</span> Recarregar Aplicação
+            </button>
+        </div>
+    </div>
+}
+
+<style>
+    .error-boundary-card {
+        margin: 2rem auto;
+        max-width: 600px;
+        padding: 2rem;
+        background: #18221c;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        text-align: center;
+        color: #f1f5f9;
+    }
+
+    .error-boundary-icon {
+        font-size: 3rem;
+        color: #ef4444;
+        margin-bottom: 1rem;
+    }
+
+    .error-boundary-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .error-boundary-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .error-boundary-details {
+        text-align: left;
+        background: #0d1310;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+        color: #fca5a5;
+    }
+
+    .error-boundary-details summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: #f87171;
+    }
+
+    .error-boundary-details pre {
+        margin-top: 0.5rem;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+    .error-boundary-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .error-boundary-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    private void HandleRecover()
+    {
+        Recover();
+    }
+
+    private void ReloadPage()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+}

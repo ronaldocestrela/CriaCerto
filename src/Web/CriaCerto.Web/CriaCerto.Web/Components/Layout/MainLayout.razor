@@ -11,15 +11,19 @@
         <header class="shell-header">
             <div>
                 <p class="shell-kicker">Cria Certo</p>
-                <h1 class="shell-title">Swine Breeding Dashboard</h1>
+                <h1 class="shell-title">Gestão Pecuária Inteligente</h1>
             </div>
             <SyncStatusHeader />
         </header>
 
         <article class="shell-content">
-            @Body
+            <CustomErrorBoundary>
+                @Body
+            </CustomErrorBoundary>
         </article>
     </main>
+
+    <ToastContainer />
 
     <nav class="mobile-tabs" aria-label="Mobile navigation">
         <NavLink href="" Match="NavLinkMatch.All">Dashboard</NavLink>

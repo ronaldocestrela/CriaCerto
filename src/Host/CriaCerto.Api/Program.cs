@@ -1,4 +1,5 @@
 using System.Text;
+using CriaCerto.Api.Middleware;
 using CriaCerto.BuildingBlocks.Application.Features.GetReferenceBreeds;
 using CriaCerto.Api.Seeders;
 using CriaCerto.Modules.Sanitary.Application.Features.GetVaccineCalendar;
@@ -86,8 +87,35 @@ builder.Services.AddGrowthInfrastructure();
 builder.Services.AddNutritionInfrastructure();
 builder.Services.AddSanitaryModule(builder.Configuration);
 
+// Configure CORS Policy
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+    ?? new[] { "https://localhost:7001", "http://localhost:5001" };
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ProductionCorsPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
+if (builder.Environment.IsProduction())
+{
+    var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? builder.Configuration["Jwt:SecretKey"];
+    if (string.IsNullOrWhiteSpace(envSecret) || 
+        envSecret.Contains("SuperSecretKey") || 
+        Encoding.UTF8.GetByteCount(envSecret) < 32)
+    {
+        throw new InvalidOperationException("ERRO DE SEGURANÇA: Chave JWT de produção ausente, insegura ou inferior a 32 bytes.");
+    }
+    jwtSecret = envSecret;
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -114,6 +142,9 @@ var app = builder.Build();
 
 ApplyMigrations(app);
 SeedReferenceData(app);
+
+app.UseSecurityHeaders();
+app.UseCors("ProductionCorsPolicy");
 
 if (app.Environment.IsDevelopment())
 {

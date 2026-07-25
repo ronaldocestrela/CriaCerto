@@ -165,7 +165,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Testes de integração com `Testcontainers` verificando a execução idempotente dos seeders.
 
-#### Sub-fase 5.2: Segurança, Variáveis de Ambiente & UI Feedback
+#### Sub-fase 5.2: Segurança, Variáveis de Ambiente & UI Feedback [CONCLUÍDA]
 * **Backend & Frontend:**
   * Substituição das chaves JWT de desenvolvimento por variáveis de ambiente de produção (`appsettings.Production.json`).
   * Ajuste de políticas de CORS e redirecionamento HTTPS obrigatório.
