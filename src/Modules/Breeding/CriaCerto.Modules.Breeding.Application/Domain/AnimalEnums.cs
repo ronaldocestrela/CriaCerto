@@ -1,46 +1,31 @@
 namespace CriaCerto.Modules.Breeding.Application.Domain;
 
-public enum LifecycleStatus
+public enum CattleCategory
 {
-    Active = 1,
-    Quarantine = 2,
-    Culled = 3
+    Cow = 1,
+    Bull = 2,
+    Heifer = 3
 }
 
 public enum ReproductiveStatus
 {
-    Empty = 1,
-    Bred = 2,
-    Pregnant = 3,
-    Lactating = 4
+    Open = 1,          // Vazia
+    InIatfProtocol = 2,// Em Protocolo IATF
+    Inseminated = 3,   // Inseminada
+    Pregnant = 4,      // Prenhe
+    Culled = 5,        // Descartada
+    Sold = 6           // Vendida
 }
 
-public enum BodyConditionScore
-{
-    VeryThin = 1,
-    Thin = 2,
-    Ideal = 3,
-    Fat = 4,
-    VeryFat = 5
-}
-
-public enum BreedingMethod
-{
-    ArtificialInsemination = 1,
-    TimedArtificialInsemination = 2,
-    NaturalService = 3
-}
-
-public enum PregnancyDiagnosisResult
-{
-    Pregnant = 1,
-    Empty = 2,
-    ReturnToEstrus = 3,
-    AbortOrDoubt = 4
-}
-
-public enum PregnancyDiagnosisMethod
+public enum DiagnosisMethod
 {
     Ultrasound = 1,
-    ReturnToEstrus = 2
+    RectalPalpation = 2
+}
+
+public enum SemenType
+{
+    Conventional = 1,
+    SexedFemale = 2,
+    SexedMale = 3
 }

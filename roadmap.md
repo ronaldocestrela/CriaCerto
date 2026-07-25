@@ -1,11 +1,11 @@
-# Product Development Roadmap: Swine Management SaaS Platform
+# Product Development Roadmap: Cattle / Bovine Management SaaS Platform
 
 ## 1. Roadmap Strategy & Rules of Engagement
 
-To ensure production-ready quality and prevent technical debt, this roadmap is structured into sequential **Phases** and **Sub-phases**.
+To ensure production-ready quality and prevent technical debt, this roadmap is structured into sequential **Phases** and **Sub-phases** tailored for Bovine/Cattle Farm Management (Beef & Dairy).
 
 ### Core Completion Rule
-> **A Phase or Sub-phase is considered "DONE" ONLY when both the Backend (.NET 10) and Frontend (Blazor PWA + MCP Stitch UI) are fully implemented, covered by unit/integration tests (TDD), offline-capable where specified, and accompanied by updated living documentation.**
+> **A Phase or Sub-phase is considered "DONE" ONLY when both the Backend (.NET 10) and Frontend (Blazor PWA + MCP Stitch UI) are fully implemented, covered by unit/integration tests (TDD), offline-capable for field/curral environments, and accompanied by updated living documentation.**
 
 ---
 
@@ -21,15 +21,15 @@ To ensure production-ready quality and prevent technical debt, this roadmap is s
                └────────────────────┬────────────────────┘
                                     │
                ┌────────────────────▼────────────────────┐
-               │   Phase 2: Breeding & Sow Management    │
+               │    Phase 2: Cattle Herd & IATF Breeding │
                └────────────────────┬────────────────────┘
                                     │
                ┌────────────────────▼────────────────────┐
-               │    Phase 3: Maternity & Farrowing Ops   │
+               │  Phase 3: Calving Ops & Calf Nursery    │
                └────────────────────┬────────────────────┘
                                     │
                ┌────────────────────▼────────────────────┐
-               │ Phase 4: Nursery, Growth & Finishing    │
+               │ Phase 4: Pasture, Feedlot & Weighings   │
                └────────────────────┬────────────────────┘
                                     │
                ┌────────────────────▼────────────────────┐
@@ -49,10 +49,10 @@ To ensure production-ready quality and prevent technical debt, this roadmap is s
 * **Backend (.NET 10):**
   * Create Modular Monolith solution setup (`src/BuildingBlocks`, `src/Modules/*`).
   * Implement base `Result`, `Result<T>`, and `Error` response types.
-  * Configure EF Core 10 base infrastructure, SQL Server connection pooling, and MediatR pipelines.
+  * Configure EF Core 10 base infrastructure, PostgreSQL connection pooling, and MediatR pipelines.
 * **Frontend (Blazor .NET 10):**
   * Create Blazor Web App with WebAssembly render mode setup.
-  * Integrate PWA Service Worker manifest and offline caching shell.
+  * Integrate PWA Service Worker manifest and offline caching shell for remote field/pasture usage.
   * Setup **MCP Stitch** layout generator pipelines and component library foundation.
 * **TDD & Living Doc Gate:**
   * Unit tests for `Result` pattern extensions and pipeline behaviors.
@@ -64,14 +64,13 @@ To ensure production-ready quality and prevent technical debt, this roadmap is s
 
 #### Sub-phase 1.1: Identity & Multi-Tenant Infrastructure
 * **Backend:**
-  * Tenant identification through authenticated identity (user-tenant membership), without subdomain/header resolution.
-  * Tenant database isolation strategy (database-per-tenant, dedicated connection per tenant).
+  * Tenant resolution middleware (Header/Subdomain per Farm/Fazenda).
+  * Tenant database isolation strategy (Schema-per-tenant / Row-Level Security).
   * JWT Auth endpoints returning `Result<AuthResponse>`.
 * **Frontend:**
-  * Login and Register Blazor components generated via MCP Stitch, with tenant resolved from authenticated user profile.
-  * Optional tenant selection only for users linked to multiple tenants, still without subdomain dependency.
+  * Login, Register, and Farm/Tenant Switcher Blazor components generated via MCP Stitch.
   * Local token storage & AuthStateProvider setup.
-* **TDD & Living Doc Gate:** Integration tests verifying tenant context separation and tenant resolution from login claims.
+* **TDD & Living Doc Gate:** Integration tests verifying tenant context separation across distinct farms.
 
 #### Sub-phase 1.2: Plan-Based Feature Gating (Modular Monolith Licensing)
 * **Backend:**
@@ -79,106 +78,106 @@ To ensure production-ready quality and prevent technical debt, this roadmap is s
   * Module access enforcement attributes & MediatR pipeline behaviors (`[RequiresModule("Breeding")]`).
 * **Frontend:**
   * Dynamic sidebar & routing guard component (`<ModuleGuard Module="Breeding">`).
-  * Plan upgrade UI callout components.
-* **TDD & Living Doc Gate:** End-to-end tests ensuring restricted plan users cannot invoke locked endpoints/views.
+  * Head-of-cattle capacity limit warnings and plan upgrade UI callout components.
+* **TDD & Living Doc Gate:** End-to-end tests ensuring restricted plan users cannot invoke locked endpoints/views (e.g., Feedlot / Confinamento optimization).
 
 ---
 
-### Phase 2: Breeding & Sow Management (`Modules.Breeding`)
+### Phase 2: Cattle Herd & IATF Breeding Management (`Modules.Breeding`)
 
-#### Sub-phase 2.1: Sow & Boar Registry (Plantel)
+#### Sub-phase 2.1: Cattle Registry & Individual Identification (Plantel e Brincagem)
 * **Backend:**
-  * CRUD commands/queries for Sows (Matrizes) and Boars (Cachaços) returning `Result<T>`.
-  * Event handlers for status changes (Active, Culled, Quarantine).
+  * CRUD commands/queries for Cows (Vacas/Matrizes), Bulls (Touros/Reprodutores), and Heifers (Novilhas) returning `Result<T>`.
+  * Support for SISBOV, Ear Tag ID (Brinco Amarelo), RFID Electronic Tags, and Tattoos.
+  * Event handlers for status changes (Active, Pregnant, Open/Vazia, Culled, Sold).
 * **Frontend:**
-  * Sow and Boar list/detail views built with MCP Stitch atomic components.
-  * Offline-capable search/filter via IndexedDB local cache.
+  * Cattle list and card view with RFID/Ear Tag search built via MCP Stitch.
+  * Offline-capable search/filter via IndexedDB local cache for field use in remote pastures.
 * **TDD & Living Doc Gate:** TDD coverage for status transition business rules. Updated `docs/modules/breeding.md`.
 
-#### Sub-phase 2.2: Insemination, Breeding & Pregnancy Diagnosis
+#### Sub-phase 2.2: Artificial Insemination (IATF Protocols) & Pregnancy Diagnosis
 * **Backend:**
-  * `RegisterBreedingEventCommand` (IA, IATF, Monta Natural).
-  * `RegisterPregnancyDiagnosisCommand` (Ultrassom / Retorno ao Cio).
-  * DNP (Days Non-Productive) calculation service.
+  * `RegisterIatfProtocolCommand` (Synchronization batch, hormone insertion/withdrawal dates, insemination date, semen lot).
+  * `RegisterPregnancyDiagnosisCommand` (Ultrasound / Rectal Palpation - Prenhe vs Vazia).
+  * Calculation service for Calving Interval (IEP - Intervalo Entre Partos), Conception Rate, and Open Days (Dias em Aberto).
 * **Frontend:**
-  * Fast-entry breeding batch log form for barn workers.
-  * Pregnancy check task list component with offline queueing support.
-* **TDD & Living Doc Gate:** Unit tests verifying DNP calculations and invalid state transitions (e.g., inseminating a sow already pregnant).
+  * Curral/Mangueiro fast-entry IATF protocol entry form for field technicians.
+  * Pregnancy check task queue component with offline queueing support.
+* **TDD & Living Doc Gate:** Unit tests verifying IEP calculations and invalid state transitions (e.g., applying IATF protocol to a cow confirmed pregnant).
 
 ---
 
-### Phase 3: Maternity & Farrowing Operations (`Modules.Maternity`)
+### Phase 3: Calving Operations & Calf Nursery (`Modules.Calving`)
 
-#### Sub-phase 3.1: Farrowing & Piglet Registration (Partos)
+#### Sub-phase 3.1: Calving & Calf Registration (Partos e Bezerreiro)
 * **Backend:**
-  * `RegisterFarrowingCommand` (Nascidos Vivos, Natimortos, Mumificados, Peso da Ninhada).
-  * Automated domain events emitting `FarrowingCompletedEvent`.
+  * `RegisterCalvingCommand` (Mother Cow ID, Birth Date, Birth Weight, Sex, Breed, Calf Tag ID, Birth Condition).
+  * Domain events emitting `CalvingCompletedEvent`.
 * **Frontend:**
-  * Touch-friendly mobile-first maternity room entry form.
-  * Real-time validation for live vs dead count.
-* **TDD & Living Doc Gate:** TDD tests for `Farrowing` entity invariant validations.
+  * Mobile-first pasture calving registration form with touch-friendly controls.
+  * Quick tag/RFID scanner integration for calf assignment.
+* **TDD & Living Doc Gate:** TDD tests for `Calving` entity invariant validations.
 
-#### Sub-phase 3.2: Cross-Fostering & Weaning (Adoções e Desmame)
+#### Sub-phase 3.2: Weaning & 205-Day Adjusted Weight (Desmame)
 * **Backend:**
-  * `TransferPigletCommand` (Adoções/Transferências entre matrizes).
-  * `RegisterWeaningCommand` (Desmame por matriz, quantidade, peso total).
-  * Calculation services for NVMA (Nascidos Vivos/Matriz/Ano) and DMA (Desmamados/Matriz/Ano).
+  * `RegisterWeaningCommand` (Weaning weight, weaning date, pasture lot destination).
+  * Calculation services for 205-Day Adjusted Weight (P205) and Pre-weaning Mortality Rate.
 * **Frontend:**
-  * Visual matrix adoption management UI.
-  * Weaning record wizard with automatic lot destination selection.
-* **TDD & Living Doc Gate:** Integration tests for cross-fostering inventory integrity.
+  * Weaning management wizard with automatic lot assignment.
+  * Performance badges for top-producing cows based on calf weaning weights.
+* **TDD & Living Doc Gate:** Integration tests for weaning weight normalization algorithms.
 
 ---
 
-### Phase 4: Nursery, Growth & Finishing (`Modules.Growth`)
+### Phase 4: Pasture Management, Feedlot & Growth (`Modules.Growth`)
 
-#### Sub-phase 4.1: Batch Creation & Movement (Creche, Recria e Terminação)
+#### Sub-phase 4.1: Lot Creation, Paddock Management & Stocking Rate (Pastos e Lotação)
 * **Backend:**
-  * `CreateBatchCommand`, `MoveBatchCommand`, `CloseBatchCommand`.
-  * Lot tracking and location/pen assignment logic.
+  * `CreateLotCommand`, `MoveLotToPaddockCommand`, `CloseLotCommand`.
+  * Paddock capacity calculator: Animal Unit per Hectare (UA/ha - Taxa de Lotação).
 * **Frontend:**
-  * Interactive barn layout / lot visualizer component built via MCP Stitch.
-  * Batch movement modal with background sync handler.
-* **TDD & Living Doc Gate:** Unit tests for lot capacity and transfer constraints.
+  * Interactive Pasture Map / Paddock Visualizer built via MCP Stitch.
+  * Lot movement modal with offline background sync handler.
+* **TDD & Living Doc Gate:** Unit tests for paddock overgrazing warnings and stocking rate math.
 
-#### Sub-phase 4.2: Weighing, ADG/GPD & Mortality Tracking
+#### Sub-phase 4.2: Curral Weighings, ADG/GPD & Arroba (@) Tracking
 * **Backend:**
-  * `RecordWeighingCommand` and `RecordMortalityCommand`.
-  * Zootecnic calculations: GPD (Ganho de Peso Diário) and Mortality Rate per phase.
+  * `RecordWeighingCommand` (Scale integration / weight entry, carcass yield estimation %).
+  * Zootecnic calculations: Average Daily Gain (ADG / GPD in kg/day and Arrobas @/month).
 * **Frontend:**
-  * Quick-input daily mortality entry form.
+  * Curral/Scale fast-input weighing screen with automated weight change calculation.
   * Interactive GPD trend charts using Blazor SVG components.
-* **TDD & Living Doc Gate:** Tests covering GPD edge cases (e.g., zero-day weight deltas).
+* **TDD & Living Doc Gate:** Tests covering GPD edge cases and negative weight loss warnings.
 
 ---
 
-### Phase 5: Nutrition, Sanitary & Zootecnic Analytics (`Modules.Analytics`)
+### Phase 5: Nutrition, Sanitary & Bovine Analytics (`Modules.Analytics`)
 
-#### Sub-phase 5.1: Feed Consumption & FCR/CA Calculation
+#### Sub-phase 5.1: Supplementation, Feedlot TMR & Cost per Arroba (@)
 * **Backend:**
-  * `RecordFeedConsumptionCommand` (Ração por setor/lote).
-  * Feed Conversion Ratio (CA / FCR = Total Feed Consumed / Total Weight Gained).
-  * Cost per kg of meat produced estimation query.
+  * `RecordSupplementationCommand` (Sal Mineral, Proteinado em Pasto).
+  * `RecordFeedlotTmrCommand` (Carregamento de Trato / Ração no Confinamento).
+  * Feed Conversion Ratio (CA) and Cost per Arroba (@) produced query engine.
 * **Frontend:**
-  * Silo stock level and daily feed log views.
-  * Feed conversion dashboard widgets.
-* **TDD & Living Doc Gate:** Full test suite for multi-phase FCR equations.
+  * Silo stock level, daily trough log (trato), and mineral salt consumption views.
+  * Feed conversion and cost per @ dashboard widgets.
+* **TDD & Living Doc Gate:** Full test suite for multi-phase feeding equations.
 
-#### Sub-phase 5.2: Sanitary Schedules & Withdrawal Warnings
+#### Sub-phase 5.2: Official Vaccination Campaigns & Slaughter Withdrawal Period
 * **Backend:**
-  * Vaccination schedule generator based on pig age/phase.
-  * `ApplyTreatmentCommand` with active withdrawal period (Período de Carência) block.
+  * Official vaccination schedule generator (Febre Aftosa, Brucelose, Raiva, Clostridioses).
+  * `ApplyTreatmentCommand` with active slaughter/milk withdrawal period (Período de Carência para Abate/Leite) block.
 * **Frontend:**
-  * Veterinary task calendar and alert notification center.
-  * Visual warning badge on animals/lots under drug withdrawal.
-* **TDD & Living Doc Gate:** TDD tests ensuring animals under grace period cannot be dispatched for slaughter.
+  * Sanitary campaign manager and veterinary alert notification center.
+  * Visual warning badge on animals/lots under active drug withdrawal period preventing slaughter dispatch.
+* **TDD & Living Doc Gate:** TDD tests ensuring animals under grace period cannot be dispatched to slaughterhouse (Frigorífico).
 
-#### Sub-phase 5.3: Executive Zootecnic Analytics & Final Hardening
+#### Sub-phase 5.3: Executive Bovine Analytics & Final Hardening
 * **Backend:**
-  * Consolidated multi-farm KPI reporting engine (DNP, NVMA, DMA, GPD, CA).
-  * Data export endpoints (CSV, Excel, PDF generation).
+  * Consolidated multi-farm KPI reporting engine (IEP, Conception Rate, GPD/Arrobas, UA/ha, Cost/@).
+  * Data export endpoints (CSV, Excel, PDF generation for GTA/State inspections).
 * **Frontend:**
-  * Executive Dashboard with key indicators, target vs actual comparisons, and offline cache backup.
+  * Executive Dashboard with key cattle performance indicators, target vs actual comparisons, and offline cache backup.
   * Complete UI polish across all MCP Stitch components.
 * **TDD & Living Doc Gate:** End-to-end integration tests across all modules. Final living documentation sync.
 
@@ -192,7 +191,7 @@ Before closing any sub-phase or phase, the following verification checklist MUST
 - [ ] Backend .NET 10 endpoints/services created and returning Result<T>.
 - [ ] Domain logic covered by unit tests (Red/Green/Refactor verified).
 - [ ] Blazor components generated/refactored using MCP Stitch guidelines.
-- [ ] Offline capability & IndexedDB sync verified for rural forms.
+- [ ] Offline capability & IndexedDB sync verified for curral/pasture forms.
 - [ ] Plan/Module access controls tested and active.
 - [ ] Living documentation (/docs) updated to reflect latest domain logic.
 ```

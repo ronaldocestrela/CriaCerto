@@ -5,9 +5,10 @@ namespace CriaCerto.Modules.Breeding.Application.Abstractions;
 
 public interface IBreedingDbContext
 {
-    DbSet<Sow> Sows { get; }
-    DbSet<Boar> Boars { get; }
-    DbSet<BreedingEvent> BreedingEvents { get; }
+    DbSet<Cow> Cows { get; }
+    DbSet<Bull> Bulls { get; }
+    DbSet<SemenBatch> SemenBatches { get; }
+    DbSet<IatfProtocol> IatfProtocols { get; }
     DbSet<PregnancyDiagnosis> PregnancyDiagnoses { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

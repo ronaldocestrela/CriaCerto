@@ -1,9 +1,9 @@
-# System Instructions & Agent Guide: Swine Management SaaS Platform
+# System Instructions & Agent Guide: Cattle / Bovine Management SaaS Platform
 
 ## 1. Project Overview & Vision
-This project is a high-performance, enterprise-grade, multi-tenant Swine Management SaaS platform (competing with legacy systems like *MeuSuino* / *SOS Suínos*). 
+This project is a high-performance, enterprise-grade, multi-tenant Cattle/Bovine Management SaaS platform (targeting beef and dairy cattle management). 
 
-The platform optimizes swine farm operations across the entire lifecycle: Breeding/Sow management, Gestation, Farrowing/Maternity, Nursery, Growing, Finishing, Feed/Nutrition management, Sanitary/Veterinary workflows, and Advanced Zootecnic Analytics (DNP, NVMA, DMA, FCR/CA, ADG/GPD).
+The platform optimizes cattle farm operations across the entire lifecycle: Breeding/Cow management, Reproduction & Artificial Insemination (IATF), Gestation, Calving & Nursery, Weight Gain & Growth (Pasture / Feedlot / Confinamento), Nutrition/Feed management, Sanitary/Veterinary workflows, and Advanced Zootecnic Analytics (Calving Interval, ADG/GPD, Feed Conversion Ratio, Stocking Rate / Taxa de Lotação UA/ha).
 
 ---
 
@@ -12,12 +12,11 @@ The platform optimizes swine farm operations across the entire lifecycle: Breedi
 ### 2.1 Architectural Style: Modular Monolith
 * **Structure:** Single unit composed of strictly separated, domain-aligned internal modules.
 * **Communication:** In-process domain events and mediator patterns. Direct cross-module database joins are **prohibited**.
-* **Tiered Feature Gating:** Modules are dynamically enabled/disabled based on tenant subscription plans (e.g., *Starter* = Breeding & Nursery; *Enterprise* = Full Zootecnic Analytics + Financials + Feed Optimization).
-* **Tenant Context Resolution:** Tenant must be resolved from authenticated user membership/claims during login and request authorization, without subdomain/header-based routing.
+* **Tiered Feature Gating:** Modules are dynamically enabled/disabled based on tenant subscription plans (e.g., *Starter* = Breeding & Herd Registry; *Enterprise* = Full Zootecnic Analytics + Financials + Feedlot/Confinamento Optimization).
 
 ### 2.2 Core Architectural Requirements
 * **Backend:** .NET 10 (C# 14) following Clean Architecture & Domain-Driven Design (DDD).
-* **Frontend:** Blazor WebAssembly / Blazor Web App targeting .NET 10 with **PWA (Progressive Web App)** capabilities for offline resilience in rural environments.
+* **Frontend:** Blazor WebAssembly / Blazor Web App targeting .NET 10 with **PWA (Progressive Web App)** capabilities for offline resilience in field/pasture environments.
 * **Design & UI Automation:** **MCP Stitch** integration for automated, standardized Blazor UI component generation.
 * **Development Methodology:** **Test-Driven Development (TDD)** — Red/Green/Refactor mandatory for all business code.
 * **Documentation Strategy:** **Living Documentation** — Automated generation and execution of specs via BDD/Tests. Architecture Decision Records (ADRs) and markdown docs must be kept up-to-date with code changes.
@@ -31,10 +30,10 @@ The platform optimizes swine farm operations across the entire lifecycle: Breedi
 * **Framework:** .NET 10 Web API / Modular Monolith Architecture.
 * **Language:** C# 14.
 * **Domain & CQRS:** MediatR / In-Memory Channel Bus.
-* **Data Access:** Entity Framework Core 10, SQL Server with strict database-per-tenant isolation (one logical database per tenant) and per-tenant connection resolution.
+* **Data Access:** Entity Framework Core 10, PostgreSQL (Multi-tenant schema-per-tenant or row-level security).
 * **Functional Error Handling:** Custom or CSharpFunctionalExtensions `Result<T>` / `Result<T, Error>`.
 * **Validation:** FluentValidation integrated into MediatR pipeline.
-* **Testing Stack:** xUnit, FluentAssertions, NSubstitute / Moq, Testcontainers (SQL Server integration tests).
+* **Testing Stack:** xUnit, FluentAssertions, NSubstitute / Moq, Testcontainers (PostgreSQL integration tests).
 
 ### 3.2 Frontend (Blazor .NET 10)
 * **Framework:** Blazor Web App / WASM .NET 10 with PWA offline caching strategy.
@@ -108,48 +107,47 @@ public class Result<TValue> : Result
 
 ## 5. Domain Modules Specification
 
-### 5.1 Breeding & Sow Management Module (`Modules.Breeding`)
-* **Entities:** `Sow` (Matriz), `Boar` (Cachaço), `BreedingEvent` (Cobertura/IA), `SemenBatch`.
+### 5.1 Breeding & Cattle Herd Management Module (`Modules.Breeding`)
+* **Entities:** `Cow` (Vaca/Matriz), `Bull` (Touro/Reprodutor), `SemenBatch` (Sêmen/Palheta), `BreedingEvent` (Inseminação/IATF/Monta Natural).
 * **Features:**
-  * Artificial Insemination / Natural Service tracking.
-  * Pregnancy diagnosis (ultrasound / return-to-estrus tracking).
-  * Sow lifecycle metrics: DNP (Non-Productive Days), IDC (Interval Desmame-Cobertura).
+  * Artificial Insemination / Fixed-Time AI (IATF) protocol tracking.
+  * Pregnancy diagnosis (ultrasound / rectal palpation).
+  * Reproductive indicators: Calving Interval (IEP - Intervalo Entre Partos), Conception Rate, Open Days (Dias em Aberto).
 
-### 5.2 Maternity & Farrowing Module (`Modules.Maternity`)
-* **Entities:** `Farrowing` (Parto), `Litter` (Ninhada), `PigletTransfer` (Adoção/Transferência), `Weaning` (Desmame).
+### 5.2 Calving & Calf Nursery Module (`Modules.Calving`)
+* **Entities:** `Calving` (Parto), `Calf` (Bezerro/a), `Weaning` (Desmame).
 * **Features:**
-  * Live born, stillborn, mummified piglet count.
-  * Cross-fostering (piglet transfers between sows).
-  * Weaning events & weight recording.
-  * Metrics: NVMA (Nascidos Vivos/Matriz/Ano), DMA (Desmamados/Matriz/Ano), Pre-weaning mortality.
+  * Birth recording (birth weight, sex, coat/breed, mother tag ID, birth condition).
+  * Calf identification (Ear Tag / SISBOV / RFID Chip / Tattoo).
+  * Weaning recording & 205-day adjusted weight calculation.
+  * Pre-weaning mortality & weaning rate per cow.
 
-### 5.3 Batch & Growth Management Module (`Modules.Growth`)
-* **Entities:** `Batch` (Lote), `Movement`, `Weighing`, `MortalityRecord`.
+### 5.3 Growth, Pasture & Feedlot Module (`Modules.Growth`)
+* **Entities:** `Lot` (Lote de Animais), `PasturePaddock` (Pasto/Piquete), `AnimalMovement`, `Weighing` (Pesagem/Arroba), `FeedlotPen` (Confinamento/Curral).
 * **Features:**
-  * Stages: Nursery (Creche), Growing/Finishing (Recria e Terminação).
-  * Daily Weight Gain (GPD/ADG) calculation.
-  * Feed Conversion Ratio (CA/FCR) analysis per batch.
-  * Cull & mortality tracking with cause taxonomy.
+  * Growth stages: Calf (Bezerro), Yearling (Novilho/Garrote), Fattening/Finishing (Boi Gordo/Recria/Engorda).
+  * Animal Unit per Hectare (UA/ha - Taxa de Lotação) calculation per paddock.
+  * Average Daily Gain (ADG / GPD - Ganho de Peso Diário em kg e @).
+  * Mortality and culling tracking.
 
-### 5.4 Nutrition & Feed Module (`Modules.Nutrition`)
-* **Entities:** `FeedFormula`, `FeedConsumption`, `SiloStock`.
+### 5.4 Nutrition & Feed Management Module (`Modules.Nutrition`)
+* **Entities:** `FeedRation`, `PastureSupplementation` (Sal Mineral / Proteinado), `DailyFeedBatch` (Carregamento de Trato), `SiloStock`.
 * **Features:**
-  * Stage-specific feeding schedules.
-  * Consumption vs. theoretical growth model comparisons.
-  * Cost per kg of meat produced.
+  * Pasture mineral & protein supplementation logs.
+  * Feedlot total mixed ration (TMR / Trato) delivery logs.
+  * Feed Conversion Ratio (CA) and Cost per @ (Arroba) produced.
 
 ### 5.5 Sanitary & Veterinary Module (`Modules.Sanitary`)
-* **Entities:** `VaccinationPlan`, `TreatmentRecord`, `Medication`.
+* **Entities:** `VaccinationCampaign` (Febre Aftosa, Brucelose, Raiva, Clostridiose), `DewormingRecord` (Vermifugação), `TreatmentRecord`.
 * **Features:**
-  * Age/Phase automated vaccination schedule.
-  * Animal/Batch treatment logs with withdrawal period (período de carência) warnings.
+  * Mandatory state/federal vaccination campaign tracking.
+  * Individual/Lot medical treatments with slaughter withdrawal period (período de carência) blocks.
 
 ### 5.6 Tenant & Licensing Module (`Modules.Tenancy`)
 * **Entities:** `Tenant`, `SubscriptionPlan`, `ModuleAccess`.
 * **Features:**
-  * Authentication-driven tenant resolution (user linked to tenant), with tenant context loaded from identity claims.
-  * Middleware/pipeline for module availability verification per tenant.
-  * Feature toggling and usage limits (e.g., max sows supported per plan).
+  * Middleware for module availability verification per tenant.
+  * Feature toggling and usage limits (e.g., max head of cattle supported per plan).
 
 ---
 
@@ -163,15 +161,15 @@ Every feature implementation must strictly adhere to the TDD cycle:
 
 ### 6.2 Living Documentation & Documentation Drift Prevention
 * **Living Documentation Rules:**
-  * When adding or modifying a API endpoint, domain event, or business rule, you **MUST update the relevant markdown files** in `/docs/` during the same commit/iteration.
+  * When adding or modifying an API endpoint, domain event, or business rule, you **MUST update the relevant markdown files** in `/docs/` during the same commit/iteration.
   * Maintain executable specifications using SpecFlow / Reqnroll or self-documenting xUnit tests.
   * Keep ADRs (Architecture Decision Records) updated in `/docs/adrs/`.
 
 ### 6.3 Frontend Development & MCP Stitch Protocols
 * **Component Architecture:** All Blazor components must be modular, highly granular, and stateless where possible (smart parent / dumb child pattern).
 * **MCP Stitch Integration:** Use MCP Stitch to generate consistent, accessible HTML/CSS component structures before binding them into Blazor `.razor` components.
-* **PWA & Rural Offline First:**
-  * Maternidade, Creche, and Parto registries must be fully operational offline.
+* **PWA & Field Offline First:**
+  * Mangueiro / Curral / Pasture registries (Pesagem, Vacinação, IATF, Partos) must be fully operational offline.
   * Offline actions must be queued in `IndexedDB` and processed through a background worker once connection is restored.
 
 ---

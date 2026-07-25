@@ -16,7 +16,7 @@ public sealed class PlantelApiClient
         _jsRuntime = jsRuntime;
     }
 
-    public async Task<PlantelListResponse<SowSummaryDto>?> ListSowsAsync(string? search, ReproductiveStatus? status, CancellationToken cancellationToken = default)
+    public async Task<CattleListResponse<CowSummaryDto>?> ListCowsAsync(string? search, ReproductiveStatus? status, CancellationToken cancellationToken = default)
     {
         await AttachTokenAsync();
         var query = new List<string>();
@@ -30,14 +30,14 @@ public sealed class PlantelApiClient
             query.Add($"status={status.Value}");
         }
 
-        var url = "api/breeding/sows" + (query.Count > 0 ? "?" + string.Join('&', query) : string.Empty);
-        return await _httpClient.GetFromJsonAsync<PlantelListResponse<SowSummaryDto>>(url, cancellationToken);
+        var url = "api/breeding/cows" + (query.Count > 0 ? "?" + string.Join('&', query) : string.Empty);
+        return await _httpClient.GetFromJsonAsync<CattleListResponse<CowSummaryDto>>(url, cancellationToken);
     }
 
-    public async Task<SowDetailDto?> GetSowAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<CowDetailDto?> GetCowAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await AttachTokenAsync();
-        return await _httpClient.GetFromJsonAsync<SowDetailDto>($"api/breeding/sows/{id}", cancellationToken);
+        return await _httpClient.GetFromJsonAsync<CowDetailDto>($"api/breeding/cows/{id}", cancellationToken);
     }
 
     private async Task AttachTokenAsync()

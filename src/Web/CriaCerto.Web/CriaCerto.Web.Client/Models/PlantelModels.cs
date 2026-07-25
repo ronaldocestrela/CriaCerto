@@ -1,98 +1,92 @@
 namespace CriaCerto.Web.Client.Models;
 
-public enum LifecycleStatus
-{
-    Active = 1,
-    Quarantine = 2,
-    Culled = 3
-}
-
 public enum ReproductiveStatus
 {
-    Empty = 1,
-    Bred = 2,
-    Pregnant = 3,
-    Lactating = 4
+    Open = 1,
+    InIatfProtocol = 2,
+    Inseminated = 3,
+    Pregnant = 4,
+    Culled = 5,
+    Sold = 6
 }
 
-public enum BodyConditionScore
+public enum DiagnosisMethod
 {
-    VeryThin = 1,
-    Thin = 2,
-    Ideal = 3,
-    Fat = 4,
-    VeryFat = 5
+    Ultrasound = 1,
+    RectalPalpation = 2
 }
 
-public sealed record PlantelListResponse<TAnimal>(List<TAnimal> Items, int TotalCount, int Page, int PageSize);
+public enum CalvingType
+{
+    Normal = 1,
+    Dystocic = 2,
+    Cesarean = 3
+}
 
-public sealed record SowSummaryDto(
+public enum BirthCondition
+{
+    Live = 1,
+    Stillborn = 2
+}
+
+public sealed record CattleListResponse<TAnimal>(List<TAnimal> Items, int TotalCount, int Page, int PageSize);
+
+public sealed record CowSummaryDto(
     Guid Id,
-    string TagId,
-    string? Nickname,
+    string EarTag,
+    string? SisbovId,
+    string? RfidTag,
     string Breed,
-    ReproductiveStatus ReproductiveStatus,
-    LifecycleStatus LifecycleStatus,
-    int Parity,
-    int DnpDays,
-    string? LastEventName,
-    DateOnly? LastEventDate,
-    string? Location,
-    bool RequiresAttention);
+    ReproductiveStatus Status,
+    int ParityCount,
+    DateTime? LastCalvingDate,
+    double? IepMonths);
 
-public sealed record BoarSummaryDto(
+public sealed record CowDetailDto(
     Guid Id,
-    string TagId,
-    string? Nickname,
+    string EarTag,
+    string? SisbovId,
+    string? RfidTag,
+    string? Tattoo,
     string Breed,
-    LifecycleStatus LifecycleStatus,
-    decimal CurrentWeightKg,
-    string? LastEventName,
-    DateOnly? LastEventDate,
-    string? Location,
-    bool RequiresAttention);
+    DateTime BirthDate,
+    ReproductiveStatus Status,
+    int ParityCount,
+    DateTime? LastCalvingDate,
+    double? IepMonths,
+    int? OpenDays);
 
-public sealed record PlantelEventDto(string EventType, string Title, DateOnly EventDate, string? Notes);
-
-public sealed record SowDetailDto(
+public sealed record BullSummaryDto(
     Guid Id,
-    string TagId,
-    string? Nickname,
-    string? PbbRegistration,
+    string EarTag,
+    string Name,
     string Breed,
-    string? Origin,
-    DateOnly? BirthDate,
-    DateOnly EntryDate,
-    decimal EntryWeightKg,
-    decimal CurrentWeightKg,
-    decimal? AverageDailyGain,
-    string? FatherTagId,
-    string? MotherTagId,
-    BodyConditionScore BodyConditionScore,
-    int Parity,
-    int DnpDays,
-    ReproductiveStatus ReproductiveStatus,
-    LifecycleStatus LifecycleStatus,
-    string? Location,
-    bool RequiresAttention,
-    List<PlantelEventDto> Events);
+    string? RegistryNumber,
+    bool IsActive);
 
-public sealed record BoarDetailDto(
+public sealed record IatfProtocolDto(
     Guid Id,
-    string TagId,
-    string? Nickname,
-    string? PbbRegistration,
-    string Breed,
-    string? Origin,
-    DateOnly? BirthDate,
-    DateOnly EntryDate,
-    decimal EntryWeightKg,
-    decimal CurrentWeightKg,
-    decimal? AverageDailyGain,
-    string? FatherTagId,
-    string? MotherTagId,
-    BodyConditionScore BodyConditionScore,
-    LifecycleStatus LifecycleStatus,
-    string? Location,
-    bool RequiresAttention,
-    List<PlantelEventDto> Events);
+    string Name,
+    DateTime StartDate,
+    DateTime InseminationDate,
+    Guid SemenBatchId,
+    int CowCount);
+
+public sealed record CalvingDto(
+    Guid Id,
+    Guid MotherCowId,
+    DateTime CalvingDate,
+    CalvingType Type,
+    Guid CalfId,
+    string CalfTagId,
+    BirthCondition Condition);
+
+public sealed record WeaningDto(
+    Guid Id,
+    Guid CalfId,
+    string CalfTagId,
+    Guid MotherCowId,
+    DateTime WeaningDate,
+    decimal WeaningWeightKg,
+    decimal Adjusted205DayWeightKg,
+    Guid? DestinationLotId);

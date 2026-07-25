@@ -7,9 +7,9 @@ public static class ModuleLicenseChecker
 {
     private static readonly Dictionary<string, HashSet<string>> PlanAccess = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "Starter", new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Breeding", "Maternity", "Tenancy" } },
-        { "Pro", new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Breeding", "Maternity", "Tenancy", "Nutrition" } },
-        { "Enterprise", new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Breeding", "Maternity", "Tenancy", "Nutrition", "Sanitary" } }
+        { "Starter", new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Breeding", "Calving", "Tenancy" } },
+        { "Pro", new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Breeding", "Calving", "Tenancy", "Nutrition" } },
+        { "Enterprise", new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Breeding", "Calving", "Tenancy", "Nutrition", "Sanitary", "Feedlot" } }
     };
 
     public static bool HasAccess(string plan, string module)

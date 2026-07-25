@@ -3,20 +3,15 @@ using CriaCerto.BuildingBlocks.Application;
 using CriaCerto.BuildingBlocks.Abstractions.Results;
 using CriaCerto.BuildingBlocks.Infrastructure;
 using CriaCerto.BuildingBlocks.Infrastructure.Persistence;
-using CriaCerto.Modules.Breeding.Application;
 using CriaCerto.Modules.Breeding.Application.Domain;
 using CriaCerto.Modules.Breeding.Application.Contracts;
 using CriaCerto.Modules.Breeding.Application.Features.Plantel;
 using CriaCerto.Modules.Breeding.Application.Features.BreedingOps;
 using CriaCerto.Modules.Breeding.Infrastructure;
 using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
-using CriaCerto.Modules.Maternity.Application;
-using CriaCerto.Modules.Maternity.Application.Features.Farrowing;
-using CriaCerto.Modules.Maternity.Application.Features.CrossFostering;
-using CriaCerto.Modules.Maternity.Application.Features.Weaning;
-using CriaCerto.Modules.Maternity.Application.Features.Metrics;
-using CriaCerto.Modules.Maternity.Infrastructure;
-using CriaCerto.Modules.Maternity.Infrastructure.Persistence;
+using CriaCerto.Modules.Calving.Application.Contracts;
+using CriaCerto.Modules.Calving.Infrastructure;
+using CriaCerto.Modules.Calving.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
@@ -34,18 +29,18 @@ builder.Services.AddOpenApi();
 // Register Assemblies for MediatR and Validation discovery
 builder.Services.AddBuildingBlocksApplication(
     typeof(Program).Assembly,
-    typeof(BreedingAssemblyMarker).Assembly,
-    typeof(MaternityAssemblyMarker).Assembly,
+    typeof(CriaCerto.Modules.Breeding.Application.BreedingAssemblyMarker).Assembly,
+    typeof(CriaCerto.Modules.Calving.Application.Contracts.CalvingDto).Assembly,
     typeof(TenancyAssemblyMarker).Assembly);
 
 var connectionString = builder.Configuration.GetConnectionString("SqlServer")
     ?? "Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=CriaCerto@123;TrustServerCertificate=True;Encrypt=False";
 
-// Register Building Blocks and Tenancy Infrastructure
+// Register Building Blocks and Infrastructure
 builder.Services.AddBuildingBlocksInfrastructure(connectionString);
 builder.Services.AddTenancyInfrastructure(builder.Configuration);
 builder.Services.AddBreedingInfrastructure();
-builder.Services.AddMaternityInfrastructure();
+builder.Services.AddCalvingInfrastructure();
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
@@ -100,158 +95,62 @@ app.MapPost("/api/auth/select-tenant", async (SelectTenantCommand command, ISend
         : Results.Json(result.Error, statusCode: 400);
 });
 
+// Cattle Breeding Endpoints
 var breeding = app.MapGroup("/api/breeding")
     .RequireAuthorization()
     .WithTags("Breeding");
 
-breeding.MapGet("/sows", async (
+breeding.MapGet("/cows", async (
     ISender sender,
     string? search,
     ReproductiveStatus? status,
     int page = 1,
     int pageSize = 25) =>
 {
-    var result = await sender.Send(new ListSowsQuery(search, status, page, pageSize));
+    var result = await sender.Send(new ListCowsQuery(search, status, page, pageSize));
     return ToHttpResult(result);
 });
 
-breeding.MapPost("/sows", async (CreateSowCommand command, ISender sender) =>
+breeding.MapPost("/cows", async (CreateCowCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);
     return ToHttpResult(result, StatusCodes.Status201Created);
 });
 
-breeding.MapGet("/sows/{id:guid}", async (Guid id, ISender sender) =>
+breeding.MapGet("/cows/{id:guid}", async (Guid id, ISender sender) =>
 {
-    var result = await sender.Send(new GetSowQuery(id));
+    var result = await sender.Send(new GetCowQuery(id));
     return ToHttpResult(result);
 });
 
-breeding.MapPut("/sows/{id:guid}", async (Guid id, UpdateSowCommand command, ISender sender) =>
-{
-    var result = await sender.Send(command with { Id = id });
-    return ToHttpResult(result);
-});
-
-breeding.MapPost("/sows/{id:guid}/status", async (Guid id, ChangeLifecycleStatusRequest request, ISender sender) =>
-{
-    var result = await sender.Send(new ChangeSowStatusCommand(id, request.Status, request.EventDate, request.Notes));
-    return ToHttpResult(result);
-});
-
-breeding.MapGet("/boars", async (
-    ISender sender,
-    string? search,
-    int page = 1,
-    int pageSize = 25) =>
-{
-    var result = await sender.Send(new ListBoarsQuery(search, page, pageSize));
-    return ToHttpResult(result);
-});
-
-breeding.MapPost("/boars", async (CreateBoarCommand command, ISender sender) =>
+breeding.MapPost("/iatf-protocols", async (RegisterIatfProtocolCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);
     return ToHttpResult(result, StatusCodes.Status201Created);
 });
 
-breeding.MapGet("/boars/{id:guid}", async (Guid id, ISender sender) =>
+breeding.MapPost("/diagnoses", async (RegisterPregnancyDiagnosisCommand command, ISender sender) =>
 {
-    var result = await sender.Send(new GetBoarQuery(id));
-    return ToHttpResult(result);
-});
-
-breeding.MapPut("/boars/{id:guid}", async (Guid id, UpdateBoarCommand command, ISender sender) =>
-{
-    var result = await sender.Send(command with { Id = id });
-    return ToHttpResult(result);
-});
-
-breeding.MapPost("/boars/{id:guid}/status", async (Guid id, ChangeLifecycleStatusRequest request, ISender sender) =>
-{
-    var result = await sender.Send(new ChangeBoarStatusCommand(id, request.Status, request.EventDate, request.Notes));
-    return ToHttpResult(result);
-});
-
-breeding.MapPost("/events/batch", async (RegisterBreedingBatchRequest request, ISender sender) =>
-{
-    var result = await sender.Send(new RegisterBreedingBatchCommand(request.EventDate, request.Lines));
+    var result = await sender.Send(command);
     return ToHttpResult(result, StatusCodes.Status201Created);
 });
 
-breeding.MapPost("/diagnoses", async (RegisterPregnancyDiagnosisRequest request, ISender sender) =>
-{
-    var result = await sender.Send(new RegisterPregnancyDiagnosisCommand(
-        request.SowId,
-        request.DiagnosisDate,
-        request.Method,
-        request.Result,
-        request.Notes));
-    return ToHttpResult(result, StatusCodes.Status201Created);
-});
-
-breeding.MapGet("/pregnancy-checks", async (
-    ISender sender,
-    string? search,
-    int page = 1,
-    int pageSize = 25) =>
-{
-    var result = await sender.Send(new ListPregnancyCheckTasksQuery(search, page, pageSize));
-    return ToHttpResult(result);
-});
-
-var maternity = app.MapGroup("/api/maternity")
+// Calving & Nursery Endpoints
+var calving = app.MapGroup("/api/calving")
     .RequireAuthorization()
-    .WithTags("Maternity");
+    .WithTags("Calving");
 
-maternity.MapPost("/farrowings", async (RegisterFarrowingCommand command, ISender sender) =>
+calving.MapPost("/calvings", async (RegisterCalvingCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);
     return ToHttpResult(result, StatusCodes.Status201Created);
 });
 
-maternity.MapGet("/farrowings/{id:guid}", async (Guid id, ISender sender) =>
-{
-    var result = await sender.Send(new GetFarrowingByIdQuery(id));
-    return ToHttpResult(result);
-});
-
-maternity.MapGet("/farrowings", async (Guid? sowId, string? maternityRoomId, ISender sender) =>
-{
-    var result = await sender.Send(new ListFarrowingsQuery(sowId, maternityRoomId));
-    return ToHttpResult(result);
-});
-
-maternity.MapPost("/transfers", async (TransferPigletCommand command, ISender sender) =>
+calving.MapPost("/weanings", async (RegisterWeaningCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);
     return ToHttpResult(result, StatusCodes.Status201Created);
 });
-
-maternity.MapGet("/transfers", async (Guid? farrowingId, ISender sender) =>
-{
-    var result = await sender.Send(new ListPigletTransfersQuery(farrowingId));
-    return ToHttpResult(result);
-});
-
-maternity.MapPost("/weanings", async (RegisterWeaningCommand command, ISender sender) =>
-{
-    var result = await sender.Send(command);
-    return ToHttpResult(result, StatusCodes.Status201Created);
-});
-
-maternity.MapGet("/weanings", async (Guid? sowId, ISender sender) =>
-{
-    var result = await sender.Send(new ListWeaningsQuery(sowId));
-    return ToHttpResult(result);
-});
-
-maternity.MapGet("/metrics", async (DateTime? startDate, DateTime? endDate, ISender sender) =>
-{
-    var result = await sender.Send(new GetMaternityMetricsQuery(startDate, endDate));
-    return ToHttpResult(result);
-});
-
 
 app.Run();
 
@@ -266,7 +165,7 @@ static void ApplyMigrations(WebApplication app)
         scope.ServiceProvider.GetRequiredService<FoundationDbContext>(),
         scope.ServiceProvider.GetRequiredService<TenancyDbContext>(),
         scope.ServiceProvider.GetRequiredService<BreedingDbContext>(),
-        scope.ServiceProvider.GetRequiredService<MaternityDbContext>()
+        scope.ServiceProvider.GetRequiredService<CalvingDbContext>()
     };
 
     foreach (var dbContext in dbContexts)
@@ -304,5 +203,3 @@ static int ToStatusCode(ErrorType errorType) => errorType switch
     ErrorType.Unauthorized => StatusCodes.Status403Forbidden,
     _ => StatusCodes.Status400BadRequest
 };
-
-public sealed record ChangeLifecycleStatusRequest(LifecycleStatus Status, DateOnly EventDate, string? Notes);

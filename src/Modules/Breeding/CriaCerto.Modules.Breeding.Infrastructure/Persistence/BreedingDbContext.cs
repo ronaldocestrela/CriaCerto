@@ -11,105 +11,65 @@ public sealed class BreedingDbContext : DbContext, IBreedingDbContext
     {
     }
 
-    public DbSet<Sow> Sows => Set<Sow>();
-    public DbSet<Boar> Boars => Set<Boar>();
-    public DbSet<BreedingEvent> BreedingEvents => Set<BreedingEvent>();
+    public DbSet<Cow> Cows => Set<Cow>();
+    public DbSet<Bull> Bulls => Set<Bull>();
+    public DbSet<SemenBatch> SemenBatches => Set<SemenBatch>();
+    public DbSet<IatfProtocol> IatfProtocols => Set<IatfProtocol>();
     public DbSet<PregnancyDiagnosis> PregnancyDiagnoses => Set<PregnancyDiagnosis>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("breeding");
 
-        modelBuilder.Entity<Sow>(builder =>
+        modelBuilder.Entity<Cow>(builder =>
         {
-            builder.ToTable("Sows");
-            builder.HasKey(s => s.Id);
-            builder.HasIndex(s => s.TagId).IsUnique();
-            builder.Property(s => s.TagId).HasMaxLength(40).IsRequired();
-            builder.Property(s => s.Nickname).HasMaxLength(100);
-            builder.Property(s => s.PbbRegistration).HasMaxLength(80);
-            builder.Property(s => s.Breed).HasMaxLength(120).IsRequired();
-            builder.Property(s => s.Origin).HasMaxLength(120);
-            builder.Property(s => s.FatherTagId).HasMaxLength(40);
-            builder.Property(s => s.MotherTagId).HasMaxLength(40);
-            builder.Property(s => s.Location).HasMaxLength(120);
-            builder.Property(s => s.LastEventName).HasMaxLength(120);
-            builder.Property(s => s.EntryWeightKg).HasPrecision(8, 2);
-            builder.Property(s => s.CurrentWeightKg).HasPrecision(8, 2);
-            builder.Property(s => s.AverageDailyGain).HasPrecision(8, 3);
-            builder.Property(s => s.BodyConditionScore).HasConversion<string>().HasMaxLength(30);
-            builder.Property(s => s.ReproductiveStatus).HasConversion<string>().HasMaxLength(30);
-            builder.Property(s => s.LifecycleStatus).HasConversion<string>().HasMaxLength(30);
-            builder.Ignore(s => s.RequiresAttention);
-            builder.Navigation(s => s.Events).HasField("_events").UsePropertyAccessMode(PropertyAccessMode.Field);
-
-            builder.OwnsMany(s => s.Events, eventsBuilder =>
-            {
-                eventsBuilder.ToTable("SowEvents");
-                eventsBuilder.WithOwner().HasForeignKey("SowId");
-                eventsBuilder.HasKey(e => e.Id);
-                eventsBuilder.Property(e => e.EventType).HasMaxLength(80).IsRequired();
-                eventsBuilder.Property(e => e.Title).HasMaxLength(160).IsRequired();
-                eventsBuilder.Property(e => e.Notes).HasMaxLength(500);
-            });
+            builder.ToTable("Cows");
+            builder.HasKey(c => c.Id);
+            builder.HasIndex(c => c.EarTag);
+            builder.Property(c => c.EarTag).HasMaxLength(50).IsRequired();
+            builder.Property(c => c.SisbovId).HasMaxLength(50);
+            builder.Property(c => c.RfidTag).HasMaxLength(50);
+            builder.Property(c => c.Tattoo).HasMaxLength(50);
+            builder.Property(c => c.Breed).HasMaxLength(100).IsRequired();
+            builder.Property(c => c.Status).HasConversion<string>().HasMaxLength(40);
         });
 
-        modelBuilder.Entity<Boar>(builder =>
+        modelBuilder.Entity<Bull>(builder =>
         {
-            builder.ToTable("Boars");
+            builder.ToTable("Bulls");
             builder.HasKey(b => b.Id);
-            builder.HasIndex(b => b.TagId).IsUnique();
-            builder.Property(b => b.TagId).HasMaxLength(40).IsRequired();
-            builder.Property(b => b.Nickname).HasMaxLength(100);
-            builder.Property(b => b.PbbRegistration).HasMaxLength(80);
-            builder.Property(b => b.Breed).HasMaxLength(120).IsRequired();
-            builder.Property(b => b.Origin).HasMaxLength(120);
-            builder.Property(b => b.FatherTagId).HasMaxLength(40);
-            builder.Property(b => b.MotherTagId).HasMaxLength(40);
-            builder.Property(b => b.Location).HasMaxLength(120);
-            builder.Property(b => b.LastEventName).HasMaxLength(120);
-            builder.Property(b => b.EntryWeightKg).HasPrecision(8, 2);
-            builder.Property(b => b.CurrentWeightKg).HasPrecision(8, 2);
-            builder.Property(b => b.AverageDailyGain).HasPrecision(8, 3);
-            builder.Property(b => b.BodyConditionScore).HasConversion<string>().HasMaxLength(30);
-            builder.Property(b => b.LifecycleStatus).HasConversion<string>().HasMaxLength(30);
-            builder.Ignore(b => b.RequiresAttention);
-            builder.Navigation(b => b.Events).HasField("_events").UsePropertyAccessMode(PropertyAccessMode.Field);
-
-            builder.OwnsMany(b => b.Events, eventsBuilder =>
-            {
-                eventsBuilder.ToTable("BoarEvents");
-                eventsBuilder.WithOwner().HasForeignKey("BoarId");
-                eventsBuilder.HasKey(e => e.Id);
-                eventsBuilder.Property(e => e.EventType).HasMaxLength(80).IsRequired();
-                eventsBuilder.Property(e => e.Title).HasMaxLength(160).IsRequired();
-                eventsBuilder.Property(e => e.Notes).HasMaxLength(500);
-            });
+            builder.HasIndex(b => b.EarTag);
+            builder.Property(b => b.EarTag).HasMaxLength(50).IsRequired();
+            builder.Property(b => b.Name).HasMaxLength(100).IsRequired();
+            builder.Property(b => b.Breed).HasMaxLength(100).IsRequired();
+            builder.Property(b => b.RegistryNumber).HasMaxLength(50);
         });
 
-        modelBuilder.Entity<BreedingEvent>(builder =>
+        modelBuilder.Entity<SemenBatch>(builder =>
         {
-            builder.ToTable("BreedingEvents");
-            builder.HasKey(e => e.Id);
-            builder.HasIndex(e => e.SowId);
-            builder.HasIndex(e => e.EventDate);
-            builder.Property(e => e.BoarOrSemenRef).HasMaxLength(80);
-            builder.Property(e => e.Technician).HasMaxLength(120);
-            builder.Property(e => e.Location).HasMaxLength(120);
-            builder.Property(e => e.Notes).HasMaxLength(500);
-            builder.Property(e => e.Method).HasConversion<string>().HasMaxLength(40);
-            builder.Property(e => e.BodyConditionScoreAtBreeding).HasConversion<string>().HasMaxLength(30);
+            builder.ToTable("SemenBatches");
+            builder.HasKey(s => s.Id);
+            builder.HasIndex(s => s.BatchCode);
+            builder.Property(s => s.BatchCode).HasMaxLength(50).IsRequired();
+            builder.Property(s => s.BullName).HasMaxLength(100).IsRequired();
+            builder.Property(s => s.Breed).HasMaxLength(100).IsRequired();
+            builder.Property(s => s.Type).HasConversion<string>().HasMaxLength(40);
+        });
+
+        modelBuilder.Entity<IatfProtocol>(builder =>
+        {
+            builder.ToTable("IatfProtocols");
+            builder.HasKey(p => p.Id);
+            builder.Property(p => p.Name).HasMaxLength(150).IsRequired();
         });
 
         modelBuilder.Entity<PregnancyDiagnosis>(builder =>
         {
             builder.ToTable("PregnancyDiagnoses");
             builder.HasKey(d => d.Id);
-            builder.HasIndex(d => d.SowId);
-            builder.HasIndex(d => d.DiagnosisDate);
-            builder.Property(d => d.Notes).HasMaxLength(500);
+            builder.HasIndex(d => d.CowId);
             builder.Property(d => d.Method).HasConversion<string>().HasMaxLength(40);
-            builder.Property(d => d.Result).HasConversion<string>().HasMaxLength(40);
+            builder.Property(d => d.Notes).HasMaxLength(500);
         });
     }
 }
