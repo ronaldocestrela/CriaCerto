@@ -525,9 +525,31 @@ analytics.MapGet("/executive-scorecard", async (
     return ToHttpResult(result);
 });
 
+analytics.MapPost("/export", async (ExportBovineReportQuery query, ISender sender) =>
+{
+    var result = await sender.Send(query);
+    if (result.IsSuccess)
+    {
+        return Results.File(
+            fileContents: result.Value.FileContents,
+            contentType: result.Value.ContentType,
+            fileDownloadName: result.Value.FileName);
+    }
+
+    return ToHttpResult(result);
+});
+
 analytics.MapPost("/export-csv", async (ExecutiveScorecardDto scorecard, ISender sender) =>
 {
     var result = await sender.Send(new ExportBovineReportQuery(scorecard));
+    if (result.IsSuccess)
+    {
+        return Results.File(
+            fileContents: result.Value.FileContents,
+            contentType: result.Value.ContentType,
+            fileDownloadName: result.Value.FileName);
+    }
+
     return ToHttpResult(result);
 });
 

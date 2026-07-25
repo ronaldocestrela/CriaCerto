@@ -1,5 +1,6 @@
 @page "/analytics/executive-dashboard"
 @using CriaCerto.Modules.Analytics.Application.Contracts
+@using CriaCerto.Web.Client.Components.Analytics
 @attribute [Authorize]
 
 <PageTitle>Dashboard Executivo Zootécnico | CriaCerto</PageTitle>
@@ -12,8 +13,8 @@
             </h3>
             <p class="text-muted mb-0">Consolidação multi-fazenda de reprodução, desmame, ganho de peso, lotação de pastos e custos por arroba (@@).</p>
         </div>
-        <button class="btn btn-outline-dark shadow-sm" @onclick="ExportReport">
-            <i class="bi bi-download me-1"></i> Exportar Relatório Executivo (CSV)
+        <button class="btn btn-dark shadow-sm px-3 fw-bold" @onclick="() => showExportModal = true">
+            <i class="bi bi-download me-2"></i> Exportar Relatórios (CSV / Excel / PDF)
         </button>
     </div>
 
@@ -132,7 +133,14 @@
     </div>
 </div>
 
+@if (showExportModal)
+{
+    <ExportReportModal Scorecard="@scorecard" OnClose="() => showExportModal = false" />
+}
+
 @code {
+    private bool showExportModal = false;
+
     private ExecutiveScorecardDto scorecard = new ExecutiveScorecardDto(
         PregnancyRatePercentage: 83.5m,
         WeaningRatePercentage: 79.2m,
@@ -141,9 +149,5 @@
         CostPerArrobaProduced: 182.00m,
         AnimalsUnderSlaughterWithdrawal: 4,
         OverallHealthStatus: "Ótimo");
-
-    private void ExportReport()
-    {
-        // Export logic
-    }
 }
+

@@ -56,4 +56,79 @@ public class ExecutiveAnalyticsTests
         csvContent.Should().Contain("Taxa de Lotação (UA/ha),1.6");
         csvContent.Should().Contain("Animais em Carência Sanitária,5");
     }
+
+    [Fact]
+    public async Task Handle_ExportQuery_WithExcelFormat_ShouldReturnExcelFileContent()
+    {
+        // Arrange
+        var scorecard = new ExecutiveScorecardDto(80m, 75m, 1.5m, 0.85m, 180m, 0, "Excelente");
+        var query = new ExportBovineReportQuery(
+            Scorecard: scorecard,
+            ReportType: ReportTypeEnum.HerdInventory,
+            Format: ReportFormatEnum.Excel);
+
+        var handler = new ExportBovineReportQueryHandler();
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        result.Value.FileName.Should().Contain("criacerto_inventario_rebanho_");
+        result.Value.FileName.Should().EndWith(".xlsx");
+
+        string excelString = System.Text.Encoding.UTF8.GetString(result.Value.FileContents);
+        excelString.Should().Contain("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        excelString.Should().Contain("<Data ss:Type=\"String\">Categoria</Data>");
+        excelString.Should().Contain("<Data ss:Type=\"String\">Quantidade</Data>");
+    }
+
+    [Fact]
+    public async Task Handle_ExportQuery_WithPdfFormat_ShouldReturnPdfFileContent()
+    {
+        // Arrange
+        var scorecard = new ExecutiveScorecardDto(80m, 75m, 1.5m, 0.85m, 180m, 0, "Excelente");
+        var query = new ExportBovineReportQuery(
+            Scorecard: scorecard,
+            ReportType: ReportTypeEnum.GtaSupport,
+            Format: ReportFormatEnum.Pdf);
+
+        var handler = new ExportBovineReportQueryHandler();
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.ContentType.Should().Be("application/pdf");
+        result.Value.FileName.Should().Contain("criacerto_suporte_gta_");
+        result.Value.FileName.Should().EndWith(".pdf");
+
+        string pdfHeader = System.Text.Encoding.UTF8.GetString(result.Value.FileContents, 0, 8);
+        pdfHeader.Should().Be("%PDF-1.4");
+    }
+
+    [Fact]
+    public async Task Handle_ExportQuery_WithInvalidCustomDateRange_ShouldReturnValidationError()
+    {
+        // Arrange
+        var scorecard = new ExecutiveScorecardDto(80m, 75m, 1.5m, 0.85m, 180m, 0, "Excelente");
+        var query = new ExportBovineReportQuery(
+            Scorecard: scorecard,
+            PeriodType: PeriodTypeEnum.CustomRange,
+            StartDate: DateTime.UtcNow.AddDays(5),
+            EndDate: DateTime.UtcNow);
+
+        var handler = new ExportBovineReportQueryHandler();
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Analytics.InvalidPeriod");
+        result.Error.Message.Should().Contain("A data inicial do relatório não pode ser posterior à data final");
+    }
 }
+

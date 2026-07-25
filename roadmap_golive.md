@@ -134,7 +134,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Teste unitário e de integração garantindo que o despacho para abate seja rejeitado com `Result.Failure(Error.Validation)` para animais medicados.
 
-#### Sub-fase 3.4: Relatórios Executivos & Exportação de Dados (GTA/Inventário)
+#### Sub-fase 3.4: Relatórios Executivos & Exportação de Dados (GTA/Inventário) [CONCLUÍDA]
 * **Backend:**
   * Endpoint `ExportBovineReportQuery` gerando arquivos CSV, Excel e PDF estilizado para inventário de rebanho e relatórios de suporte à emissão de GTA.
 * **Frontend:**
