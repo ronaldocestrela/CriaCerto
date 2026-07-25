@@ -114,7 +114,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Testes unitários cobrindo validação de brincos duplicados dentro do mesmo Tenant.
 
-#### Sub-fase 3.2: Importação de Balanças de Curral & Análise de GPD
+#### Sub-fase 3.2: Importação de Balanças de Curral & Análise de GPD [CONCLUÍDA]
 * **Backend:**
   * `ImportWeighingFileCommand` (parser para arquivos de balança Tru-Test, Coimma, Toledo em formato CSV/TXT).
   * Serviço de cálculo e alerta de perda de peso (GPD negativo em 2 pesagens consecutivas).

@@ -18,7 +18,10 @@
                 <i class="bi bi-wifi-off text-warning me-2 fs-6"></i>
                 IndexedDB Cache Off-line Ativo
             </span>
-            <button class="btn btn-outline-success" @onclick="ClearSession">
+            <button class="btn btn-outline-success" @onclick="OpenImportModal">
+                <i class="bi bi-file-earmark-excel me-1"></i> Importar Balança
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="ClearSession">
                 <i class="bi bi-arrow-counterclockwise me-1"></i> Nova Sessão
             </button>
         </div>
@@ -156,6 +159,75 @@
     </div>
 </div>
 
+<!-- Modal Importação de Balança Eletrônica -->
+@if (showImportModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-cloud-arrow-up me-2"></i>Importar Arquivo de Balança Eletrônica
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseImportModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Modelo da Balança</label>
+                        <select class="form-select" @bind="selectedScaleModel">
+                            <option value="0">Detecção Automática / CSV Genérico</option>
+                            <option value="1">Tru-Test (CSV / TXT)</option>
+                            <option value="2">Coimma (TXT / CSV)</option>
+                            <option value="3">Toledo (CSV / TXT)</option>
+                            <option value="4">CriaCerto CSV Padrão</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Arquivo de Pesagem (.csv, .txt)</label>
+                        <InputFile OnChange="HandleFileSelected" class="form-control" accept=".csv,.txt" />
+                        @if (!string.IsNullOrEmpty(selectedFileName))
+                        {
+                            <div class="form-text text-success font-monospace mt-1">
+                                <i class="bi bi-file-check me-1"></i>Arquivo selecionado: <strong>@selectedFileName</strong> (@(selectedFileBytes?.Length ?? 0) bytes)
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(importErrorMessage))
+                    {
+                        <div class="alert alert-danger py-2 small mb-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>@importErrorMessage
+                        </div>
+                    }
+
+                    @if (importedSuccessfully)
+                    {
+                        <div class="alert alert-success py-2 small mb-3">
+                            <i class="bi bi-check-circle me-1"></i>Arquivo de pesagem importado com sucesso para a sessão atual!
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseImportModal">Fechar</button>
+                    <button type="button" class="btn btn-success fw-bold" @onclick="ProcessImportFile" disabled="@(selectedFileBytes == null || isImporting)">
+                        @if (isImporting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Importando...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-upload me-1"></i>
+                            <span>Processar & Importar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private string currentTag = string.Empty;
     private decimal currentWeight = 0.0m;
@@ -164,6 +236,103 @@
 
     private List<SessionWeighingItem> sessionWeighings = new();
     private List<GpdTrendChart.WeighingPointModel> chartPoints = new();
+
+    private bool showImportModal = false;
+    private int selectedScaleModel = 0;
+    private string selectedFileName = string.Empty;
+    private byte[]? selectedFileBytes;
+    private bool isImporting = false;
+    private string? importErrorMessage;
+    private bool importedSuccessfully = false;
+
+    private void OpenImportModal()
+    {
+        showImportModal = true;
+        importErrorMessage = null;
+        importedSuccessfully = false;
+    }
+
+    private void CloseImportModal()
+    {
+        showImportModal = false;
+        selectedFileName = string.Empty;
+        selectedFileBytes = null;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            selectedFileName = file.Name;
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            selectedFileBytes = ms.ToArray();
+            importErrorMessage = null;
+        }
+    }
+
+    private void ProcessImportFile()
+    {
+        if (selectedFileBytes == null || selectedFileBytes.Length == 0) return;
+
+        isImporting = true;
+        importErrorMessage = null;
+
+        try
+        {
+            string fileText = System.Text.Encoding.UTF8.GetString(selectedFileBytes);
+            var lines = fileText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            int importedCount = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (i == 0 && (lines[i].ToLower().Contains("tag") || lines[i].ToLower().Contains("brinco") || lines[i].ToLower().Contains("vid") || lines[i].ToLower().Contains("peso")))
+                    continue;
+
+                char delimiter = lines[i].Contains(';') ? ';' : (lines[i].Contains('\t') ? '\t' : ',');
+                var parts = lines[i].Split(delimiter, StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2)
+                {
+                    string tag = parts[0].Trim().ToUpper();
+                    string weightStr = parts[1].Replace(",", ".").Trim();
+                    if (decimal.TryParse(weightStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal weight) && weight > 0)
+                    {
+                        decimal yield = 50.0m;
+                        if (parts.Length >= 3 && decimal.TryParse(parts[2].Replace("%", "").Replace(",", ".").Trim(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal customYield))
+                        {
+                            yield = customYield;
+                        }
+
+                        decimal arrobas = Math.Round((weight * (yield / 100.0m)) / 15.0m, 2);
+
+                        sessionWeighings.Insert(0, new SessionWeighingItem
+                        {
+                            AnimalTagId = tag,
+                            WeightKg = weight,
+                            CarcassYieldPercentage = yield,
+                            CalculatedArrobasTotal = arrobas,
+                            IsWeightLossWarning = false,
+                            Notes = $"Importado do arquivo {selectedFileName}"
+                        });
+                        importedCount++;
+                    }
+                }
+            }
+
+            UpdateChartPoints();
+            importedSuccessfully = true;
+        }
+        catch (Exception ex)
+        {
+            importErrorMessage = $"Erro ao processar o arquivo: {ex.Message}";
+        }
+        finally
+        {
+            isImporting = false;
+        }
+    }
 
     private void OnTagKeyUp(KeyboardEventArgs e)
     {

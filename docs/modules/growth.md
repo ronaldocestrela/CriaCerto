@@ -35,6 +35,14 @@ The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), an
 * **Monthly Arroba Gain (GPD em @/mês):**
   $$\text{GPD (@/mês)} = \frac{\text{GPD (kg/dia)} \times 30.0\text{ dias} \times (\text{Rendimento Carcaça \%} / 100)}{15.0\text{ kg/@}}$$
 * **Weight Loss Warning (`IsWeightLossWarning`):** Triggered automatically when current weight is less than the previous recorded weight ($\text{GPD} < 0$).
+* **Consecutive Weight Loss Anomaly (`WeightLossAnomalyService`):** Flags critical anomaly when an animal records 2 consecutive weighings with negative GPD ($\text{GPD} < 0$).
+
+### 2.5 Scale File Import & Formats (`IWeighingScaleFileParser`)
+Supported Electronic Scale Export File Formats:
+* **Tru-Test:** CSV/TXT with headers (`VID`/`Tag`, `Weight`, `Date`).
+* **Coimma:** TXT/CSV with semicolon delimiters (`Brinco`, `Peso`, `Data`).
+* **Toledo:** CSV with headers (`TAG`, `PESO`, `DATA_PESAGEM`).
+* **Generic CSV / Auto-Detect:** Flexible CSV header mapping (`Brinco`, `Peso`, `Data`, `Rendimento`).
 
 ---
 
@@ -47,6 +55,8 @@ The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), an
 * `POST /api/growth/lots/{id}/close` - Close an active lot.
 * `POST /api/growth/weighings` - Record individual curral weighing.
 * `POST /api/growth/weighings/batch` - Record batch weighings for curral session.
+* `POST /api/growth/weighings/import` - Multipart upload of Tru-Test, Coimma, Toledo, or CSV scale export files.
+* `GET /api/growth/weighings/anomalies` - List animals with consecutive weight loss anomaly alerts.
 * `GET /api/growth/weighings/history/{animalTagId}` - Get animal weighing history & GPD progression.
 * `GET /api/growth/weighings/lot-summary/{lotId}` - Get summary metrics for a lot's latest weighings.
 * `GET /api/growth/weighings/recent` - Get recent weighings list.
@@ -55,3 +65,4 @@ The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), an
 
 ## 4. Field Offline Capability
 * Pasture lot movements and curral weighings performed in remote paddocks are cached in client `IndexedDB` when network connection is unavailable and synchronized automatically when connectivity is re-established.
+

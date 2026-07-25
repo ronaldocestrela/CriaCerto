@@ -95,3 +95,20 @@ public sealed record MoveLotToPaddockCommand(
 public sealed record CloseLotCommand(
     Guid LotId,
     Guid TenantId);
+
+public sealed record WeighingImportRowResultDto(
+    int RowNumber,
+    string AnimalTagId,
+    decimal WeightKg,
+    bool IsSuccess,
+    bool IsWeightLossAnomaly,
+    string? Message);
+
+public sealed record ImportWeighingFileResultDto(
+    string FileName,
+    int ScaleModel,
+    int TotalRowsProcessed,
+    int SuccessCount,
+    int ErrorCount,
+    int AnomaliesDetectedCount,
+    List<WeighingImportRowResultDto> RowResults);

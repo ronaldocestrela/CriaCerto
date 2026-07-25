@@ -379,6 +379,33 @@ growth.MapGet("/weighings/recent", async (Guid tenantId, Guid? lotId, int? top, 
     return ToHttpResult(result);
 });
 
+growth.MapPost("/weighings/import", async (IFormFile file, ScaleModelEnum scaleModel, Guid tenantId, Guid? lotId, DateTime? defaultWeighingDate, decimal? defaultCarcassYield, ISender sender) =>
+{
+    if (file is null || file.Length == 0)
+        return Results.BadRequest("Arquivo de balança não fornecido ou vazio.");
+
+    using var ms = new MemoryStream();
+    await file.CopyToAsync(ms);
+
+    var command = new ImportWeighingFileCommand(
+        ms.ToArray(),
+        file.FileName,
+        scaleModel,
+        tenantId,
+        lotId,
+        defaultWeighingDate ?? DateTime.UtcNow,
+        defaultCarcassYield ?? 50.0m);
+
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+}).DisableAntiforgery();
+
+growth.MapGet("/weighings/anomalies", async (Guid tenantId, Guid? lotId, ISender sender) =>
+{
+    var result = await sender.Send(new GetWeighingAnomaliesQuery(tenantId, lotId));
+    return ToHttpResult(result);
+});
+
 // Nutrition & Feed Management Endpoints
 var nutrition = app.MapGroup("/api/nutrition")
     .RequireAuthorization()

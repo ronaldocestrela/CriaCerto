@@ -74,6 +74,34 @@ public sealed class GrowthApiClient
         return null;
     }
 
+    public async Task<ImportWeighingFileResultDto?> ImportWeighingFileAsync(
+        byte[] fileBytes,
+        string fileName,
+        int scaleModel,
+        Guid tenantId,
+        Guid? lotId = null,
+        DateTime? defaultDate = null,
+        decimal defaultYield = 50.0m,
+        CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(fileBytes);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
+        content.Add(fileContent, "file", fileName);
+
+        string url = $"api/growth/weighings/import?scaleModel={scaleModel}&tenantId={tenantId}&defaultCarcassYield={defaultYield}";
+        if (lotId.HasValue) url += $"&lotId={lotId.Value}";
+        if (defaultDate.HasValue) url += $"&defaultWeighingDate={defaultDate.Value:yyyy-MM-ddTHH:mm:ss}";
+
+        var response = await _httpClient.PostAsync(url, content, cancellationToken);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<ImportWeighingFileResultDto>(cancellationToken);
+        }
+        return null;
+    }
+
     private async Task AttachTokenAsync()
     {
         var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");

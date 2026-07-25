@@ -3,6 +3,7 @@ using CriaCerto.BuildingBlocks.Application.Abstractions.Messaging;
 using CriaCerto.Modules.Growth.Application.Abstractions;
 using CriaCerto.Modules.Growth.Application.Domain;
 using CriaCerto.Modules.Growth.Application.Domain.Services;
+using CriaCerto.Modules.Growth.Application.Services.ScaleParsers;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -722,3 +723,195 @@ public sealed class GetRecentWeighingsQueryHandler : IRequestHandler<GetRecentWe
         return Result.Success(weighings.Select(RecordWeighingCommandHandler.MapToDto).ToList());
     }
 }
+
+// --- SCALE IMPORT & ANOMALIES ENUMS / DTOs / COMMANDS / HANDLERS ---
+
+public enum ScaleModelEnum
+{
+    AutoDetect = 0,
+    TruTest = 1,
+    Coimma = 2,
+    Toledo = 3,
+    GenericCsv = 4
+}
+
+public sealed record WeighingImportRowResultDto(
+    int RowNumber,
+    string AnimalTagId,
+    decimal WeightKg,
+    bool IsSuccess,
+    bool IsWeightLossAnomaly,
+    string? Message);
+
+public sealed record ImportWeighingFileResultDto(
+    string FileName,
+    ScaleModelEnum ScaleModel,
+    int TotalRowsProcessed,
+    int SuccessCount,
+    int ErrorCount,
+    int AnomaliesDetectedCount,
+    List<WeighingImportRowResultDto> RowResults);
+
+public sealed record ImportWeighingFileCommand(
+    byte[] FileContent,
+    string FileName,
+    ScaleModelEnum ScaleModel,
+    Guid TenantId,
+    Guid? LotId,
+    DateTime DefaultWeighingDate,
+    decimal DefaultCarcassYieldPercentage = Weighing.DefaultCarcassYieldPercentage) : ICommand<ImportWeighingFileResultDto>;
+
+public sealed record GetWeighingAnomaliesQuery(
+    Guid TenantId,
+    Guid? LotId = null) : IQuery<List<AnimalWeighingHistoryDto>>;
+
+public sealed class ImportWeighingFileCommandValidator : AbstractValidator<ImportWeighingFileCommand>
+{
+    public ImportWeighingFileCommandValidator()
+    {
+        RuleFor(x => x.FileContent).NotEmpty().WithMessage("O conteúdo do arquivo é obrigatório.");
+        RuleFor(x => x.FileName).NotEmpty().WithMessage("O nome do arquivo é obrigatório.");
+        RuleFor(x => x.TenantId).NotEmpty();
+        RuleFor(x => x.DefaultCarcassYieldPercentage).InclusiveBetween(Weighing.MinCarcassYieldPercentage, Weighing.MaxCarcassYieldPercentage);
+    }
+}
+
+public sealed class ImportWeighingFileCommandHandler : IRequestHandler<ImportWeighingFileCommand, Result<ImportWeighingFileResultDto>>
+{
+    private readonly IGrowthDbContext _dbContext;
+    private readonly IScaleFileParserFactory _parserFactory;
+
+    public ImportWeighingFileCommandHandler(IGrowthDbContext dbContext, IScaleFileParserFactory parserFactory)
+    {
+        _dbContext = dbContext;
+        _parserFactory = parserFactory;
+    }
+
+    public async Task<Result<ImportWeighingFileResultDto>> Handle(ImportWeighingFileCommand request, CancellationToken cancellationToken)
+    {
+        if (request.FileContent == null || request.FileContent.Length == 0)
+            return Result.Failure<ImportWeighingFileResultDto>(Error.Validation("ImportWeighing.EmptyFile", "O arquivo enviado está vazio."));
+
+        var parser = _parserFactory.GetParser(request.ScaleModel);
+        using var stream = new MemoryStream(request.FileContent);
+        var parseResult = parser.Parse(stream, request.FileName);
+
+        if (parseResult.IsFailure)
+            return Result.Failure<ImportWeighingFileResultDto>(parseResult.Error);
+
+        var parsedRows = parseResult.Value;
+        var rowResults = new List<WeighingImportRowResultDto>();
+        int successCount = 0;
+        int errorCount = 0;
+        int anomaliesCount = 0;
+
+        foreach (var row in parsedRows)
+        {
+            if (!row.IsValid)
+            {
+                errorCount++;
+                rowResults.Add(new WeighingImportRowResultDto(row.RowNumber, row.AnimalTagId, row.WeightKg, false, false, row.ErrorMessage ?? "Registro inválido no arquivo."));
+                continue;
+            }
+
+            var date = row.WeighingDate ?? request.DefaultWeighingDate;
+            var yield = row.CarcassYieldPercentage ?? request.DefaultCarcassYieldPercentage;
+
+            var weighingResult = Weighing.Create(
+                request.TenantId,
+                row.AnimalTagId,
+                request.LotId,
+                date,
+                row.WeightKg,
+                yield,
+                row.Notes);
+
+            if (weighingResult.IsFailure)
+            {
+                errorCount++;
+                rowResults.Add(new WeighingImportRowResultDto(row.RowNumber, row.AnimalTagId, row.WeightKg, false, false, weighingResult.Error.Message));
+                continue;
+            }
+
+            var weighing = weighingResult.Value;
+
+            var previousWeighing = await _dbContext.Weighings
+                .Where(w => w.TenantId == request.TenantId && w.AnimalTagId == weighing.AnimalTagId && w.WeighingDate < weighing.WeighingDate)
+                .OrderByDescending(w => w.WeighingDate)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (previousWeighing is not null)
+            {
+                weighing.ApplyPreviousWeighing(previousWeighing);
+            }
+
+            _dbContext.Weighings.Add(weighing);
+            successCount++;
+
+            // Anomaly detection check (consecutive weight loss)
+            var animalHistory = await _dbContext.Weighings
+                .Where(w => w.TenantId == request.TenantId && w.AnimalTagId == weighing.AnimalTagId)
+                .ToListAsync(cancellationToken);
+
+            animalHistory.Add(weighing);
+
+            bool isAnomaly = WeightLossAnomalyService.IsConsecutiveWeightLoss(animalHistory);
+            if (isAnomaly) anomaliesCount++;
+
+            rowResults.Add(new WeighingImportRowResultDto(row.RowNumber, weighing.AnimalTagId, weighing.WeightKg, true, isAnomaly, "Importado com sucesso."));
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(new ImportWeighingFileResultDto(
+            request.FileName,
+            parser.ScaleModel,
+            parsedRows.Count,
+            successCount,
+            errorCount,
+            anomaliesCount,
+            rowResults));
+    }
+}
+
+public sealed class GetWeighingAnomaliesQueryHandler : IRequestHandler<GetWeighingAnomaliesQuery, Result<List<AnimalWeighingHistoryDto>>>
+{
+    private readonly IGrowthDbContext _dbContext;
+
+    public GetWeighingAnomaliesQueryHandler(IGrowthDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<List<AnimalWeighingHistoryDto>>> Handle(GetWeighingAnomaliesQuery request, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Weighings.Where(w => w.TenantId == request.TenantId);
+        if (request.LotId.HasValue)
+            query = query.Where(w => w.LotId == request.LotId.Value);
+
+        var weighings = await query.ToListAsync(cancellationToken);
+        var groupedByAnimal = weighings.GroupBy(w => w.AnimalTagId);
+
+        var anomalyHistories = new List<AnimalWeighingHistoryDto>();
+
+        foreach (var group in groupedByAnimal)
+        {
+            var historyList = group.OrderByDescending(w => w.WeighingDate).ToList();
+            if (WeightLossAnomalyService.IsConsecutiveWeightLoss(historyList))
+            {
+                var dtos = historyList.Select(RecordWeighingCommandHandler.MapToDto).ToList();
+                var latest = dtos.First();
+                var validGpds = dtos.Where(d => d.CalculatedAdgKgPerDay != 0.0m).Select(d => d.CalculatedAdgKgPerDay).ToList();
+                decimal avgGpd = validGpds.Any() ? Math.Round(validGpds.Average(), 2) : 0.0m;
+
+                anomalyHistories.Add(new AnimalWeighingHistoryDto(
+                    group.Key,
+                    latest.WeightKg,
+                    latest.CalculatedArrobasTotal,
+                    avgGpd,
+                    dtos.Count,
+                    dtos));
+            }
+        }
+
+        return Result.Success(anomalyHistories);
+    }
+}
+

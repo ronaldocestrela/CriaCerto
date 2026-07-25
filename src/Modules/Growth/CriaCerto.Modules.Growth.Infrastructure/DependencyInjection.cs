@@ -22,6 +22,14 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IGrowthDbContext>(sp => sp.GetRequiredService<GrowthDbContext>());
+
+        // Scale file parsers DI
+        services.AddTransient<CriaCerto.Modules.Growth.Application.Services.ScaleParsers.IWeighingScaleFileParser, CriaCerto.Modules.Growth.Application.Services.ScaleParsers.TruTestScaleParser>();
+        services.AddTransient<CriaCerto.Modules.Growth.Application.Services.ScaleParsers.IWeighingScaleFileParser, CriaCerto.Modules.Growth.Application.Services.ScaleParsers.CoimmaScaleParser>();
+        services.AddTransient<CriaCerto.Modules.Growth.Application.Services.ScaleParsers.IWeighingScaleFileParser, CriaCerto.Modules.Growth.Application.Services.ScaleParsers.ToledoScaleParser>();
+        services.AddTransient<CriaCerto.Modules.Growth.Application.Services.ScaleParsers.IWeighingScaleFileParser, CriaCerto.Modules.Growth.Application.Services.ScaleParsers.GenericCsvScaleParser>();
+        services.AddTransient<CriaCerto.Modules.Growth.Application.Services.ScaleParsers.IScaleFileParserFactory, CriaCerto.Modules.Growth.Application.Services.ScaleParsers.ScaleFileParserFactory>();
+
         return services;
     }
 }
