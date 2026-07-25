@@ -11,6 +11,9 @@ using CriaCerto.Modules.Breeding.Application.Features.BreedingOps;
 using CriaCerto.Modules.Breeding.Infrastructure;
 using CriaCerto.Modules.Breeding.Infrastructure.Persistence;
 using CriaCerto.Modules.Maternity.Application;
+using CriaCerto.Modules.Maternity.Application.Features.Farrowing;
+using CriaCerto.Modules.Maternity.Infrastructure;
+using CriaCerto.Modules.Maternity.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
@@ -39,6 +42,7 @@ var connectionString = builder.Configuration.GetConnectionString("SqlServer")
 builder.Services.AddBuildingBlocksInfrastructure(connectionString);
 builder.Services.AddTenancyInfrastructure(builder.Configuration);
 builder.Services.AddBreedingInfrastructure();
+builder.Services.AddMaternityInfrastructure();
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
@@ -193,6 +197,28 @@ breeding.MapGet("/pregnancy-checks", async (
     return ToHttpResult(result);
 });
 
+var maternity = app.MapGroup("/api/maternity")
+    .RequireAuthorization()
+    .WithTags("Maternity");
+
+maternity.MapPost("/farrowings", async (RegisterFarrowingCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+maternity.MapGet("/farrowings/{id:guid}", async (Guid id, ISender sender) =>
+{
+    var result = await sender.Send(new GetFarrowingByIdQuery(id));
+    return ToHttpResult(result);
+});
+
+maternity.MapGet("/farrowings", async (Guid? sowId, string? maternityRoomId, ISender sender) =>
+{
+    var result = await sender.Send(new ListFarrowingsQuery(sowId, maternityRoomId));
+    return ToHttpResult(result);
+});
+
 app.Run();
 
 static void ApplyMigrations(WebApplication app)
@@ -205,7 +231,8 @@ static void ApplyMigrations(WebApplication app)
     {
         scope.ServiceProvider.GetRequiredService<FoundationDbContext>(),
         scope.ServiceProvider.GetRequiredService<TenancyDbContext>(),
-        scope.ServiceProvider.GetRequiredService<BreedingDbContext>()
+        scope.ServiceProvider.GetRequiredService<BreedingDbContext>(),
+        scope.ServiceProvider.GetRequiredService<MaternityDbContext>()
     };
 
     foreach (var dbContext in dbContexts)

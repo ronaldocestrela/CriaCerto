@@ -10,6 +10,7 @@ builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddScoped<PlantelApiClient>();
 builder.Services.AddScoped<BreedingOpsApiClient>();
+builder.Services.AddScoped<MaternityApiClient>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

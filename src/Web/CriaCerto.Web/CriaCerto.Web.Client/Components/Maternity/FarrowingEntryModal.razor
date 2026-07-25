@@ -1,0 +1,208 @@
+@using CriaCerto.Web.Client.Models
+
+@if (IsOpen)
+{
+    <div class="maternity-modal-backdrop" @onclick="Close">
+        <div class="maternity-modal-card" @onclick:stopPropagation="true">
+            <header class="maternity-modal-header">
+                <div class="modal-title">
+                    <span class="material-symbols-outlined header-icon">child_care</span>
+                    <h3>Registo de Parto</h3>
+                </div>
+                <button type="button" class="close-btn" @onclick="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+
+            <div class="maternity-modal-body">
+                <div class="form-group">
+                    <label class="form-label">ID / Brinco da Matriz *</label>
+                    <input type="text" class="form-input" @bind="_sowIdInput" placeholder="Ex: 00000000-0000-0000-0000-000000000000" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label class="form-label">Data e Hora do Parto</label>
+                        <input type="datetime-local" class="form-input" @bind="_farrowingDate" />
+                    </div>
+                    <div class="form-group half">
+                        <label class="form-label">Sala de Maternidade</label>
+                        <input type="text" class="form-input" @bind="_maternityRoomId" placeholder="Ex: Sala-01" />
+                    </div>
+                </div>
+
+                <!-- Interactive Touch Counters for Barn Operators -->
+                <div class="counters-grid">
+                    <div class="counter-card live">
+                        <div class="counter-header">
+                            <span class="material-symbols-outlined">favorite</span>
+                            <span>Nascidos Vivos</span>
+                        </div>
+                        <div class="counter-controls">
+                            <button type="button" class="touch-btn" @onclick="DecrementLiveBorn">-</button>
+                            <span class="counter-value">@_liveBorn</span>
+                            <button type="button" class="touch-btn" @onclick="IncrementLiveBorn">+</button>
+                        </div>
+                    </div>
+
+                    <div class="counter-card stillborn">
+                        <div class="counter-header">
+                            <span class="material-symbols-outlined">heart_broken</span>
+                            <span>Natimortos</span>
+                        </div>
+                        <div class="counter-controls">
+                            <button type="button" class="touch-btn" @onclick="DecrementStillborn">-</button>
+                            <span class="counter-value">@_stillborn</span>
+                            <button type="button" class="touch-btn" @onclick="IncrementStillborn">+</button>
+                        </div>
+                    </div>
+
+                    <div class="counter-card mummified">
+                        <div class="counter-header">
+                            <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+                            <span>Mumificados</span>
+                        </div>
+                        <div class="counter-controls">
+                            <button type="button" class="touch-btn" @onclick="DecrementMummified">-</button>
+                            <span class="counter-value">@_mummified</span>
+                            <button type="button" class="touch-btn" @onclick="IncrementMummified">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Peso Total da Ninhada (kg) *</label>
+                    <input type="number" step="0.1" class="form-input" @bind="_litterWeightKg" placeholder="Ex: 16.5" />
+                </div>
+
+                <!-- Real-time Validation & Zootecnic Summary Badge -->
+                <div class="zootecnic-summary-badge @(IsTotalValid ? "valid" : "invalid")">
+                    <div class="badge-row">
+                        <span>Total de Nascidos:</span>
+                        <strong>@TotalBorn Leitões</strong>
+                    </div>
+                    @if (_liveBorn > 0 && _litterWeightKg > 0)
+                    {
+                        <div class="badge-row">
+                            <span>Peso Médio/Leitão Vivo:</span>
+                            <strong>@($"{AverageWeight:F2} kg")</strong>
+                        </div>
+                    }
+                    @if (!IsTotalValid)
+                    {
+                        <p class="validation-warning">
+                            <span class="material-symbols-outlined warning-icon">warning</span>
+                            O número total de leitões nascidos deve ser maior que zero.
+                        </p>
+                    }
+                    @if (_liveBorn > 0 && AverageWeight > 0 && (AverageWeight < 0.3m || AverageWeight > 3.5m))
+                    {
+                        <p class="validation-warning">
+                            <span class="material-symbols-outlined warning-icon">warning</span>
+                            Atenção: Peso médio por leitão fora do padrão biológico (0.3kg - 3.5kg).
+                        </p>
+                    }
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" @bind="_assisted" />
+                        <span>Parto Assistido por Operador/Veterinário</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações</label>
+                    <textarea class="form-textarea" @bind="_notes" placeholder="Descreva intercorrências ou detalhes do parto..."></textarea>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="modal-error-alert">
+                        <span class="material-symbols-outlined">error</span>
+                        <span>@ErrorMessage</span>
+                    </div>
+                }
+            </div>
+
+            <footer class="maternity-modal-footer">
+                <button type="button" class="btn-secondary" @onclick="Close">Cancelar</button>
+                <button type="button" class="btn-primary" disabled="@(!IsTotalValid || IsSubmitting)" @onclick="Submit">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>Registrar Parto</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public EventCallback<RegisterFarrowingRequest> OnSubmit { get; set; }
+
+    private string _sowIdInput = string.Empty;
+    private DateTime _farrowingDate = DateTime.Now;
+    private string _maternityRoomId = string.Empty;
+    private int _liveBorn = 10;
+    private int _stillborn = 0;
+    private int _mummified = 0;
+    private decimal _litterWeightKg = 14.0m;
+    private bool _assisted = false;
+    private string _notes = string.Empty;
+
+    public string? ErrorMessage { get; set; }
+    public bool IsSubmitting { get; set; }
+
+    private int TotalBorn => _liveBorn + _stillborn + _mummified;
+    private decimal AverageWeight => _liveBorn > 0 ? _litterWeightKg / _liveBorn : 0m;
+    private bool IsTotalValid => TotalBorn > 0;
+
+    private void IncrementLiveBorn() => _liveBorn++;
+    private void DecrementLiveBorn() { if (_liveBorn > 0) _liveBorn--; }
+
+    private void IncrementStillborn() => _stillborn++;
+    private void DecrementStillborn() { if (_stillborn > 0) _stillborn--; }
+
+    private void IncrementMummified() => _mummified++;
+    private void DecrementMummified() { if (_mummified > 0) _mummified--; }
+
+    private async Task Close()
+    {
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(false);
+    }
+
+    private async Task Submit()
+    {
+        if (!Guid.TryParse(_sowIdInput, out var sowId))
+        {
+            ErrorMessage = "Informe um ID de matriz válido (Guid).";
+            return;
+        }
+
+        if (!IsTotalValid)
+        {
+            ErrorMessage = "O total de leitões nascidos deve ser maior que zero.";
+            return;
+        }
+
+        ErrorMessage = null;
+        IsSubmitting = true;
+
+        var request = new RegisterFarrowingRequest(
+            sowId,
+            _farrowingDate,
+            _liveBorn,
+            _stillborn,
+            _mummified,
+            _litterWeightKg,
+            string.IsNullOrWhiteSpace(_maternityRoomId) ? null : _maternityRoomId,
+            _assisted,
+            string.IsNullOrWhiteSpace(_notes) ? null : _notes);
+
+        await OnSubmit.InvokeAsync(request);
+        IsSubmitting = false;
+        await Close();
+    }
+}
