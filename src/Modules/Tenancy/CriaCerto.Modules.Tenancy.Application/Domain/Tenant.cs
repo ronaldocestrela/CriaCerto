@@ -9,6 +9,9 @@ public sealed class Tenant
     public string SubscribedPlan { get; set; } = "Starter"; // Starter, Pro, Enterprise
     public int Capacity { get; set; } = 1000;
     public string State { get; set; } = string.Empty; // RS, SC, MT, PR
+    public string City { get; set; } = string.Empty;
+    public string StateRegistration { get; set; } = string.Empty;
+    public decimal AreaInHectares { get; set; }
     public string Type { get; set; } = string.Empty; // e.g. Gestação, Engorda, Creche
     public List<UserTenant> UserTenants { get; set; } = new();
 }

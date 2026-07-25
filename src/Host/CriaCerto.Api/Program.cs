@@ -26,6 +26,7 @@ using CriaCerto.Modules.Nutrition.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.RegisterUser;
+using CriaCerto.Modules.Tenancy.Application.Features.CreateTenant;
 using CriaCerto.Modules.Tenancy.Application.Features.ForgotPassword;
 using CriaCerto.Modules.Tenancy.Application.Features.ResetPassword;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
@@ -152,6 +153,14 @@ app.MapGet("/api/v1/tenancy/plans", async (ISender sender) =>
     return result.IsSuccess
         ? Results.Ok(result.Value)
         : Results.Json(result.Error, statusCode: 400);
+}).AllowAnonymous().WithTags("Tenancy");
+
+app.MapPost("/api/v1/tenancy/farms", async (CreateTenantCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return result.IsSuccess
+        ? Results.Json(result.Value, statusCode: StatusCodes.Status201Created)
+        : Results.Json(result.Error, statusCode: ToStatusCode(result.Error.Type));
 }).AllowAnonymous().WithTags("Tenancy");
 
 // Cattle Breeding Endpoints

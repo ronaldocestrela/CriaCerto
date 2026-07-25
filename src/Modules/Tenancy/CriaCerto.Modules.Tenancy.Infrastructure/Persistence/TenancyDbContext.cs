@@ -41,6 +41,9 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
             builder.Property(t => t.Status).HasMaxLength(50).IsRequired();
             builder.Property(t => t.SubscribedPlan).HasMaxLength(50).IsRequired();
             builder.Property(t => t.State).HasMaxLength(50);
+            builder.Property(t => t.City).HasMaxLength(100);
+            builder.Property(t => t.StateRegistration).HasMaxLength(50);
+            builder.Property(t => t.AreaInHectares).HasPrecision(18, 2);
             builder.Property(t => t.Type).HasMaxLength(100);
         });
 
