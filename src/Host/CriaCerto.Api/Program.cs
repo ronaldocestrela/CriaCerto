@@ -15,6 +15,14 @@ using CriaCerto.Modules.Calving.Infrastructure.Persistence;
 using CriaCerto.Modules.Growth.Application.Contracts;
 using CriaCerto.Modules.Growth.Infrastructure;
 using CriaCerto.Modules.Growth.Infrastructure.Persistence;
+using CriaCerto.Modules.Nutrition.Application;
+using CriaCerto.Modules.Nutrition.Application.Contracts;
+using CriaCerto.Modules.Nutrition.Application.Features.AnalyticsFeatures;
+using CriaCerto.Modules.Nutrition.Application.Features.FeedingFeatures;
+using CriaCerto.Modules.Nutrition.Application.Features.RationFeatures;
+using CriaCerto.Modules.Nutrition.Application.Features.SiloStockFeatures;
+using CriaCerto.Modules.Nutrition.Infrastructure;
+using CriaCerto.Modules.Nutrition.Infrastructure.Persistence;
 using CriaCerto.Modules.Tenancy.Application;
 using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
@@ -35,6 +43,7 @@ builder.Services.AddBuildingBlocksApplication(
     typeof(CriaCerto.Modules.Breeding.Application.BreedingAssemblyMarker).Assembly,
     typeof(CriaCerto.Modules.Calving.Application.Contracts.CalvingDto).Assembly,
     typeof(CriaCerto.Modules.Growth.Application.Contracts.PaddockDto).Assembly,
+    typeof(NutritionAssemblyMarker).Assembly,
     typeof(TenancyAssemblyMarker).Assembly);
 
 var connectionString = builder.Configuration.GetConnectionString("SqlServer")
@@ -46,6 +55,7 @@ builder.Services.AddTenancyInfrastructure(builder.Configuration);
 builder.Services.AddBreedingInfrastructure();
 builder.Services.AddCalvingInfrastructure();
 builder.Services.AddGrowthInfrastructure();
+builder.Services.AddNutritionInfrastructure();
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
@@ -228,6 +238,65 @@ growth.MapGet("/weighings/recent", async (Guid tenantId, Guid? lotId, int? top, 
     return ToHttpResult(result);
 });
 
+// Nutrition & Feed Management Endpoints
+var nutrition = app.MapGroup("/api/nutrition")
+    .RequireAuthorization()
+    .WithTags("Nutrition");
+
+nutrition.MapGet("/silos", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetSiloStocksQuery(tenantId));
+    return ToHttpResult(result);
+});
+
+nutrition.MapPost("/silos", async (CreateSiloStockCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+nutrition.MapPost("/silos/restock", async (RestockSiloCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result);
+});
+
+nutrition.MapGet("/rations", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetFeedRationsQuery(tenantId));
+    return ToHttpResult(result);
+});
+
+nutrition.MapPost("/rations", async (CreateFeedRationCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+nutrition.MapPost("/supplementation", async (RecordSupplementationCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+nutrition.MapPost("/tmr-batches", async (RecordFeedlotTmrCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+nutrition.MapGet("/analytics/feed-conversion", async (Guid tenantId, Guid lotId, decimal totalWeightGainKg, ISender sender) =>
+{
+    var result = await sender.Send(new GetFeedlotPerformanceQuery(tenantId, lotId, totalWeightGainKg));
+    return ToHttpResult(result);
+});
+
+nutrition.MapGet("/analytics/cost-per-arroba", async (Guid tenantId, Guid lotId, decimal totalWeightGainKg, decimal? carcassYieldPercentage, ISender sender) =>
+{
+    var result = await sender.Send(new GetCostPerArrobaQuery(tenantId, lotId, totalWeightGainKg, carcassYieldPercentage));
+    return ToHttpResult(result);
+});
+
 app.Run();
 
 static void ApplyMigrations(WebApplication app)
@@ -242,7 +311,8 @@ static void ApplyMigrations(WebApplication app)
         scope.ServiceProvider.GetRequiredService<TenancyDbContext>(),
         scope.ServiceProvider.GetRequiredService<BreedingDbContext>(),
         scope.ServiceProvider.GetRequiredService<CalvingDbContext>(),
-        scope.ServiceProvider.GetRequiredService<GrowthDbContext>()
+        scope.ServiceProvider.GetRequiredService<GrowthDbContext>(),
+        scope.ServiceProvider.GetRequiredService<NutritionDbContext>()
     };
 
     foreach (var dbContext in dbContexts)

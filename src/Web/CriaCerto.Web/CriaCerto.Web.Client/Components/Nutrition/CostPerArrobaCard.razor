@@ -1,0 +1,33 @@
+@using CriaCerto.Modules.Nutrition.Application.Contracts
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="text-uppercase text-muted fw-bold small">Custo por Arroba Produzida ($/@)</span>
+                <h3 class="fw-bold text-primary mb-0 mt-1">
+                    R$ @(CostInfo != null ? CostInfo.CostPerArroba.ToString("N2") : "0.00")
+                    <small class="fs-6 text-muted fw-normal">/ @</small>
+                </h3>
+            </div>
+            <div class="bg-primary-subtle p-3 rounded-circle text-primary">
+                <i class="bi bi-currency-dollar fs-4"></i>
+            </div>
+        </div>
+        <div class="row g-2 pt-2 border-top text-muted small">
+            <div class="col-6">
+                <span>Total Nutrição:</span>
+                <strong class="d-block text-dark">R$ @(CostInfo != null ? CostInfo.TotalNutritionCost.ToString("N2") : "0.00")</strong>
+            </div>
+            <div class="col-6">
+                <span>Arrobas Ganhas:</span>
+                <strong class="d-block text-dark">@(CostInfo != null ? CostInfo.ArrobasProduced.ToString("N1") + " @" : "0.0 @") (RC @(CostInfo?.CarcassYieldPercentage ?? 50)%)</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public CostPerArrobaDto? CostInfo { get; set; }
+}

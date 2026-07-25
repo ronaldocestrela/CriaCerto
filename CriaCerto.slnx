@@ -21,6 +21,10 @@
     <Project Path="src/Modules/Growth/CriaCerto.Modules.Growth.Application/CriaCerto.Modules.Growth.Application.csproj" />
     <Project Path="src/Modules/Growth/CriaCerto.Modules.Growth.Infrastructure/CriaCerto.Modules.Growth.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Nutrition/">
+    <Project Path="src/Modules/Nutrition/CriaCerto.Modules.Nutrition.Application/CriaCerto.Modules.Nutrition.Application.csproj" />
+    <Project Path="src/Modules/Nutrition/CriaCerto.Modules.Nutrition.Infrastructure/CriaCerto.Modules.Nutrition.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Tenancy/">
     <Project Path="src/Modules/Tenancy/CriaCerto.Modules.Tenancy.Application/CriaCerto.Modules.Tenancy.Application.csproj" />
     <Project Path="src/Modules/Tenancy/CriaCerto.Modules.Tenancy.Infrastructure/CriaCerto.Modules.Tenancy.Infrastructure.csproj" />
@@ -39,5 +43,6 @@
     <Project Path="tests/Unit/CriaCerto.Modules.Breeding.UnitTests/CriaCerto.Modules.Breeding.UnitTests.csproj" />
     <Project Path="tests/Unit/CriaCerto.Modules.Calving.UnitTests/CriaCerto.Modules.Calving.UnitTests.csproj" />
     <Project Path="tests/Unit/CriaCerto.Modules.Growth.UnitTests/CriaCerto.Modules.Growth.UnitTests.csproj" />
+    <Project Path="tests/Unit/CriaCerto.Modules.Nutrition.UnitTests/CriaCerto.Modules.Nutrition.UnitTests.csproj" />
   </Folder>
 </Solution>
