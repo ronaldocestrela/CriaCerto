@@ -14,6 +14,7 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<UserTenant> UserTenants => Set<UserTenant>();
+    public DbSet<ProductionUnit> ProductionUnits => Set<ProductionUnit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,5 +63,22 @@ public sealed class TenancyDbContext : DbContext, ITenancyDbContext
                 .HasForeignKey(ut => ut.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<ProductionUnit>(builder =>
+        {
+            builder.ToTable("ProductionUnits");
+            builder.HasKey(pu => pu.Id);
+            builder.Property(pu => pu.Code).HasMaxLength(50).IsRequired();
+            builder.Property(pu => pu.Name).HasMaxLength(100).IsRequired();
+            builder.Property(pu => pu.Type).HasMaxLength(50).IsRequired();
+            builder.Property(pu => pu.Status).HasMaxLength(50).IsRequired();
+            builder.Property(pu => pu.LocationDetails).HasMaxLength(250);
+
+            builder.HasOne(pu => pu.Tenant)
+                .WithMany(t => t.ProductionUnits)
+                .HasForeignKey(pu => pu.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
+

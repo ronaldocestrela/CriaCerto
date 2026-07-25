@@ -96,20 +96,20 @@ Nesta fase inicial (Sub-phase 0.1), o foco esta na fundacao tecnica: arquitetura
 
 Fluxo Red -> Green -> Refactor em qualquer entrega funcional.
 
-## 5. Estado Atual (Go-Live Phase 1)
+## 5. Estado Atual (Go-Live Phase 1 - CONCLUÍDA)
 
 Concluído:
 
 - **Sub-fase 1.1 (CONCLUÍDA):** Landing Page Comercial (`/`) com catálogo de planos (`/api/v1/tenancy/plans`), design system visual Stitch.
 - **Sub-fase 1.2 (CONCLUÍDA):** Auto-Cadastro de Usuário (`/register`) e Recuperação/Redefinição de Senha (`/forgot-password`), validados com FluentValidation e Result Pattern (`Result.Failure(Error.Conflict)`).
-- Solucao monorepo em `CriaCerto.slnx` com 92 testes automatizados (100% de aprovação).
+- **Sub-fase 1.3 (CONCLUÍDA):** Wizard de Onboarding do Primeiro Acesso & Cadastro da Fazenda (`/onboarding`), vinculando automaticamente o produtor como Administrador em `UserTenant` via `CreateTenantCommand` e emitindo JWT token sem o erro `Auth.NoTenantAssociation`.
+- Solucao monorepo em `CriaCerto.slnx` com 110 testes automatizados (100% de aprovação).
 - BuildingBlocks base (Abstractions, Application, Infrastructure).
 - Blazor Web App + WASM PWA com cache offline.
 - Documentação viva e ADRs atualizadas em `/docs`.
 
 Em andamento / Próxima entrega:
 
-- **Sub-fase 1.3:** Wizard de Onboarding do Primeiro Acesso & Cadastro da Fazenda (`CreateTenantCommand`).
 - **Phase 2:** Gestão da Organização, Unidades & Permissões (RBAC).
 
 ## 6. Requisitos de Ambiente

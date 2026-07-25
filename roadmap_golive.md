@@ -64,7 +64,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Testes unitários para `RegisterUserCommandHandler`, `RegisterUserCommandValidator`, `ForgotPasswordCommandHandler` e `ResetPasswordCommandHandler` garantindo cobertura completa e tratamento de e-mail duplicado via `Result.Failure(Error.Conflict)`.
 
-#### Sub-fase 1.3: Wizard de Onboarding do Primeiro Acesso & Cadastro da Fazenda
+#### Sub-fase 1.3: Wizard de Onboarding do Primeiro Acesso & Cadastro da Fazenda [CONCLUÍDA]
 * **Backend:**
   * `CreateTenantCommand` / `CreateFarmCommand` (Nome da Fazenda, CNPJ/CPF, UF/Município, Inscrição Estadual, Área em Hectares, Plano Selecionado).
   * Vínculo automático do novo usuário como Administrador da fazenda criada no `UserTenant`.
@@ -80,7 +80,8 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 
 ### Phase 2: Gestão da Organização, Unidades & Permissões (RBAC)
 
-#### Sub-fase 2.1: Perfil da Fazenda & Unidades de Produção
+#### Sub-fase 2.1: Perfil da Fazenda & Unidades de Produção [CONCLUÍDA]
+
 * **Backend:**
   * `UpdateTenantProfileCommand` (Edição de CNPJ, Razão Social, Endereço, Capacidade).
   * CRUD de Unidades Produção (`CreateProductionUnitCommand`, `GetProductionUnitsQuery`).

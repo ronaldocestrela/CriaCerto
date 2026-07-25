@@ -1,8 +1,11 @@
 @page "/settings/organization"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @attribute [Authorize]
+@using CriaCerto.Web.Client.Services
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject TenancyApiClient TenancyApi
+
 
 <PageTitle>Cria Certo - Organização & Unidades</PageTitle>
 
@@ -24,10 +27,10 @@
             </p>
         </div>
         <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
-            <button class="cc-btn cc-btn-outline" style="border: 1px solid var(--cc-outline); padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer;">
+            <button @onclick="OpenEditProfile" class="cc-btn cc-btn-outline" style="border: 1px solid var(--cc-outline); padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; background: white; color: var(--cc-primary); cursor: pointer;">
                 Editar Perfil
             </button>
-            <button class="cc-btn cc-btn-primary" style="background: var(--cc-primary); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <button @onclick="OpenCreateUnit" class="cc-btn cc-btn-primary" style="background: var(--cc-primary); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
                 <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Nova Unidade
             </button>
         </div>
@@ -40,27 +43,27 @@
         <section style="background-color: var(--cc-brand-surface-lowest, #ffffff); border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); display: flex; flex-direction: column;">
             <div style="height: 180px; position: relative; background: linear-gradient(135deg, #005323, #15803d); display: flex; align-items: flex-end; padding: 1.5rem;">
                 <div style="position: absolute; top: 1.5rem; right: 1.5rem; background-color: var(--cc-primary-container); color: white; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">
-                    @_subscribedPlan Plan
+                    @(_profile?.SubscribedPlan ?? _subscribedPlan) Plan
                 </div>
                 <div style="color: white; z-index: 10;">
                     <span style="font-size: 11px; font-weight: bold; text-transform: uppercase; background-color: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem;" class="font-mono">Active Tenant</span>
-                    <h3 style="margin: 0; font-size: 24px; font-weight: bold;">@_tenantName</h3>
+                    <h3 style="margin: 0; font-size: 24px; font-weight: bold;">@(_profile?.Name ?? _tenantName)</h3>
                 </div>
             </div>
             <div style="padding: 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; flex: 1;">
                 <div>
                     <span style="font-size: 11px; color: var(--cc-ink-muted); text-transform: uppercase; font-weight: bold;" class="font-mono">CNPJ</span>
-                    <p style="margin: 0.25rem 0 0 0; font-size: 16px; font-weight: 600; color: var(--cc-ink);">12.345.678/0001-99</p>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 16px; font-weight: 600; color: var(--cc-ink);">@(_profile?.CNPJ ?? "12.345.678/0001-99")</p>
                 </div>
                 <div>
                     <span style="font-size: 11px; color: var(--cc-ink-muted); text-transform: uppercase; font-weight: bold;" class="font-mono">Capacidade Total</span>
-                    <p style="margin: 0.25rem 0 0 0; font-size: 16px; font-weight: 600; color: var(--cc-ink);">12.500 Cabeças</p>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 16px; font-weight: 600; color: var(--cc-ink);">@((_profile?.Capacity ?? 12500).ToString("N0")) Cabeças</p>
                 </div>
                 <div style="grid-column: span 2; border-top: 1px solid var(--cc-border); padding-top: 1rem;">
                     <span style="font-size: 11px; color: var(--cc-ink-muted); text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 0.25rem;" class="font-mono">Localização</span>
                     <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
                         <span class="material-symbols-outlined" style="color: var(--cc-primary); font-size: 18px;">location_on</span>
-                        <span style="font-size: 14px; color: var(--cc-ink);">Rodovia BR-163, KM 450, Distrito Industrial - Sorriso, MT</span>
+                        <span style="font-size: 14px; color: var(--cc-ink);">@(_profile?.City ?? "Sorriso"), @(_profile?.State ?? "MT") @(!string.IsNullOrEmpty(_profile?.StateRegistration) ? $" - IE: {_profile.StateRegistration}" : "")</span>
                     </div>
                 </div>
             </div>
@@ -99,7 +102,7 @@
     <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; overflow: hidden; box-shadow: var(--cc-shadow); margin-bottom: 2rem;">
         <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--cc-border); background-color: var(--cc-canvas); display: flex; justify-content: space-between; align-items: center;">
             <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: var(--cc-ink);">Unidades de Produção</h3>
-            <span style="font-size: 12px; color: var(--cc-secondary); font-weight: 600;">3 Unidades Ativas</span>
+            <span style="font-size: 12px; color: var(--cc-secondary); font-weight: 600;">@_units.Count Unidades Cadastradas</span>
         </div>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -109,100 +112,50 @@
                         <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Tipo</th>
                         <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase;">Status</th>
                         <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: right;">Ocupação</th>
-                        <th style="padding: 1rem 1.5rem; font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: right;">Ações</th>
                     </tr>
                 </thead>
                 <tbody style="color: var(--cc-ink);">
-                    <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.15s;">
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-weight: 600; font-size: 15px;">Unidade Matriz 01</span>
-                                <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: UN-001-SFE</span>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <span style="background-color: #d8e3fb; color: #111c2d; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">Gestação</span>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-primary-container);"></span>
-                                <span style="font-size: 12px; font-weight: bold; color: var(--cc-primary); text-transform: uppercase;" class="font-mono">Operação Normal</span>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
-                                <span style="font-size: 13px; font-weight: 600;">82%</span>
-                                <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
-                                    <div style="width: 82%; height: 100%; background-color: var(--cc-primary-container);"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <button style="border: none; background: transparent; color: var(--cc-secondary); cursor: pointer;">
-                                <span class="material-symbols-outlined">open_in_new</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.15s;">
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-weight: 600; font-size: 15px;">Crechário Sul</span>
-                                <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: UN-002-SFE</span>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <span style="background-color: #ffdbd0; color: #832600; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">Creche</span>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-primary-container);"></span>
-                                <span style="font-size: 12px; font-weight: bold; color: var(--cc-primary); text-transform: uppercase;" class="font-mono">Ativo</span>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
-                                <span style="font-size: 13px; font-weight: 600;">94%</span>
-                                <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
-                                    <div style="width: 94%; height: 100%; background-color: var(--cc-primary-container);"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <button style="border: none; background: transparent; color: var(--cc-secondary); cursor: pointer;">
-                                <span class="material-symbols-outlined">open_in_new</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: none; transition: background-color 0.15s;">
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-weight: 600; font-size: 15px;">Unidade de Engorda 04</span>
-                                <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: UN-004-SFE</span>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <span style="background-color: #f7f9fb; color: var(--cc-ink-muted); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid var(--cc-border);" class="font-mono">Terminação</span>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--cc-error);"></span>
-                                <span style="font-size: 12px; font-weight: bold; color: var(--cc-error); text-transform: uppercase;" class="font-mono">Manutenção</span>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
-                                <span style="font-size: 13px; font-weight: 600;">0%</span>
-                                <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
-                                    <div style="width: 0%; height: 100%; background-color: var(--cc-error);"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <button style="border: none; background: transparent; color: var(--cc-secondary); cursor: pointer;">
-                                <span class="material-symbols-outlined">open_in_new</span>
-                            </button>
-                        </td>
-                    </tr>
+                    @if (_units.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4" style="padding: 2rem; text-align: center; color: var(--cc-ink-muted);">
+                                Nenhuma unidade de produção cadastrada. Crie uma clicando em "Nova Unidade".
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var unit in _units)
+                        {
+                            <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.15s;">
+                                <td style="padding: 1.25rem 1.5rem;">
+                                    <div style="display: flex; flex-direction: column;">
+                                        <span style="font-weight: 600; font-size: 15px;">@unit.Name</span>
+                                        <span style="font-size: 11px; color: var(--cc-ink-muted); font-family: monospace;">ID: @unit.Code</span>
+                                    </div>
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem;">
+                                    <span style="background-color: #d8e3fb; color: #111c2d; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;" class="font-mono">@unit.Type</span>
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @(unit.Status == "Active" ? "var(--cc-primary-container)" : "var(--cc-error)");"></span>
+                                        <span style="font-size: 12px; font-weight: bold; color: @(unit.Status == "Active" ? "var(--cc-primary)" : "var(--cc-error)"); text-transform: uppercase;" class="font-mono">
+                                            @(unit.Status == "Active" ? "Ativo" : unit.Status)
+                                        </span>
+                                    </div>
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                                        <span style="font-size: 13px; font-weight: 600;">@unit.OccupancyPercentage% (@unit.CurrentHeadCount / @unit.Capacity)</span>
+                                        <div style="width: 100px; height: 6px; background-color: var(--cc-canvas); border-radius: 99px; overflow: hidden;">
+                                            <div style="width: @Math.Min(100, unit.OccupancyPercentage)%; height: 100%; background-color: var(--cc-primary-container);"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
@@ -210,10 +163,26 @@
 
 </div>
 
+<CriaCerto.Web.Client.Components.Settings.EditTenantProfileModal
+    @bind-IsOpen="_isEditProfileOpen"
+    Profile="_profile"
+    OnSaved="HandleProfileSaved" />
+
+<CriaCerto.Web.Client.Components.Settings.CreateProductionUnitModal
+    @bind-IsOpen="_isCreateUnitOpen"
+    TenantId="_tenantId ?? Guid.Empty"
+    OnCreated="HandleUnitCreated" />
+
 @code {
     private string _tenantName = "Fazenda Santa Fé - Matriz";
     private string _subscribedPlan = "Enterprise";
     private Guid? _tenantId;
+
+    private TenantProfileModel? _profile;
+    private List<ProductionUnitModel> _units = new();
+
+    private bool _isEditProfileOpen;
+    private bool _isCreateUnitOpen;
 
     protected override async Task OnInitializedAsync()
     {
@@ -240,10 +209,30 @@
                 _tenantId = tenantId;
             }
         }
-        else
-        {
-            // Redirect to login if not authenticated
-            Navigation.NavigateTo("login");
-        }
+
+        _tenantId ??= Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+        _profile = await TenancyApi.GetTenantProfileAsync(_tenantId.Value);
+        _units = await TenancyApi.GetProductionUnitsAsync(_tenantId.Value);
+    }
+
+    private void OpenEditProfile()
+    {
+        _isEditProfileOpen = true;
+    }
+
+    private void OpenCreateUnit()
+    {
+        _isCreateUnitOpen = true;
+    }
+
+    private void HandleProfileSaved(TenantProfileModel updated)
+    {
+        _profile = updated;
+    }
+
+    private void HandleUnitCreated(ProductionUnitModel newUnit)
+    {
+        _units.Add(newUnit);
     }
 }

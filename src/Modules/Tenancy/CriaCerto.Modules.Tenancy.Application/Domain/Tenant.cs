@@ -14,4 +14,6 @@ public sealed class Tenant
     public decimal AreaInHectares { get; set; }
     public string Type { get; set; } = string.Empty; // e.g. Gestação, Engorda, Creche
     public List<UserTenant> UserTenants { get; set; } = new();
+    public List<ProductionUnit> ProductionUnits { get; set; } = new();
 }
+

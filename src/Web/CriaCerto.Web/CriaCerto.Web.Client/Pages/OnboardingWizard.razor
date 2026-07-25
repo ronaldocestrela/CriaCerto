@@ -350,7 +350,7 @@
 
             if (response.IsSuccessStatusCode)
             {
-                var authResult = await response.Content.ReadFromJsonAsync<CriaCerto.Modules.Tenancy.Application.Contracts.AuthResponse>();
+                var authResult = await response.Content.ReadFromJsonAsync<OnboardingAuthResponse>();
                 if (authResult != null && !string.IsNullOrEmpty(authResult.Token))
                 {
                     // Redirect to login or home dashboard with active session
@@ -358,6 +358,7 @@
                 }
                 else
                 {
+
                     Navigation.NavigateTo("/login");
                 }
             }
@@ -383,4 +384,7 @@
             IsLoading = false;
         }
     }
+
+    private record OnboardingAuthResponse(string? Token);
 }
+

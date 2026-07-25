@@ -31,7 +31,13 @@ using CriaCerto.Modules.Tenancy.Application.Features.ForgotPassword;
 using CriaCerto.Modules.Tenancy.Application.Features.ResetPassword;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
 using CriaCerto.Modules.Tenancy.Application.Features.GetSubscriptionPlans;
+using CriaCerto.Modules.Tenancy.Application.Features.GetTenantProfile;
+using CriaCerto.Modules.Tenancy.Application.Features.UpdateTenantProfile;
+using CriaCerto.Modules.Tenancy.Application.Features.GetProductionUnits;
+using CriaCerto.Modules.Tenancy.Application.Features.CreateProductionUnit;
+using CriaCerto.Modules.Tenancy.Application.Features.UpdateProductionUnit;
 using CriaCerto.Modules.Tenancy.Infrastructure;
+
 using CriaCerto.Modules.Tenancy.Infrastructure.Persistence;
 using CriaCerto.Modules.Sanitary.Application.Contracts;
 using CriaCerto.Modules.Sanitary.Infrastructure;
@@ -162,6 +168,37 @@ app.MapPost("/api/v1/tenancy/farms", async (CreateTenantCommand command, ISender
         ? Results.Json(result.Value, statusCode: StatusCodes.Status201Created)
         : Results.Json(result.Error, statusCode: ToStatusCode(result.Error.Type));
 }).AllowAnonymous().WithTags("Tenancy");
+
+app.MapGet("/api/v1/tenancy/profile", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetTenantProfileQuery(tenantId));
+    return ToHttpResult(result);
+}).RequireAuthorization().WithTags("Tenancy");
+
+app.MapPut("/api/v1/tenancy/profile", async (UpdateTenantProfileCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result);
+}).RequireAuthorization().WithTags("Tenancy");
+
+app.MapGet("/api/v1/tenancy/production-units", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetProductionUnitsQuery(tenantId));
+    return ToHttpResult(result);
+}).RequireAuthorization().WithTags("Tenancy");
+
+app.MapPost("/api/v1/tenancy/production-units", async (CreateProductionUnitCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+}).RequireAuthorization().WithTags("Tenancy");
+
+app.MapPut("/api/v1/tenancy/production-units/{id:guid}", async (Guid id, UpdateProductionUnitCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command with { Id = id });
+    return ToHttpResult(result);
+}).RequireAuthorization().WithTags("Tenancy");
+
 
 // Cattle Breeding Endpoints
 var breeding = app.MapGroup("/api/breeding")
