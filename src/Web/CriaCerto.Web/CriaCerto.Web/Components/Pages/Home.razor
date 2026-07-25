@@ -1,111 +1,325 @@
-﻿@page "/"
+@page "/"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject NavigationManager Navigation
+@inject CriaCerto.Web.Client.Services.TenancyApiClient TenancyApiClient
 
-<PageTitle>Cria Certo Dashboard</PageTitle>
+<PageTitle>CriaCerto - Gestão Pecuária Inteligente do Pasto ao Confinamento</PageTitle>
 
-<section id="kpis" class="dashboard-grid">
-	<article class="kpi-card kpi-liveborn">
-		<p class="kpi-label">Live Born / Sow / Cycle</p>
-		<p class="kpi-value">@LiveBornPerCycle</p>
-		<p class="kpi-trend">+@LiveBornTrend% vs previous cycle</p>
-	</article>
+<div class="landing-page font-headline">
 
-	<article class="kpi-card">
-		<p class="kpi-label">Pre-Weaning Mortality</p>
-		<p class="kpi-value">@MortalityRate%</p>
-		<p class="kpi-trend neutral">Target: below 8.5%</p>
-	</article>
+    <!-- Commercial Top Navigation Bar -->
+    <header class="landing-navbar">
+        <div class="landing-nav-container">
+            <div class="landing-brand">
+                <div class="brand-logo-icon">
+                    <span class="material-symbols-outlined">pets</span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">CriaCerto</span>
+                    <span class="brand-subtitle">BOVINO SaaS</span>
+                </div>
+            </div>
 
-	<article class="kpi-card">
-		<p class="kpi-label">ADG (Nursery Batch)</p>
-		<p class="kpi-value">@AdgKgPerDay kg/day</p>
-		<p class="kpi-trend">+@AdgTrend% this week</p>
-	</article>
+            <nav class="landing-nav-links">
+                <a href="#recursos" class="nav-item">Funcionalidades</a>
+                <a href="#modulos" class="nav-item">Módulos</a>
+                <a href="#planos" class="nav-item">Planos & Preços</a>
+                <a href="#diferenciais" class="nav-item">Diferenciais</a>
+            </nav>
 
-	<article class="kpi-card">
-		<p class="kpi-label">Feed Conversion (FCR)</p>
-		<p class="kpi-value">@FcrRatio</p>
-		<p class="kpi-trend warning">Watch threshold: 2.55</p>
-	</article>
-</section>
+            <div class="landing-nav-actions">
+                <a href="/login" class="cc-btn cc-btn-outline nav-btn-login">Entrar</a>
+                <a href="/login" class="cc-btn cc-btn-primary nav-btn-register">
+                    <span>Experimentar Grátis</span>
+                    <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+    </header>
 
-<section class="panel-grid">
-	<article class="panel-card">
-		<header class="panel-header">
-			<h2>Today's Farrowing Queue</h2>
-			<span class="chip">@FarrowingQueue.Count pending</span>
-		</header>
-		<table class="cc-table">
-			<thead>
-				<tr>
-					<th>Sow</th>
-					<th>Parity</th>
-					<th>Expected</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				@foreach (var row in FarrowingQueue)
-				{
-					<tr>
-						<td>@row.SowCode</td>
-						<td>@row.Parity</td>
-						<td>@row.ExpectedDate</td>
-						<td><span class="badge @row.StatusClass">@row.Status</span></td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	</article>
+    <!-- Hero Banner Section -->
+    <section class="landing-hero">
+        <div class="hero-bg-overlay"></div>
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="material-symbols-outlined text-emerald-400">wifi_off</span>
+                    <span>100% Funcional Off-line no Curral & Pasto (PWA)</span>
+                </div>
+                <h1 class="hero-title">
+                    Gestão Pecuária Inteligente: <br />
+                    <span class="hero-highlight">Do Pasto ao Confinamento</span>
+                </h1>
+                <p class="hero-description">
+                    Controle individual do rebanho, pesagens com balança eletrônica, GPD, protocolos de IATF, 
+                    suplementação e trava sanitária de carência — tudo na palma da mão, mesmo sem sinal de internet no mangueiro.
+                </p>
 
-	<article id="components" class="panel-card">
-		<header class="panel-header">
-			<h2>Component Library Preview</h2>
-			<span class="chip">Desktop + Mobile</span>
-		</header>
+                <div class="hero-cta-group">
+                    <a href="/login" class="cc-btn cc-btn-primary hero-btn-main">
+                        <span>Iniciar Teste Grátis de 14 Dias</span>
+                        <span class="material-symbols-outlined">rocket_launch</span>
+                    </a>
+                    <a href="#recursos" class="cc-btn cc-btn-outline hero-btn-sec">
+                        <span>Ver Recursos Pecuários</span>
+                        <span class="material-symbols-outlined">expand_more</span>
+                    </a>
+                </div>
 
-		<div class="component-row">
-			<button class="cc-btn cc-btn-primary">Register Farrowing</button>
-			<button class="cc-btn cc-btn-outline">Record Weighing</button>
-			<button class="cc-btn cc-btn-ghost">Open Batch Transfer</button>
-		</div>
+                <div class="hero-metrics-row">
+                    <div class="metric-pill">
+                        <span class="metric-value">+150k</span>
+                        <span class="metric-label">Cabeças Monitoradas</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-pill">
+                        <span class="metric-value">60%</span>
+                        <span class="metric-label">Economia de Tempo no Curral</span>
+                    </div>
+                    <div class="metric-divider"></div>
+                    <div class="metric-pill">
+                        <span class="metric-value">100%</span>
+                        <span class="metric-label">Segurança Sanitária para Abate</span>
+                    </div>
+                </div>
+            </div>
 
-		<div class="component-row component-row-inputs">
-			<label class="cc-field">
-				<span>Sow ID</span>
-				<input type="text" value="SOW-0217" readonly />
-			</label>
-			<label class="cc-field">
-				<span>Event Type</span>
-				<select>
-					<option>Natural Service</option>
-					<option>AI</option>
-					<option>IATF</option>
-				</select>
-			</label>
-		</div>
+            <div class="hero-visual-card">
+                <div class="glass-card-header">
+                    <div class="card-status-dot"></div>
+                    <span class="font-mono text-xs text-emerald-300">CURRAL PWA OFFLINE ACTIVE</span>
+                </div>
+                <div class="hero-card-preview">
+                    <div class="preview-metric-box">
+                        <span class="preview-label">Lote Engorda BR-163</span>
+                        <span class="preview-val">420 Cabeças</span>
+                        <div class="preview-tag-chip">GPD Média: 1,280 kg/dia</div>
+                    </div>
+                    <div class="preview-mini-chart">
+                        <div class="chart-bar" style="height: 45%;"></div>
+                        <div class="chart-bar" style="height: 60%;"></div>
+                        <div class="chart-bar" style="height: 75%;"></div>
+                        <div class="chart-bar active" style="height: 90%;"></div>
+                    </div>
+                    <div class="preview-alert-box">
+                        <span class="material-symbols-outlined text-amber-400">verified_user</span>
+                        <span>Trava de Carência Medicamentosa Ativa</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-		<div class="component-row">
-			<div class="alert-box">
-				Withdrawal lock active for Batch B-44 until 2026-08-03.
-			</div>
-		</div>
-	</article>
-</section>
+    <!-- Core Features Section (Bento Grid) -->
+    <section id="recursos" class="landing-features">
+        <div class="features-header text-center">
+            <span class="section-tag font-mono">PILARESED ZOOTÉCNICOS</span>
+            <h2 class="section-title">Tudo o que sua fazenda precisa para maximizar a arroba (@)</h2>
+            <p class="section-subtitle">Tecnologia desenvolvida sob medida para a realidade do produtor de corte e leite do Brasil.</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Bento Box 1: PWA Offline -->
+            <div class="bento-card bento-wide">
+                <div class="bento-icon-box text-emerald-600 bg-emerald-50">
+                    <span class="material-symbols-outlined">signal_wifi_off</span>
+                </div>
+                <div class="bento-body">
+                    <span class="bento-badge">PWA Field Technology</span>
+                    <h3>Curral & Pasto 100% Off-line</h3>
+                    <p>
+                        Lance pesagens, partos, vacinas e manejos no meio do pasto ou no curral sem internet. 
+                        O sistema armazena os dados no dispositivo e sincroniza automaticamente assim que você se conectar ao Wi-Fi da sede.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bento Box 2: Reprodução & IATF -->
+            <div class="bento-card">
+                <div class="bento-icon-box text-rose-600 bg-rose-50">
+                    <span class="material-symbols-outlined">favorite</span>
+                </div>
+                <div class="bento-body">
+                    <h3>Reprodução & IATF</h3>
+                    <p>
+                        Controle total de matrizes (Lactantes, Gestantes, Vazias), protocolo sincronizado de IATF, 
+                        diagnóstico de gestação por ultrassom e cálculo automático de IEP.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bento Box 3: Pesagem & Balança -->
+            <div class="bento-card">
+                <div class="bento-icon-box text-blue-600 bg-blue-50">
+                    <span class="material-symbols-outlined">scale</span>
+                </div>
+                <div class="bento-body">
+                    <h3>Pesagem & Curva de GPD</h3>
+                    <p>
+                        Entrada rápida por brinco SISBOV / Eletrônico RFID, acompanhamento de Ganho de Peso Diário (kg/dia e @) 
+                        e alertas automáticos para animais com perda de peso.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bento Box 4: Nutrição & Confinamento -->
+            <div class="bento-card">
+                <div class="bento-icon-box text-amber-600 bg-amber-50">
+                    <span class="material-symbols-outlined">set_meal</span>
+                </div>
+                <div class="bento-body">
+                    <h3>Nutrição & Custo por Arroba</h3>
+                    <p>
+                        Registro de trato total (TMR) em confinamento, suplementação mineral em pasto, estoque de silos 
+                        e indicador em tempo real de custo por @ produzida.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bento Box 5: Sanidade & Carência -->
+            <div class="bento-card bento-wide">
+                <div class="bento-icon-box text-purple-600 bg-purple-50">
+                    <span class="material-symbols-outlined">health_and_safety</span>
+                </div>
+                <div class="bento-body">
+                    <span class="bento-badge">Segurança Sanitária</span>
+                    <h3>Campanhas Vacinais & Trava de Abate</h3>
+                    <p>
+                        Calendário automático de vacinação oficial (Aftosa, Brucelose, Raiva) e bloqueio sanitário inteligente 
+                        que impede o despacho para o frigorífico de lote sob período de carência de medicamentos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="planos" class="landing-pricing">
+        <div class="pricing-header text-center">
+            <span class="section-tag font-mono">INVESTIMENTO TRANSPARENTE</span>
+            <h2 class="section-title">Planos sob medida para o tamanho do seu rebanho</h2>
+            <p class="section-subtitle">Sem taxa de adesão ou surpresas. Cancele ou mude de plano quando quiser.</p>
+
+            <div class="pricing-toggle-box">
+                <button class="toggle-btn @(!_isAnnual ? "active" : "")" @onclick="() => _isAnnual = false">Mensal</button>
+                <button class="toggle-btn @(_isAnnual ? "active" : "")" @onclick="() => _isAnnual = true">
+                    <span>Anual</span>
+                    <span class="discount-badge">20% OFF</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pricing-grid">
+            @foreach (var plan in _plans)
+            {
+                <div class="pricing-card @(plan.IsPopular ? "popular-card" : "")">
+                    @if (plan.IsPopular)
+                    {
+                        <div class="popular-ribbon">MAIS ESCOLHIDO</div>
+                    }
+
+                    <div class="card-plan-header">
+                        <h3 class="plan-name">@plan.Name</h3>
+                        <p class="plan-desc">@plan.Description</p>
+                    </div>
+
+                    <div class="card-plan-price">
+                        <span class="currency">R$</span>
+                        <span class="price-val">@((_isAnnual ? plan.AnnualPriceMonthly : plan.MonthlyPrice).ToString("N0"))</span>
+                        <span class="period">/mês</span>
+                    </div>
+
+                    <div class="capacity-pill font-mono">
+                        <span class="material-symbols-outlined icon-sm">groups</span>
+                        <span>@(plan.HeadCapacityLimit == int.MaxValue ? "Cabeças Ilimitadas" : $"Até {plan.HeadCapacityLimit:N0} cabeças")</span>
+                    </div>
+
+                    <ul class="plan-features-list">
+                        <li>
+                            <span class="material-symbols-outlined check-icon">check_circle</span>
+                            <span>Acesso PWA Curral 100% Off-line</span>
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined check-icon">check_circle</span>
+                            <span>Módulo Reprodução & IATF</span>
+                        </li>
+                        @if (plan.IncludedModules.Contains("Growth"))
+                        {
+                            <li>
+                                <span class="material-symbols-outlined check-icon">check_circle</span>
+                                <span>Balança Eletrônica & Curva de GPD</span>
+                            </li>
+                        }
+                        @if (plan.IncludedModules.Contains("Nutrition"))
+                        {
+                            <li>
+                                <span class="material-symbols-outlined check-icon">check_circle</span>
+                                <span>Nutrição, TMR & Silos</span>
+                            </li>
+                        }
+                        @if (plan.IncludedModules.Contains("Sanitary"))
+                        {
+                            <li>
+                                <span class="material-symbols-outlined check-icon">check_circle</span>
+                                <span>Trava de Carência Medicamentosa</span>
+                            </li>
+                        }
+                        @if (plan.IncludedModules.Contains("Analytics"))
+                        {
+                            <li>
+                                <span class="material-symbols-outlined check-icon">check_circle</span>
+                                <span>Analytics Executivo & Custo por @</span>
+                            </li>
+                        }
+                    </ul>
+
+                    <a href="/login" class="cc-btn @(plan.IsPopular ? "cc-btn-primary" : "cc-btn-outline") plan-cta-btn">
+                        <span>Assinar @plan.Name</span>
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </a>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="brand-logo-icon">
+                    <span class="material-symbols-outlined">pets</span>
+                </div>
+                <span class="footer-title">CriaCerto Bovino SaaS</span>
+                <p class="footer-text">Plataforma de alta performance para gestão pecuária de precisão baseada em .NET 10 e Blazor WebAssembly.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <span class="col-title font-mono">PRODUTO</span>
+                    <a href="#recursos">Funcionalidades</a>
+                    <a href="#planos">Planos & Preços</a>
+                    <a href="#diferenciais">PWA Off-line</a>
+                </div>
+                <div class="link-col">
+                    <span class="col-title font-mono">SUPORTE</span>
+                    <a href="/login">Central de Ajuda</a>
+                    <a href="/login">Documentação Técnica</a>
+                    <a href="/login">Contato Zootécnico</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom text-center font-mono text-xs">
+            © 2026 CriaCerto Bovino SaaS. Todos os direitos reservados.
+        </div>
+    </footer>
+
+</div>
 
 @code {
-	private static decimal LiveBornPerCycle => 12.8m;
-	private static decimal LiveBornTrend => 6.4m;
-	private static decimal MortalityRate => 7.2m;
-	private static decimal AdgKgPerDay => 0.43m;
-	private static decimal AdgTrend => 2.1m;
-	private static decimal FcrRatio => 2.46m;
+    private bool _isAnnual = true;
+    private List<CriaCerto.Web.Client.Services.SubscriptionPlanModel> _plans = new();
 
-	private static IReadOnlyList<FarrowingRow> FarrowingQueue { get; } =
-	[
-		new("SOW-0217", 4, "2026-07-22", "In progress", "badge-live"),
-		new("SOW-0142", 3, "2026-07-22", "Waiting", "badge-wait"),
-		new("SOW-0331", 5, "2026-07-23", "Prepared", "badge-ready")
-	];
-
-	private sealed record FarrowingRow(string SowCode, int Parity, string ExpectedDate, string Status, string StatusClass);
+    protected override async Task OnInitializedAsync()
+    {
+        _plans = await TenancyApiClient.GetSubscriptionPlansAsync();
+    }
 }

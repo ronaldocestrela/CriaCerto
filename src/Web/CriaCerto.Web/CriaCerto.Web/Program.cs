@@ -18,6 +18,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/login";
     });
 builder.Services.AddAuthorization();
+builder.Services.AddScoped(sp => new HttpClient());
+builder.Services.AddScoped<CriaCerto.Web.Client.Services.TenancyApiClient>();
 
 var app = builder.Build();
 

@@ -1444,3 +1444,680 @@ h1:focus {
     color: var(--cc-primary);
     font-weight: 800;
 }
+
+/* ==========================================================================
+   Commercial Landing Page Styles - CriaCerto Bovino SaaS
+   ========================================================================== */
+
+.landing-page {
+    color: #1a2218;
+    background-color: #f7faf6;
+    overflow-x: hidden;
+}
+
+.landing-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 83, 35, 0.1);
+    padding: 0.85rem 1.5rem;
+}
+
+.landing-nav-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.landing-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.brand-logo-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #005323, #15803d);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 83, 35, 0.2);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #005323;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.brand-subtitle {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #15803d;
+    letter-spacing: 0.08em;
+}
+
+.landing-nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-item {
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-item:hover {
+    color: #005323;
+}
+
+.landing-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.nav-btn-login {
+    border-radius: 10px;
+    padding: 0.5rem 1.2rem;
+    text-decoration: none;
+}
+
+.nav-btn-register {
+    border-radius: 10px;
+    padding: 0.5rem 1.25rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Hero Section */
+.landing-hero {
+    position: relative;
+    padding: 5rem 1.5rem 4rem 1.5rem;
+    background: linear-gradient(135deg, #022c15 0%, #005323 50%, #0f5c2e 100%);
+    color: white;
+    overflow: hidden;
+}
+
+.hero-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    padding: 0.4rem 0.9rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 1.5rem;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
+}
+
+.hero-highlight {
+    background: linear-gradient(135deg, #4ade80, #86efac);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+    margin-bottom: 2rem;
+    max-width: 640px;
+}
+
+.hero-cta-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.hero-btn-main {
+    padding: 0.85rem 1.85rem;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(74, 222, 128, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hero-btn-sec {
+    padding: 0.85rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hero-metrics-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.metric-pill {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #4ade80;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+.metric-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glassmorphism Card Preview */
+.hero-visual-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.card-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 10px #4ade80;
+}
+
+.hero-card-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.preview-metric-box {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    border-radius: 14px;
+}
+
+.preview-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.preview-val {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin: 0.2rem 0;
+}
+
+.preview-tag-chip {
+    display: inline-block;
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+}
+
+.preview-mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    height: 60px;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.chart-bar {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.chart-bar.active {
+    background: #4ade80;
+}
+
+.preview-alert-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fef3c7;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+/* Features Bento Grid */
+.landing-features {
+    padding: 5rem 1.5rem;
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.section-tag {
+    color: #005323;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.section-title {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0.5rem 0 1rem 0;
+    letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: #64748b;
+    max-width: 680px;
+    margin: 0 auto 3rem auto;
+}
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.bento-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bento-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 83, 35, 0.08);
+}
+
+.bento-card.bento-wide {
+    grid-column: span 2;
+}
+
+.bento-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bento-icon-box span {
+    font-size: 1.8rem;
+}
+
+.bento-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #005323;
+    background: #e8f5e9;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.bento-body h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+}
+
+.bento-body p {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Pricing Section */
+.landing-pricing {
+    background: #f1f5f9;
+    padding: 5rem 1.5rem;
+}
+
+.pricing-header {
+    max-width: 1240px;
+    margin: 0 auto 3rem auto;
+}
+
+.pricing-toggle-box {
+    display: inline-flex;
+    align-items: center;
+    background: white;
+    padding: 0.35rem;
+    border-radius: 99px;
+    border: 1px solid #cbd5e1;
+    margin-top: 1.5rem;
+}
+
+.toggle-btn {
+    border: 0;
+    background: transparent;
+    padding: 0.5rem 1.25rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #64748b;
+    border-radius: 99px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-btn.active {
+    background: #005323;
+    color: white;
+}
+
+.discount-badge {
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 0.15rem 0.4rem;
+    border-radius: 99px;
+}
+
+.pricing-grid {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.pricing-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2.25rem 1.75rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-6px);
+}
+
+.pricing-card.popular-card {
+    border: 2px solid #005323;
+    box-shadow: 0 12px 35px rgba(0, 83, 35, 0.15);
+}
+
+.popular-ribbon {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #005323;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 0.25rem 1rem;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+}
+
+.plan-name {
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0 0 0.4rem 0;
+}
+
+.plan-desc {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin: 0 0 1.25rem 0;
+    min-height: 40px;
+}
+
+.card-plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    margin-bottom: 1.25rem;
+}
+
+.currency {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #005323;
+}
+
+.price-val {
+    font-size: 2.75rem;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+}
+
+.period {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.capacity-pill {
+    background: #f1f5f9;
+    color: #005323;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+}
+
+.plan-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.plan-features-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #334155;
+    font-weight: 600;
+}
+
+.check-icon {
+    color: #16a34a;
+    font-size: 1.1rem;
+}
+
+.plan-cta-btn {
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+/* Landing Footer */
+.landing-footer {
+    background: #022c15;
+    color: white;
+    padding: 4rem 1.5rem 2rem 1.5rem;
+}
+
+.footer-container {
+    max-width: 1240px;
+    margin: 0 auto 3rem auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 4rem;
+}
+
+.footer-brand {
+    max-width: 380px;
+}
+
+.footer-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #4ade80;
+    display: block;
+    margin: 0.5rem 0;
+}
+
+.footer-text {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.footer-links {
+    display: flex;
+    gap: 4rem;
+}
+
+.link-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.col-title {
+    font-size: 0.75rem;
+    color: #4ade80;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.link-col a {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.link-col a:hover {
+    color: white;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1.5rem;
+    color: #64748b;
+}
+
+@media (max-width: 1024px) {
+    .hero-container {
+        grid-template-columns: 1fr;
+    }
+    .bento-grid, .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+    .bento-card.bento-wide {
+        grid-column: span 1;
+    }
+    .hero-title {
+        font-size: 2.25rem;
+    }
+    .landing-nav-links {
+        display: none;
+    }
+}
+
