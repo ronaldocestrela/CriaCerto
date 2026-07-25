@@ -4,10 +4,10 @@
     <div class="card-body p-4">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <div>
-                <span class="text-uppercase text-muted fw-bold small">Custo por Arroba Produzida ($/@)</span>
+                <span class="text-uppercase text-muted fw-bold small">Custo por Arroba Produzida ($/@@)</span>
                 <h3 class="fw-bold text-primary mb-0 mt-1">
                     R$ @(CostInfo != null ? CostInfo.CostPerArroba.ToString("N2") : "0.00")
-                    <small class="fs-6 text-muted fw-normal">/ @</small>
+                    <small class="fs-6 text-muted fw-normal">/ @@</small>
                 </h3>
             </div>
             <div class="bg-primary-subtle p-3 rounded-circle text-primary">
@@ -21,7 +21,7 @@
             </div>
             <div class="col-6">
                 <span>Arrobas Ganhas:</span>
-                <strong class="d-block text-dark">@(CostInfo != null ? CostInfo.ArrobasProduced.ToString("N1") + " @" : "0.0 @") (RC @(CostInfo?.CarcassYieldPercentage ?? 50)%)</strong>
+                <strong class="d-block text-dark">@(CostInfo != null ? CostInfo.ArrobasProduced.ToString("N1") + " @@" : "0.0 @@") (RC @(CostInfo?.CarcassYieldPercentage ?? 50)%)</strong>
             </div>
         </div>
     </div>

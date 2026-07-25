@@ -11,7 +11,7 @@
             <h3 class="fw-bold mb-1 text-success">
                 <i class="bi bi-speedometer2 me-2"></i>Curral & Mangueiro: Pesagem Rápida
             </h3>
-            <p class="text-muted mb-0">Entrada ágil de pesagem individual, cálculo automático de GPD e conversão em Arrobas (@).</p>
+            <p class="text-muted mb-0">Entrada ágil de pesagem individual, cálculo automático de GPD e conversão em Arrobas (@@).</p>
         </div>
         <div class="d-flex gap-2">
             <span class="badge bg-outline-secondary d-flex align-items-center px-3 py-2 border">
@@ -28,54 +28,38 @@
         <!-- Input & Quick Entry Panel -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-success text-white py-3">
-                    <h6 class="m-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Registrar Balança</h6>
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-dark"><i class="bi bi-plus-circle me-2 text-success"></i>Lançamento Rápido na Balança</h6>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Brinco / Tag RFID do Animal</label>
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text bg-light"><i class="bi bi-tag-fill text-muted"></i></span>
-                            <input type="text" class="form-control text-uppercase font-monospace fw-bold" 
-                                   placeholder="Ex: BR-1020" 
-                                   @bind="currentTag" 
-                                   @bind:event="oninput" 
-                                   @onkeyup="OnTagKeyUp" />
+                        <label class="form-label font-monospace fw-bold">Brinco / RFID / SISBOV *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-qr-code-scan"></i></span>
+                            <input type="text" class="form-control font-monospace text-uppercase" placeholder="Ex: BR-9802" @bind="currentTag" @bind:event="oninput" />
                         </div>
                     </div>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-7">
-                            <label class="form-label fw-bold">Peso Medido na Balança (kg)</label>
-                            <div class="input-group input-group-lg">
-                                <input type="number" step="0.5" class="form-control fw-bold text-success" 
-                                       placeholder="0.0" 
-                                       @bind="currentWeight" 
-                                       @bind:event="oninput" />
-                                <span class="input-group-text">kg</span>
-                            </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Peso Vivo (kg) *</label>
+                            <input type="number" step="0.5" class="form-control text-success fw-bold fs-5" placeholder="0.0" @bind="currentWeight" />
                         </div>
-                        <div class="col-md-5">
-                            <label class="form-label fw-bold">Rendimento Carcaça</label>
-                            <div class="input-group input-group-lg">
-                                <input type="number" step="0.5" class="form-control" 
-                                       @bind="currentYield" 
-                                       @bind:event="oninput" />
-                                <span class="input-group-text">%</span>
-                            </div>
+                        <div class="col-6">
+                            <label class="form-label">Rendimento Carcaça %</label>
+                            <input type="number" step="0.5" class="form-control" placeholder="52.0" @bind="currentYield" />
                         </div>
                     </div>
 
-                    <!-- Real-Time Computed Preview Box -->
                     @if (currentWeight > 0)
                     {
                         var previewArrobas = Math.Round((currentWeight * (currentYield / 100.0m)) / 15.0m, 2);
                         <div class="p-3 bg-light rounded-3 border mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="text-muted fs-7">Conversão Estimada em Arrobas:</span>
-                                <span class="badge bg-success fs-6">@previewArrobas @</span>
+                                <span class="badge bg-success fs-6">@previewArrobas @@</span>
                             </div>
-                            <small class="text-muted d-block fs-8">Fórmula: (Peso Vivo × Rendimento %) ÷ 15 kg/@</small>
+                            <small class="text-muted d-block fs-8">Fórmula: (Peso Vivo × Rendimento %) ÷ 15 kg/@@</small>
                         </div>
                     }
 
@@ -122,7 +106,7 @@
                                         <th>Brinco / Tag</th>
                                         <th>Peso (kg)</th>
                                         <th>Rendimento</th>
-                                        <th>Arrobas (@)</th>
+                                        <th>Arrobas (@@)</th>
                                         <th>Status / Alerta</th>
                                         <th class="text-end">Ações</th>
                                     </tr>
@@ -134,7 +118,7 @@
                                             <td class="fw-bold font-monospace">@item.AnimalTagId</td>
                                             <td class="fw-bold text-success">@item.WeightKg.ToString("N1") kg</td>
                                             <td>@item.CarcassYieldPercentage.ToString("N1")%</td>
-                                            <td class="fw-bold">@item.CalculatedArrobasTotal.ToString("N2") @</td>
+                                            <td class="fw-bold">@item.CalculatedArrobasTotal.ToString("N2") @@</td>
                                             <td>
                                                 @if (item.IsWeightLossWarning)
                                                 {

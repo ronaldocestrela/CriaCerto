@@ -1,0 +1,149 @@
+@page "/analytics/executive-dashboard"
+@using CriaCerto.Modules.Analytics.Application.Contracts
+@attribute [Authorize]
+
+<PageTitle>Dashboard Executivo Zootécnico | CriaCerto</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">
+                <i class="bi bi-graph-up-arrow me-2 text-success"></i>Dashboard Executivo Zootécnico & KPIs
+            </h3>
+            <p class="text-muted mb-0">Consolidação multi-fazenda de reprodução, desmame, ganho de peso, lotação de pastos e custos por arroba (@@).</p>
+        </div>
+        <button class="btn btn-outline-dark shadow-sm" @onclick="ExportReport">
+            <i class="bi bi-download me-1"></i> Exportar Relatório Executivo (CSV)
+        </button>
+    </div>
+
+    <!-- CARDS DE METRICAS CHAVE -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase">Taxa de Prenhez (IATF)</span>
+                        <h2 class="fw-bold text-success mb-0">@scorecard.PregnancyRatePercentage%</h2>
+                        <small class="text-muted">Meta: > 80%</small>
+                    </div>
+                    <div class="bg-success-subtle p-3 rounded-circle text-success">
+                        <i class="bi bi-heart-pulse fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase">Lotação (UA/ha)</span>
+                        <h2 class="fw-bold text-primary mb-0">@scorecard.StockingRateUAPerHa</h2>
+                        <small class="text-muted">Capacidade Ideal: 1.8 UA/ha</small>
+                    </div>
+                    <div class="bg-primary-subtle p-3 rounded-circle text-primary">
+                        <i class="bi bi-bounding-box-circles fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase">GPD Médio (kg/dia)</span>
+                        <h2 class="fw-bold text-warning mb-0">@scorecard.AverageGpdKg kg</h2>
+                        <small class="text-muted">Ganho de peso diário</small>
+                    </div>
+                    <div class="bg-warning-subtle p-3 rounded-circle text-warning">
+                        <i class="bi bi-speedometer fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase">Custo por Arroba (@@)</span>
+                        <h2 class="fw-bold text-dark mb-0">R$ @scorecard.CostPerArrobaProduced</h2>
+                        <small class="text-muted">Custo de produção / @@</small>
+                    </div>
+                    <div class="bg-light p-3 rounded-circle text-dark border">
+                        <i class="bi bi-currency-dollar fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECAO GRAFICA INTERATIVA -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-dark"><i class="bi bi-bar-chart-line me-2 text-success"></i>Evolução de Ganho de Peso Médio Diário (GPD) por Lote</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-end h-100 p-4 border rounded bg-light" style="min-height: 200px;">
+                        <div class="text-center flex-fill">
+                            <div class="bg-success rounded-top mx-auto" style="height: 100px; width: 40px;"></div>
+                            <span class="small text-muted mt-2 d-block">Jan (0.75kg)</span>
+                        </div>
+                        <div class="text-center flex-fill">
+                            <div class="bg-success rounded-top mx-auto" style="height: 120px; width: 40px;"></div>
+                            <span class="small text-muted mt-2 d-block">Fev (0.82kg)</span>
+                        </div>
+                        <div class="text-center flex-fill">
+                            <div class="bg-success rounded-top mx-auto" style="height: 110px; width: 40px;"></div>
+                            <span class="small text-muted mt-2 d-block">Mar (0.79kg)</span>
+                        </div>
+                        <div class="text-center flex-fill">
+                            <div class="bg-success rounded-top mx-auto" style="height: 140px; width: 40px;"></div>
+                            <span class="small text-muted mt-2 d-block">Abr (0.88kg)</span>
+                        </div>
+                        <div class="text-center flex-fill">
+                            <div class="bg-success rounded-top mx-auto" style="height: 155px; width: 40px;"></div>
+                            <span class="small text-muted mt-2 d-block">Mai (0.92kg)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-dark"><i class="bi bi-shield-check me-2 text-primary"></i>Conformidade Sanitária Executiva</h6>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Status da Fazenda: @scorecard.OverallHealthStatus</h5>
+                    <p class="text-muted small">Nenhum lote com carência vencida e vacinações de Aftosa e Brucelose em dia.</p>
+                    <div class="alert alert-light border text-start mb-0">
+                        <small class="d-block text-muted"><strong>Animais em Carência Sanitária:</strong> @scorecard.AnimalsUnderSlaughterWithdrawal</small>
+                        <small class="d-block text-muted"><strong>Bloqueios Ativos de Abate:</strong> 0 Alertas Críticos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ExecutiveScorecardDto scorecard = new ExecutiveScorecardDto(
+        PregnancyRatePercentage: 83.5m,
+        WeaningRatePercentage: 79.2m,
+        StockingRateUAPerHa: 1.55m,
+        AverageGpdKg: 0.890m,
+        CostPerArrobaProduced: 182.00m,
+        AnimalsUnderSlaughterWithdrawal: 4,
+        OverallHealthStatus: "Ótimo");
+
+    private void ExportReport()
+    {
+        // Export logic
+    }
+}

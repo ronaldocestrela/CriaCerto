@@ -28,6 +28,11 @@ using CriaCerto.Modules.Tenancy.Application.Features.Login;
 using CriaCerto.Modules.Tenancy.Application.Features.SelectTenant;
 using CriaCerto.Modules.Tenancy.Infrastructure;
 using CriaCerto.Modules.Tenancy.Infrastructure.Persistence;
+using CriaCerto.Modules.Sanitary.Application.Contracts;
+using CriaCerto.Modules.Sanitary.Infrastructure;
+using CriaCerto.Modules.Sanitary.Infrastructure.Persistence;
+using CriaCerto.Modules.Analytics.Application.Contracts;
+using CriaCerto.Modules.Analytics.Application.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +49,8 @@ builder.Services.AddBuildingBlocksApplication(
     typeof(CriaCerto.Modules.Calving.Application.Contracts.CalvingDto).Assembly,
     typeof(CriaCerto.Modules.Growth.Application.Contracts.PaddockDto).Assembly,
     typeof(NutritionAssemblyMarker).Assembly,
+    typeof(VaccinationCampaignDto).Assembly,
+    typeof(ExecutiveScorecardDto).Assembly,
     typeof(TenancyAssemblyMarker).Assembly);
 
 var connectionString = builder.Configuration.GetConnectionString("SqlServer")
@@ -56,6 +63,7 @@ builder.Services.AddBreedingInfrastructure();
 builder.Services.AddCalvingInfrastructure();
 builder.Services.AddGrowthInfrastructure();
 builder.Services.AddNutritionInfrastructure();
+builder.Services.AddSanitaryModule(builder.Configuration);
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
@@ -294,6 +302,59 @@ nutrition.MapGet("/analytics/feed-conversion", async (Guid tenantId, Guid lotId,
 nutrition.MapGet("/analytics/cost-per-arroba", async (Guid tenantId, Guid lotId, decimal totalWeightGainKg, decimal? carcassYieldPercentage, ISender sender) =>
 {
     var result = await sender.Send(new GetCostPerArrobaQuery(tenantId, lotId, totalWeightGainKg, carcassYieldPercentage));
+    return ToHttpResult(result);
+});
+
+// --- SANITARY ENDPOINTS ---
+var sanitary = app.MapGroup("/api/sanitary").RequireAuthorization();
+
+sanitary.MapGet("/campaigns", async (ISender sender) =>
+{
+    var result = await sender.Send(new GetActiveCampaignsQuery());
+    return ToHttpResult(result);
+});
+
+sanitary.MapPost("/campaigns", async (CreateVaccinationCampaignCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+sanitary.MapPost("/treatments", async (ApplyTreatmentCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+sanitary.MapGet("/slaughter-validation/{animalId:guid}", async (Guid animalId, ISender sender) =>
+{
+    var result = await sender.Send(new ValidateSlaughterEligibilityQuery(animalId));
+    return ToHttpResult(result);
+});
+
+// --- EXECUTIVE ANALYTICS ENDPOINTS ---
+var analytics = app.MapGroup("/api/analytics").RequireAuthorization();
+
+analytics.MapGet("/executive-scorecard", async (
+    int totalCows,
+    int pregnantCows,
+    int calvesWeaned,
+    decimal totalPastureHectares,
+    decimal totalAnimalUnits,
+    decimal averageGpdKg,
+    decimal averageCostPerArroba,
+    int animalsUnderWithdrawal,
+    ISender sender) =>
+{
+    var query = new GetExecutiveAnalyticsQuery(
+        totalCows, pregnantCows, calvesWeaned, totalPastureHectares, totalAnimalUnits, averageGpdKg, averageCostPerArroba, animalsUnderWithdrawal);
+    var result = await sender.Send(query);
+    return ToHttpResult(result);
+});
+
+analytics.MapPost("/export-csv", async (ExecutiveScorecardDto scorecard, ISender sender) =>
+{
+    var result = await sender.Send(new ExportBovineReportQuery(scorecard));
     return ToHttpResult(result);
 });
 
