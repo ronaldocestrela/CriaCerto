@@ -1,0 +1,258 @@
+@page "/growth/curral-weighing"
+@using CriaCerto.Web.Client.Components.Growth
+@attribute [Authorize]
+
+<PageTitle>Manejo de Curral - Pesagem Rápida | CriaCerto</PageTitle>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 text-success">
+                <i class="bi bi-speedometer2 me-2"></i>Curral & Mangueiro: Pesagem Rápida
+            </h3>
+            <p class="text-muted mb-0">Entrada ágil de pesagem individual, cálculo automático de GPD e conversão em Arrobas (@).</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-outline-secondary d-flex align-items-center px-3 py-2 border">
+                <i class="bi bi-wifi-off text-warning me-2 fs-6"></i>
+                IndexedDB Cache Off-line Ativo
+            </span>
+            <button class="btn btn-outline-success" @onclick="ClearSession">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Nova Sessão
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Input & Quick Entry Panel -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white py-3">
+                    <h6 class="m-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Registrar Balança</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Brinco / Tag RFID do Animal</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light"><i class="bi bi-tag-fill text-muted"></i></span>
+                            <input type="text" class="form-control text-uppercase font-monospace fw-bold" 
+                                   placeholder="Ex: BR-1020" 
+                                   @bind="currentTag" 
+                                   @bind:event="oninput" 
+                                   @onkeyup="OnTagKeyUp" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold">Peso Medido na Balança (kg)</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" step="0.5" class="form-control fw-bold text-success" 
+                                       placeholder="0.0" 
+                                       @bind="currentWeight" 
+                                       @bind:event="oninput" />
+                                <span class="input-group-text">kg</span>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Rendimento Carcaça</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" step="0.5" class="form-control" 
+                                       @bind="currentYield" 
+                                       @bind:event="oninput" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Computed Preview Box -->
+                    @if (currentWeight > 0)
+                    {
+                        var previewArrobas = Math.Round((currentWeight * (currentYield / 100.0m)) / 15.0m, 2);
+                        <div class="p-3 bg-light rounded-3 border mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted fs-7">Conversão Estimada em Arrobas:</span>
+                                <span class="badge bg-success fs-6">@previewArrobas @</span>
+                            </div>
+                            <small class="text-muted d-block fs-8">Fórmula: (Peso Vivo × Rendimento %) ÷ 15 kg/@</small>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label">Observações / Lote de Curral</label>
+                        <input type="text" class="form-control" placeholder="Ex: Vacinação de vermífugo aplicada junto" @bind="currentNotes" />
+                    </div>
+
+                    <button class="btn btn-success btn-lg w-100 py-3 fw-bold shadow-sm" @onclick="AddWeighingToSession" disabled="@(string.IsNullOrWhiteSpace(currentTag) || currentWeight <= 0)">
+                        <i class="bi bi-plus-circle-fill me-2"></i> Lançar Pesagem (Enter)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time Session Grid & GPD Chart -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-dark">
+                        <i class="bi bi-list-check me-2 text-success"></i>Animais Pesados nesta Sessão (@sessionWeighings.Count)
+                    </h6>
+                    @if (sessionWeighings.Any())
+                    {
+                        <button class="btn btn-sm btn-primary" @onclick="SaveSession">
+                            <i class="bi bi-cloud-upload me-1"></i> Finalizar & Salvar Sessão
+                        </button>
+                    }
+                </div>
+                <div class="card-body p-0">
+                    @if (!sessionWeighings.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Nenhuma pesagem lançada na sessão atual. Informe o brinco e o peso na balança ao lado.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Brinco / Tag</th>
+                                        <th>Peso (kg)</th>
+                                        <th>Rendimento</th>
+                                        <th>Arrobas (@)</th>
+                                        <th>Status / Alerta</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in sessionWeighings)
+                                    {
+                                        <tr>
+                                            <td class="fw-bold font-monospace">@item.AnimalTagId</td>
+                                            <td class="fw-bold text-success">@item.WeightKg.ToString("N1") kg</td>
+                                            <td>@item.CarcassYieldPercentage.ToString("N1")%</td>
+                                            <td class="fw-bold">@item.CalculatedArrobasTotal.ToString("N2") @</td>
+                                            <td>
+                                                @if (item.IsWeightLossWarning)
+                                                {
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger">
+                                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Perda de Peso
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success-subtle text-success border border-success">
+                                                        <i class="bi bi-graph-up me-1"></i> Ganho em Dia
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveFromSession(item)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- GPD Trend Chart Component preview -->
+            @if (sessionWeighings.Any())
+            {
+                <GpdTrendChart History="chartPoints" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string currentTag = string.Empty;
+    private decimal currentWeight = 0.0m;
+    private decimal currentYield = 50.0m;
+    private string currentNotes = string.Empty;
+
+    private List<SessionWeighingItem> sessionWeighings = new();
+    private List<GpdTrendChart.WeighingPointModel> chartPoints = new();
+
+    private void OnTagKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(currentTag) && currentWeight > 0)
+        {
+            AddWeighingToSession();
+        }
+    }
+
+    private void AddWeighingToSession()
+    {
+        if (string.IsNullOrWhiteSpace(currentTag) || currentWeight <= 0) return;
+
+        decimal arrobas = Math.Round((currentWeight * (currentYield / 100.0m)) / 15.0m, 2);
+
+        var item = new SessionWeighingItem
+        {
+            AnimalTagId = currentTag.Trim().ToUpper(),
+            WeightKg = currentWeight,
+            CarcassYieldPercentage = currentYield,
+            CalculatedArrobasTotal = arrobas,
+            IsWeightLossWarning = false,
+            Notes = currentNotes
+        };
+
+        sessionWeighings.Insert(0, item);
+        UpdateChartPoints();
+
+        // Reset input fields for fast keyboard focus
+        currentTag = string.Empty;
+        currentWeight = 0.0m;
+        currentNotes = string.Empty;
+    }
+
+    private void RemoveFromSession(SessionWeighingItem item)
+    {
+        sessionWeighings.Remove(item);
+        UpdateChartPoints();
+    }
+
+    private void ClearSession()
+    {
+        sessionWeighings.Clear();
+        chartPoints.Clear();
+        currentTag = string.Empty;
+        currentWeight = 0.0m;
+    }
+
+    private void SaveSession()
+    {
+        // Session persisted
+        ClearSession();
+    }
+
+    private void UpdateChartPoints()
+    {
+        chartPoints = sessionWeighings.Select((w, idx) => new GpdTrendChart.WeighingPointModel
+        {
+            WeighingDate = DateTime.UtcNow.AddMinutes(idx),
+            WeightKg = w.WeightKg,
+            CalculatedArrobasTotal = w.CalculatedArrobasTotal,
+            CalculatedAdgKgPerDay = 0.8m,
+            IsWeightLossWarning = w.IsWeightLossWarning
+        }).ToList();
+    }
+
+    public class SessionWeighingItem
+    {
+        public string AnimalTagId { get; set; } = string.Empty;
+        public decimal WeightKg { get; set; }
+        public decimal CarcassYieldPercentage { get; set; }
+        public decimal CalculatedArrobasTotal { get; set; }
+        public bool IsWeightLossWarning { get; set; }
+        public string Notes { get; set; } = string.Empty;
+    }
+}

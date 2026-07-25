@@ -423,3 +423,302 @@ public sealed class GetLotsQueryHandler : IRequestHandler<GetLotsQuery, Result<L
         return Result.Success(result);
     }
 }
+
+// --- WEIGHING DTOs ---
+public sealed record WeighingDto(
+    Guid Id,
+    Guid TenantId,
+    string AnimalTagId,
+    Guid? LotId,
+    DateTime WeighingDate,
+    decimal WeightKg,
+    decimal CarcassYieldPercentage,
+    decimal CalculatedArrobasTotal,
+    decimal CalculatedAdgKgPerDay,
+    decimal CalculatedMonthlyArrobaGain,
+    bool IsWeightLossWarning,
+    string Notes,
+    DateTime CreatedAtUtc);
+
+public sealed record SingleWeighingEntryDto(
+    string AnimalTagId,
+    decimal WeightKg,
+    decimal CarcassYieldPercentage = Weighing.DefaultCarcassYieldPercentage,
+    string Notes = "");
+
+public sealed record AnimalWeighingHistoryDto(
+    string AnimalTagId,
+    decimal LatestWeightKg,
+    decimal LatestArrobas,
+    decimal AverageAdgKgPerDay,
+    int WeighingsCount,
+    List<WeighingDto> History);
+
+public sealed record LotWeighingSummaryDto(
+    Guid LotId,
+    string LotName,
+    int TotalAnimalsWeighed,
+    decimal AverageWeightKg,
+    decimal AverageAdgKgPerDay,
+    decimal AverageArrobasPerAnimal,
+    int WeightLossCount);
+
+// --- WEIGHING COMMANDS ---
+public sealed record RecordWeighingCommand(
+    Guid TenantId,
+    string AnimalTagId,
+    Guid? LotId,
+    DateTime WeighingDate,
+    decimal WeightKg,
+    decimal CarcassYieldPercentage = Weighing.DefaultCarcassYieldPercentage,
+    string Notes = "") : ICommand<WeighingDto>;
+
+public sealed record BatchRecordWeighingCommand(
+    Guid TenantId,
+    Guid? LotId,
+    DateTime WeighingDate,
+    List<SingleWeighingEntryDto> Entries) : ICommand<List<WeighingDto>>;
+
+// --- WEIGHING QUERIES ---
+public sealed record GetAnimalWeighingHistoryQuery(
+    Guid TenantId,
+    string AnimalTagId) : IQuery<AnimalWeighingHistoryDto>;
+
+public sealed record GetLotWeighingSummaryQuery(
+    Guid TenantId,
+    Guid LotId) : IQuery<LotWeighingSummaryDto>;
+
+public sealed record GetRecentWeighingsQuery(
+    Guid TenantId,
+    Guid? LotId = null,
+    int Top = 50) : IQuery<List<WeighingDto>>;
+
+// --- WEIGHING VALIDATORS ---
+public sealed class RecordWeighingCommandValidator : AbstractValidator<RecordWeighingCommand>
+{
+    public RecordWeighingCommandValidator()
+    {
+        RuleFor(x => x.TenantId).NotEmpty();
+        RuleFor(x => x.AnimalTagId).NotEmpty().MaximumLength(50);
+        RuleFor(x => x.WeightKg).GreaterThan(0);
+        RuleFor(x => x.CarcassYieldPercentage).InclusiveBetween(Weighing.MinCarcassYieldPercentage, Weighing.MaxCarcassYieldPercentage);
+    }
+}
+
+public sealed class BatchRecordWeighingCommandValidator : AbstractValidator<BatchRecordWeighingCommand>
+{
+    public BatchRecordWeighingCommandValidator()
+    {
+        RuleFor(x => x.TenantId).NotEmpty();
+        RuleFor(x => x.Entries).NotEmpty();
+    }
+}
+
+// --- WEIGHING HANDLERS ---
+public sealed class RecordWeighingCommandHandler : IRequestHandler<RecordWeighingCommand, Result<WeighingDto>>
+{
+    private readonly IGrowthDbContext _dbContext;
+
+    public RecordWeighingCommandHandler(IGrowthDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<WeighingDto>> Handle(RecordWeighingCommand request, CancellationToken cancellationToken)
+    {
+        var weighingResult = Weighing.Create(
+            request.TenantId,
+            request.AnimalTagId,
+            request.LotId,
+            request.WeighingDate,
+            request.WeightKg,
+            request.CarcassYieldPercentage,
+            request.Notes);
+
+        if (weighingResult.IsFailure)
+            return Result.Failure<WeighingDto>(weighingResult.Error);
+
+        var weighing = weighingResult.Value;
+
+        // Fetch previous weighing for this animal to calculate ADG/GPD
+        var previousWeighing = await _dbContext.Weighings
+            .Where(w => w.TenantId == request.TenantId && w.AnimalTagId == weighing.AnimalTagId && w.WeighingDate < weighing.WeighingDate)
+            .OrderByDescending(w => w.WeighingDate)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (previousWeighing is not null)
+        {
+            weighing.ApplyPreviousWeighing(previousWeighing);
+        }
+
+        _dbContext.Weighings.Add(weighing);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(MapToDto(weighing));
+    }
+
+    public static WeighingDto MapToDto(Weighing w) => new(
+        w.Id,
+        w.TenantId,
+        w.AnimalTagId,
+        w.LotId,
+        w.WeighingDate,
+        w.WeightKg,
+        w.CarcassYieldPercentage,
+        w.CalculatedArrobasTotal,
+        w.CalculatedAdgKgPerDay,
+        w.CalculatedMonthlyArrobaGain,
+        w.IsWeightLossWarning,
+        w.Notes,
+        w.CreatedAtUtc);
+}
+
+public sealed class BatchRecordWeighingCommandHandler : IRequestHandler<BatchRecordWeighingCommand, Result<List<WeighingDto>>>
+{
+    private readonly IGrowthDbContext _dbContext;
+
+    public BatchRecordWeighingCommandHandler(IGrowthDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<List<WeighingDto>>> Handle(BatchRecordWeighingCommand request, CancellationToken cancellationToken)
+    {
+        var results = new List<WeighingDto>();
+
+        foreach (var entry in request.Entries)
+        {
+            var weighingResult = Weighing.Create(
+                request.TenantId,
+                entry.AnimalTagId,
+                request.LotId,
+                request.WeighingDate,
+                entry.WeightKg,
+                entry.CarcassYieldPercentage,
+                entry.Notes);
+
+            if (weighingResult.IsFailure)
+                return Result.Failure<List<WeighingDto>>(weighingResult.Error);
+
+            var weighing = weighingResult.Value;
+
+            var previousWeighing = await _dbContext.Weighings
+                .Where(w => w.TenantId == request.TenantId && w.AnimalTagId == weighing.AnimalTagId && w.WeighingDate < weighing.WeighingDate)
+                .OrderByDescending(w => w.WeighingDate)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (previousWeighing is not null)
+            {
+                weighing.ApplyPreviousWeighing(previousWeighing);
+            }
+
+            _dbContext.Weighings.Add(weighing);
+            results.Add(RecordWeighingCommandHandler.MapToDto(weighing));
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result.Success(results);
+    }
+}
+
+public sealed class GetAnimalWeighingHistoryQueryHandler : IRequestHandler<GetAnimalWeighingHistoryQuery, Result<AnimalWeighingHistoryDto>>
+{
+    private readonly IGrowthDbContext _dbContext;
+
+    public GetAnimalWeighingHistoryQueryHandler(IGrowthDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<AnimalWeighingHistoryDto>> Handle(GetAnimalWeighingHistoryQuery request, CancellationToken cancellationToken)
+    {
+        string tag = request.AnimalTagId.Trim().ToUpperInvariant();
+
+        var weighings = await _dbContext.Weighings
+            .Where(w => w.TenantId == request.TenantId && w.AnimalTagId == tag)
+            .OrderByDescending(w => w.WeighingDate)
+            .ToListAsync(cancellationToken);
+
+        if (!weighings.Any())
+            return Result.Failure<AnimalWeighingHistoryDto>(Error.NotFound("Weighing.NotFound", $"Nenhuma pesagem encontrada para o animal {tag}."));
+
+        var dtos = weighings.Select(RecordWeighingCommandHandler.MapToDto).ToList();
+        var latest = dtos.First();
+        var validGpds = dtos.Where(d => d.CalculatedAdgKgPerDay != 0.0m).Select(d => d.CalculatedAdgKgPerDay).ToList();
+        decimal avgGpd = validGpds.Any() ? Math.Round(validGpds.Average(), 2) : 0.0m;
+
+        return Result.Success(new AnimalWeighingHistoryDto(
+            tag,
+            latest.WeightKg,
+            latest.CalculatedArrobasTotal,
+            avgGpd,
+            dtos.Count,
+            dtos));
+    }
+}
+
+public sealed class GetLotWeighingSummaryQueryHandler : IRequestHandler<GetLotWeighingSummaryQuery, Result<LotWeighingSummaryDto>>
+{
+    private readonly IGrowthDbContext _dbContext;
+
+    public GetLotWeighingSummaryQueryHandler(IGrowthDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<LotWeighingSummaryDto>> Handle(GetLotWeighingSummaryQuery request, CancellationToken cancellationToken)
+    {
+        var lot = await _dbContext.Lots
+            .FirstOrDefaultAsync(l => l.Id == request.LotId && l.TenantId == request.TenantId, cancellationToken);
+
+        if (lot is null)
+            return Result.Failure<LotWeighingSummaryDto>(Error.NotFound("Lot.NotFound", "Lote não encontrado."));
+
+        var weighings = await _dbContext.Weighings
+            .Where(w => w.TenantId == request.TenantId && w.LotId == request.LotId)
+            .OrderByDescending(w => w.WeighingDate)
+            .ToListAsync(cancellationToken);
+
+        if (!weighings.Any())
+        {
+            return Result.Success(new LotWeighingSummaryDto(
+                lot.Id,
+                lot.Name,
+                0,
+                0.0m,
+                0.0m,
+                0.0m,
+                0));
+        }
+
+        var latestPerAnimal = weighings
+            .GroupBy(w => w.AnimalTagId)
+            .Select(g => g.First())
+            .ToList();
+
+        decimal avgWeight = Math.Round(latestPerAnimal.Average(w => w.WeightKg), 2);
+        decimal avgArrobas = Math.Round(latestPerAnimal.Average(w => w.CalculatedArrobasTotal), 2);
+        var validGpds = latestPerAnimal.Where(w => w.CalculatedAdgKgPerDay != 0.0m).Select(w => w.CalculatedAdgKgPerDay).ToList();
+        decimal avgAdg = validGpds.Any() ? Math.Round(validGpds.Average(), 2) : 0.0m;
+        int lossCount = latestPerAnimal.Count(w => w.IsWeightLossWarning);
+
+        return Result.Success(new LotWeighingSummaryDto(
+            lot.Id,
+            lot.Name,
+            latestPerAnimal.Count,
+            avgWeight,
+            avgAdg,
+            avgArrobas,
+            lossCount));
+    }
+}
+
+public sealed class GetRecentWeighingsQueryHandler : IRequestHandler<GetRecentWeighingsQuery, Result<List<WeighingDto>>>
+{
+    private readonly IGrowthDbContext _dbContext;
+
+    public GetRecentWeighingsQueryHandler(IGrowthDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<List<WeighingDto>>> Handle(GetRecentWeighingsQuery request, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Weighings.Where(w => w.TenantId == request.TenantId);
+
+        if (request.LotId.HasValue)
+            query = query.Where(w => w.LotId == request.LotId.Value);
+
+        var weighings = await query
+            .OrderByDescending(w => w.WeighingDate)
+            .Take(request.Top)
+            .ToListAsync(cancellationToken);
+
+        return Result.Success(weighings.Select(RecordWeighingCommandHandler.MapToDto).ToList());
+    }
+}

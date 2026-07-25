@@ -1,7 +1,7 @@
 # Module Specification: Growth, Pasture Management & Stocking Rate (`Modules.Growth`)
 
 ## 1. Overview
-The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), animal movements between paddocks, and zootecnic stocking rate indicators (Taxa de Lotação em Unidades Animais por Hectare - UA/ha).
+The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), animal movements between paddocks, zootecnic stocking rate indicators (Taxa de Lotação em Unidades Animais por Hectare - UA/ha), and curral weighings with ADG/GPD (Ganho de Peso Diário) and Arroba (@) conversions.
 
 ---
 
@@ -25,6 +25,17 @@ The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), an
   $$\text{Taxa de Lotação (UA/ha)} = \frac{\sum \text{UA dos lotes alocados no piquete}}{\text{Área do Piquete (ha)}}$$
 * **Overgrazing Warning:** Triggered when total allocated UA exceeds `MaxCapacityUA` or when lots are placed in a paddock with status `Resting` or `Maintenance`.
 
+### 2.4 Curral Weighing & Zootecnic Growth Tracking (`Weighing`)
+* **Entity:** `Weighing` (`AnimalTagId`, `WeightKg`, `CarcassYieldPercentage`, `WeighingDate`).
+* **Arrobas (@) Calculation:**
+  $$\text{Arrobas Total (@)} = \frac{\text{Peso Vivo (kg)} \times (\text{Rendimento Carcaça \%} / 100)}{15.0\text{ kg/@}}$$
+  *(Standard default Rendimento de Carcaça = 50.0\%, customizable between 40.0\% and 65.0\%).*
+* **Average Daily Gain (ADG / GPD kg/dia):**
+  $$\text{GPD (kg/dia)} = \frac{\text{Peso Atual (kg)} - \text{Peso Anterior (kg)}}{\text{Dias Decorridos}}$$
+* **Monthly Arroba Gain (GPD em @/mês):**
+  $$\text{GPD (@/mês)} = \frac{\text{GPD (kg/dia)} \times 30.0\text{ dias} \times (\text{Rendimento Carcaça \%} / 100)}{15.0\text{ kg/@}}$$
+* **Weight Loss Warning (`IsWeightLossWarning`):** Triggered automatically when current weight is less than the previous recorded weight ($\text{GPD} < 0$).
+
 ---
 
 ## 3. API Endpoints
@@ -34,8 +45,13 @@ The `Modules.Growth` module manages animal lots, pasture paddocks (piquetes), an
 * `POST /api/growth/lots` - Create a new animal lot.
 * `POST /api/growth/lots/move` - Move a lot to a destination paddock (records history).
 * `POST /api/growth/lots/{id}/close` - Close an active lot.
+* `POST /api/growth/weighings` - Record individual curral weighing.
+* `POST /api/growth/weighings/batch` - Record batch weighings for curral session.
+* `GET /api/growth/weighings/history/{animalTagId}` - Get animal weighing history & GPD progression.
+* `GET /api/growth/weighings/lot-summary/{lotId}` - Get summary metrics for a lot's latest weighings.
+* `GET /api/growth/weighings/recent` - Get recent weighings list.
 
 ---
 
 ## 4. Field Offline Capability
-* Pasture lot movements performed in remote paddocks are cached in client `IndexedDB` when network connection is unavailable and synchronized automatically when connectivity is re-established.
+* Pasture lot movements and curral weighings performed in remote paddocks are cached in client `IndexedDB` when network connection is unavailable and synchronized automatically when connectivity is re-established.

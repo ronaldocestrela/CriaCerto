@@ -198,6 +198,36 @@ growth.MapPost("/lots/{id:guid}/close", async (Guid id, Guid tenantId, ISender s
     return ToHttpResult(result, StatusCodes.Status200OK);
 });
 
+growth.MapPost("/weighings", async (RecordWeighingCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+growth.MapPost("/weighings/batch", async (BatchRecordWeighingCommand command, ISender sender) =>
+{
+    var result = await sender.Send(command);
+    return ToHttpResult(result, StatusCodes.Status201Created);
+});
+
+growth.MapGet("/weighings/history/{animalTagId}", async (Guid tenantId, string animalTagId, ISender sender) =>
+{
+    var result = await sender.Send(new GetAnimalWeighingHistoryQuery(tenantId, animalTagId));
+    return ToHttpResult(result);
+});
+
+growth.MapGet("/weighings/lot-summary/{lotId:guid}", async (Guid tenantId, Guid lotId, ISender sender) =>
+{
+    var result = await sender.Send(new GetLotWeighingSummaryQuery(tenantId, lotId));
+    return ToHttpResult(result);
+});
+
+growth.MapGet("/weighings/recent", async (Guid tenantId, Guid? lotId, int? top, ISender sender) =>
+{
+    var result = await sender.Send(new GetRecentWeighingsQuery(tenantId, lotId, top ?? 50));
+    return ToHttpResult(result);
+});
+
 app.Run();
 
 static void ApplyMigrations(WebApplication app)

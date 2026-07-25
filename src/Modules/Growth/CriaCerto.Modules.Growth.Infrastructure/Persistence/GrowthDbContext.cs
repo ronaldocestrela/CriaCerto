@@ -14,6 +14,7 @@ public sealed class GrowthDbContext : DbContext, IGrowthDbContext
     public DbSet<PasturePaddock> Paddocks => Set<PasturePaddock>();
     public DbSet<Lot> Lots => Set<Lot>();
     public DbSet<LotMovement> LotMovements => Set<LotMovement>();
+    public DbSet<Weighing> Weighings => Set<Weighing>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

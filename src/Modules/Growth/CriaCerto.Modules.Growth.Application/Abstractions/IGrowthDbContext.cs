@@ -8,6 +8,7 @@ public interface IGrowthDbContext
     DbSet<PasturePaddock> Paddocks { get; }
     DbSet<Lot> Lots { get; }
     DbSet<LotMovement> LotMovements { get; }
+    DbSet<Weighing> Weighings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

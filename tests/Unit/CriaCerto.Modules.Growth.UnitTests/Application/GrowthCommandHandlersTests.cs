@@ -26,6 +26,7 @@ public class GrowthCommandHandlersTests
         public DbSet<PasturePaddock> Paddocks => Set<PasturePaddock>();
         public DbSet<Lot> Lots => Set<Lot>();
         public DbSet<LotMovement> LotMovements => Set<LotMovement>();
+        public DbSet<Weighing> Weighings => Set<Weighing>();
     }
 
     [Fact]
