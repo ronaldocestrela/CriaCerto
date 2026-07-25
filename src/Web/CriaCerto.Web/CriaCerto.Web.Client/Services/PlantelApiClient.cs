@@ -40,6 +40,18 @@ public sealed class PlantelApiClient
         return await _httpClient.GetFromJsonAsync<CowDetailDto>($"api/breeding/cows/{id}", cancellationToken);
     }
 
+    public async Task<HttpResponseMessage> CreateCowAsync(CreateAnimalRequest request, CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        return await _httpClient.PostAsJsonAsync("api/breeding/cows", request, cancellationToken);
+    }
+
+    public async Task<HttpResponseMessage> UpdateCowAsync(Guid id, UpdateAnimalRequest request, CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        return await _httpClient.PutAsJsonAsync($"api/breeding/cows/{id}", request, cancellationToken);
+    }
+
     private async Task AttachTokenAsync()
     {
         var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");

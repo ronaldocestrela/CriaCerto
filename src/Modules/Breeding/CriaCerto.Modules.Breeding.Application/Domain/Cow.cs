@@ -9,8 +9,17 @@ public class Cow
     public string? SisbovId { get; private set; }
     public string? RfidTag { get; private set; }
     public string? Tattoo { get; private set; }
+    public string? Nickname { get; private set; }
+    public string? RegistryNumber { get; private set; }
     public string Breed { get; private set; } = string.Empty;
+    public string Origin { get; private set; } = "Nascimento Interno";
     public DateTime BirthDate { get; private set; }
+    public DateTime? EntryDate { get; private set; }
+    public decimal? EntryWeightKg { get; private set; }
+    public string? SireInfo { get; private set; }
+    public string? DamInfo { get; private set; }
+    public decimal? BodyConditionScore { get; private set; }
+    public string Category { get; private set; } = "Matriz";
     public ReproductiveStatus Status { get; private set; }
     public int ParityCount { get; private set; }
     public DateTime? LastCalvingDate { get; private set; }
@@ -25,16 +34,31 @@ public class Cow
         Guid tenantId,
         string? sisbovId = null,
         string? rfidTag = null,
-        string? tattoo = null)
+        string? tattoo = null,
+        string? nickname = null,
+        string? registryNumber = null,
+        string origin = "Nascimento Interno",
+        DateTime? entryDate = null,
+        decimal? entryWeightKg = null,
+        string? sireInfo = null,
+        string? damInfo = null,
+        decimal? bodyConditionScore = null,
+        string category = "Matriz")
     {
         if (string.IsNullOrWhiteSpace(earTag))
-            return Result.Failure<Cow>(Error.Validation("Cow.EarTagRequired", "O brinco de identificação da vaca é obrigatório."));
+            return Result.Failure<Cow>(Error.Validation("Cow.EarTagRequired", "O brinco de identificação do animal é obrigatório."));
 
         if (string.IsNullOrWhiteSpace(breed))
-            return Result.Failure<Cow>(Error.Validation("Cow.BreedRequired", "A raça da matriz é obrigatória."));
+            return Result.Failure<Cow>(Error.Validation("Cow.BreedRequired", "A raça do animal é obrigatória."));
 
         if (birthDate > DateTime.UtcNow)
             return Result.Failure<Cow>(Error.Validation("Cow.InvalidBirthDate", "Data de nascimento não pode ser no futuro."));
+
+        if (entryDate.HasValue && entryDate.Value < birthDate)
+            return Result.Failure<Cow>(Error.Validation("Cow.InvalidEntryDate", "Data de entrada não pode ser anterior à data de nascimento."));
+
+        if (bodyConditionScore.HasValue && (bodyConditionScore.Value < 1.0m || bodyConditionScore.Value > 5.0m))
+            return Result.Failure<Cow>(Error.Validation("Cow.InvalidBcs", "O Escore de Condição Corporal (ECC) deve estar entre 1.0 e 5.0."));
 
         var cow = new Cow
         {
@@ -48,10 +72,70 @@ public class Cow
             TenantId = tenantId,
             SisbovId = sisbovId?.Trim(),
             RfidTag = rfidTag?.Trim(),
-            Tattoo = tattoo?.Trim()
+            Tattoo = tattoo?.Trim(),
+            Nickname = nickname?.Trim(),
+            RegistryNumber = registryNumber?.Trim(),
+            Origin = string.IsNullOrWhiteSpace(origin) ? "Nascimento Interno" : origin.Trim(),
+            EntryDate = entryDate,
+            EntryWeightKg = entryWeightKg,
+            SireInfo = sireInfo?.Trim(),
+            DamInfo = damInfo?.Trim(),
+            BodyConditionScore = bodyConditionScore,
+            Category = string.IsNullOrWhiteSpace(category) ? "Matriz" : category.Trim()
         };
 
         return Result.Success(cow);
+    }
+
+    public Result Update(
+        string earTag,
+        string breed,
+        DateTime birthDate,
+        string? sisbovId = null,
+        string? rfidTag = null,
+        string? tattoo = null,
+        string? nickname = null,
+        string? registryNumber = null,
+        string origin = "Nascimento Interno",
+        DateTime? entryDate = null,
+        decimal? entryWeightKg = null,
+        string? sireInfo = null,
+        string? damInfo = null,
+        decimal? bodyConditionScore = null,
+        string category = "Matriz")
+    {
+        if (string.IsNullOrWhiteSpace(earTag))
+            return Result.Failure(Error.Validation("Cow.EarTagRequired", "O brinco de identificação é obrigatório."));
+
+        if (string.IsNullOrWhiteSpace(breed))
+            return Result.Failure(Error.Validation("Cow.BreedRequired", "A raça é obrigatória."));
+
+        if (birthDate > DateTime.UtcNow)
+            return Result.Failure(Error.Validation("Cow.InvalidBirthDate", "Data de nascimento não pode ser no futuro."));
+
+        if (entryDate.HasValue && entryDate.Value < birthDate)
+            return Result.Failure(Error.Validation("Cow.InvalidEntryDate", "Data de entrada não pode ser anterior à data de nascimento."));
+
+        if (bodyConditionScore.HasValue && (bodyConditionScore.Value < 1.0m || bodyConditionScore.Value > 5.0m))
+            return Result.Failure(Error.Validation("Cow.InvalidBcs", "O Escore de Condição Corporal (ECC) deve estar entre 1.0 e 5.0."));
+
+        EarTag = earTag.Trim();
+        Breed = breed.Trim();
+        BirthDate = birthDate;
+        SisbovId = sisbovId?.Trim();
+        RfidTag = rfidTag?.Trim();
+        Tattoo = tattoo?.Trim();
+        Nickname = nickname?.Trim();
+        RegistryNumber = registryNumber?.Trim();
+        Origin = string.IsNullOrWhiteSpace(origin) ? "Nascimento Interno" : origin.Trim();
+        EntryDate = entryDate;
+        EntryWeightKg = entryWeightKg;
+        SireInfo = sireInfo?.Trim();
+        DamInfo = damInfo?.Trim();
+        BodyConditionScore = bodyConditionScore;
+        Category = string.IsNullOrWhiteSpace(category) ? "Matriz" : category.Trim();
+
+        return Result.Success();
     }
 
     public Result StartIatfProtocol(Guid protocolId)

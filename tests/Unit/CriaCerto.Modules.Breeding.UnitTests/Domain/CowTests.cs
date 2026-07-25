@@ -64,4 +64,39 @@ public class CowTests
         cow.LastCalvingDate.Should().Be(calvingDate);
         cow.Status.Should().Be(ReproductiveStatus.Open);
     }
+
+    [Fact]
+    public void Create_WithInvalidBcs_ShouldReturnFailure()
+    {
+        var result = Cow.Create("BR-105", "Nelore", DateTime.UtcNow.AddYears(-2), _tenantId, bodyConditionScore: 6.0m);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Cow.InvalidBcs");
+    }
+
+    [Fact]
+    public void Create_WithEntryDateBeforeBirthDate_ShouldReturnFailure()
+    {
+        var birthDate = DateTime.UtcNow.AddYears(-2);
+        var entryDate = birthDate.AddDays(-10);
+
+        var result = Cow.Create("BR-106", "Nelore", birthDate, _tenantId, entryDate: entryDate);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("Cow.InvalidEntryDate");
+    }
+
+    [Fact]
+    public void Update_WithValidData_ShouldUpdateProperties()
+    {
+        var cow = Cow.Create("BR-107", "Nelore", DateTime.UtcNow.AddYears(-3), _tenantId).Value;
+
+        var updateResult = cow.Update("BR-107-UPDATED", "Angus", cow.BirthDate, nickname: "Mimosa", bodyConditionScore: 4.0m);
+
+        updateResult.IsSuccess.Should().BeTrue();
+        cow.EarTag.Should().Be("BR-107-UPDATED");
+        cow.Breed.Should().Be("Angus");
+        cow.Nickname.Should().Be("Mimosa");
+        cow.BodyConditionScore.Should().Be(4.0m);
+    }
 }

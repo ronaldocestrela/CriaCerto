@@ -7,8 +7,10 @@ The `Modules.Breeding` module manages the reproductive lifecycle of beef and dai
 
 ## 2. Core Entities & Aggregates
 
-### 2.1 Cow (`Cow`)
-* **Identification:** `EarTag` (Mandatory), `SisbovId` (Optional state traceability code), `RfidTag` (Electronic chip), `Tattoo`.
+### 2.1 Cow / Bovine (`Cow`)
+* **Identification:** `EarTag` (Mandatory ear tag ID), `SisbovId` (Optional state traceability code), `RfidTag` (Electronic chip), `Tattoo` (Ear tattoo), `Nickname` (Alcunha/Apelido do animal), `RegistryNumber` (Registro de Associação de Raça PBB).
+* **Demographics & Origin:** `Breed` (Raça), `Category` (Matriz/Fêmea, Reprodutor/Touro, Bezerro/a, Novilho/Garrote), `Origin` (Nascimento Interno, Compra/Aquisição, Transferência), `BirthDate`, `EntryDate` (Data de entrada no rebanho), `EntryWeightKg` (Peso inicial de entrada em kg).
+* **Genealogy & Condition:** `SireInfo` (Pai / Código do Sêmen), `DamInfo` (Mãe / Matriz), `BodyConditionScore` (ECC - Escore de Condição Corporal de 1.0 a 5.0).
 * **Reproductive Statuses:** `Open` (Vazia), `InIatfProtocol` (Em Protocolo IATF), `Inseminated` (Inseminada), `Pregnant` (Prenhe), `Culled` (Descartada), `Sold` (Vendida).
 * **Parity & History:** `ParityCount` (Partos realizados), `LastCalvingDate`.
 
@@ -27,11 +29,14 @@ The `Modules.Breeding` module manages the reproductive lifecycle of beef and dai
 ## 3. Zootecnic Calculations
 * **Intervalo Entre Partos (IEP):** Measured in months between two consecutive calvings for a matriz ($IEP = \text{Dias} / 30.4375$).
 * **Dias em Aberto (Open Days):** Days elapsed between the last calving and pregnancy confirmation.
+* **Escore de Condição Corporal (ECC):** Visual/palpation score from 1.0 (muito magra) to 5.0 (obesa).
 
 ---
 
 ## 4. API Endpoints
-* `GET /api/breeding/cows` - List cows with status/search filters.
-* `POST /api/breeding/cows` - Create new matriz.
+* `GET /api/breeding/cows` - List cows/bovines with status, search filter (EarTag, Nickname, SISBOV, RFID) and pagination.
+* `POST /api/breeding/cows` - Create new matriz/bovine with complete MVP fields and tenant ear tag uniqueness check.
+* `GET /api/breeding/cows/{id:guid}` - Get detailed animal profile (`CowDetailDto`) including unified timeline events (`TimelineEventDto`).
+* `PUT /api/breeding/cows/{id:guid}` - Update animal zootecnic attributes.
 * `POST /api/breeding/iatf-protocols` - Register IATF synchronization batch.
 * `POST /api/breeding/diagnoses` - Record ultrasound or rectal palpation pregnancy diagnosis.

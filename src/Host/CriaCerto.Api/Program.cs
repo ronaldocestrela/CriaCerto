@@ -270,6 +270,15 @@ breeding.MapGet("/cows/{id:guid}", async (Guid id, ISender sender) =>
     return ToHttpResult(result);
 });
 
+breeding.MapPut("/cows/{id:guid}", async (Guid id, UpdateCowCommand command, ISender sender) =>
+{
+    if (id != command.Id)
+        return Results.BadRequest(new { Error = "ID da URL diverge do ID do corpo da requisição." });
+
+    var result = await sender.Send(command);
+    return ToHttpResult(result);
+});
+
 breeding.MapPost("/iatf-protocols", async (RegisterIatfProtocolCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);

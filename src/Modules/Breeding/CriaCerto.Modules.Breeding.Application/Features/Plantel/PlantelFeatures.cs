@@ -19,7 +19,35 @@ public sealed record CreateCowCommand(
     Guid TenantId,
     string? SisbovId = null,
     string? RfidTag = null,
-    string? Tattoo = null) : ICommand<CowDetailDto>;
+    string? Tattoo = null,
+    string? Nickname = null,
+    string? RegistryNumber = null,
+    string Origin = "Nascimento Interno",
+    DateTime? EntryDate = null,
+    decimal? EntryWeightKg = null,
+    string? SireInfo = null,
+    string? DamInfo = null,
+    decimal? BodyConditionScore = null,
+    string Category = "Matriz") : ICommand<CowDetailDto>;
+
+[RequiresModule("Breeding")]
+public sealed record UpdateCowCommand(
+    Guid Id,
+    string EarTag,
+    string Breed,
+    DateTime BirthDate,
+    string? SisbovId = null,
+    string? RfidTag = null,
+    string? Tattoo = null,
+    string? Nickname = null,
+    string? RegistryNumber = null,
+    string Origin = "Nascimento Interno",
+    DateTime? EntryDate = null,
+    decimal? EntryWeightKg = null,
+    string? SireInfo = null,
+    string? DamInfo = null,
+    decimal? BodyConditionScore = null,
+    string Category = "Matriz") : ICommand<CowDetailDto>;
 
 [RequiresModule("Breeding")]
 public sealed record GetCowQuery(Guid Id) : IQuery<CowDetailDto>;
@@ -34,6 +62,19 @@ public sealed class CreateCowCommandValidator : AbstractValidator<CreateCowComma
         RuleFor(x => x.EarTag).NotEmpty().MaximumLength(50);
         RuleFor(x => x.Breed).NotEmpty().MaximumLength(100);
         RuleFor(x => x.BirthDate).LessThanOrEqualTo(DateTime.UtcNow);
+        RuleFor(x => x.BodyConditionScore).InclusiveBetween(1.0m, 5.0m).When(x => x.BodyConditionScore.HasValue);
+    }
+}
+
+public sealed class UpdateCowCommandValidator : AbstractValidator<UpdateCowCommand>
+{
+    public UpdateCowCommandValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.EarTag).NotEmpty().MaximumLength(50);
+        RuleFor(x => x.Breed).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.BirthDate).LessThanOrEqualTo(DateTime.UtcNow);
+        RuleFor(x => x.BodyConditionScore).InclusiveBetween(1.0m, 5.0m).When(x => x.BodyConditionScore.HasValue);
     }
 }
 
@@ -46,12 +87,29 @@ public sealed class CreateCowCommandHandler : IRequestHandler<CreateCowCommand, 
     public async Task<Result<CowDetailDto>> Handle(CreateCowCommand request, CancellationToken cancellationToken)
     {
         var normalizedEarTag = request.EarTag.Trim().ToUpperInvariant();
-        if (await _dbContext.Cows.AnyAsync(c => c.EarTag.ToUpper() == normalizedEarTag, cancellationToken))
+        if (await _dbContext.Cows.AnyAsync(c => c.TenantId == request.TenantId && c.EarTag.ToUpper() == normalizedEarTag, cancellationToken))
         {
-            return Result.Failure<CowDetailDto>(Error.Conflict("Cow.EarTagAlreadyExists", "Já existe uma matriz cadastrada com este brinco."));
+            return Result.Failure<CowDetailDto>(Error.Conflict("Cow.EarTagAlreadyExists", "Já existe um animal cadastrado com este brinco nesta fazenda."));
         }
 
-        var cowResult = Cow.Create(request.EarTag, request.Breed, request.BirthDate, request.TenantId, request.SisbovId, request.RfidTag, request.Tattoo);
+        var cowResult = Cow.Create(
+            request.EarTag,
+            request.Breed,
+            request.BirthDate,
+            request.TenantId,
+            request.SisbovId,
+            request.RfidTag,
+            request.Tattoo,
+            request.Nickname,
+            request.RegistryNumber,
+            request.Origin,
+            request.EntryDate,
+            request.EntryWeightKg,
+            request.SireInfo,
+            request.DamInfo,
+            request.BodyConditionScore,
+            request.Category);
+
         if (cowResult.IsFailure)
             return Result.Failure<CowDetailDto>(cowResult.Error);
 
@@ -59,6 +117,50 @@ public sealed class CreateCowCommandHandler : IRequestHandler<CreateCowCommand, 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Success(cowResult.Value.ToDetailDto());
+    }
+}
+
+public sealed class UpdateCowCommandHandler : IRequestHandler<UpdateCowCommand, Result<CowDetailDto>>
+{
+    private readonly IBreedingDbContext _dbContext;
+
+    public UpdateCowCommandHandler(IBreedingDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<CowDetailDto>> Handle(UpdateCowCommand request, CancellationToken cancellationToken)
+    {
+        var cow = await _dbContext.Cows.FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
+        if (cow is null)
+            return Result.Failure<CowDetailDto>(Error.NotFound("Cow.NotFound", "Animal não encontrado."));
+
+        var normalizedEarTag = request.EarTag.Trim().ToUpperInvariant();
+        if (await _dbContext.Cows.AnyAsync(c => c.TenantId == cow.TenantId && c.Id != cow.Id && c.EarTag.ToUpper() == normalizedEarTag, cancellationToken))
+        {
+            return Result.Failure<CowDetailDto>(Error.Conflict("Cow.EarTagAlreadyExists", "Outro animal já utiliza este brinco."));
+        }
+
+        var updateResult = cow.Update(
+            request.EarTag,
+            request.Breed,
+            request.BirthDate,
+            request.SisbovId,
+            request.RfidTag,
+            request.Tattoo,
+            request.Nickname,
+            request.RegistryNumber,
+            request.Origin,
+            request.EntryDate,
+            request.EntryWeightKg,
+            request.SireInfo,
+            request.DamInfo,
+            request.BodyConditionScore,
+            request.Category);
+
+        if (updateResult.IsFailure)
+            return Result.Failure<CowDetailDto>(updateResult.Error);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(cow.ToDetailDto());
     }
 }
 
@@ -72,9 +174,30 @@ public sealed class GetCowQueryHandler : IRequestHandler<GetCowQuery, Result<Cow
     {
         var cow = await _dbContext.Cows.FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
         if (cow is null)
-            return Result.Failure<CowDetailDto>(Error.NotFound("Cow.NotFound", "Matriz bovina não encontrada."));
+            return Result.Failure<CowDetailDto>(Error.NotFound("Cow.NotFound", "Matriz/Bovino não encontrado."));
 
-        return Result.Success(cow.ToDetailDto());
+        var timeline = BuildTimeline(cow);
+        return Result.Success(cow.ToDetailDto(timeline));
+    }
+
+    private static List<TimelineEventDto> BuildTimeline(Cow cow)
+    {
+        var events = new List<TimelineEventDto>
+        {
+            new(cow.BirthDate, "Birth", "Nascimento do Animal", $"Raça {cow.Breed}. Origem: {cow.Origin}", "Cadastral", "cake")
+        };
+
+        if (cow.EntryDate.HasValue)
+        {
+            events.Add(new(cow.EntryDate.Value, "Entry", "Entrada no Rebanho", $"Peso de Entrada: {(cow.EntryWeightKg.HasValue ? cow.EntryWeightKg + " kg" : "N/A")}", "Manejo", "login"));
+        }
+
+        if (cow.LastCalvingDate.HasValue)
+        {
+            events.Add(new(cow.LastCalvingDate.Value, "Calving", "Registro de Parto", $"Parto nº {cow.ParityCount} registrado com sucesso.", "Reprodução", "child_care"));
+        }
+
+        return events.OrderByDescending(e => e.EventDate).ToList();
     }
 }
 
@@ -92,6 +215,7 @@ public sealed class ListCowsQueryHandler : IRequestHandler<ListCowsQuery, Result
         {
             var search = request.Search.Trim().ToUpperInvariant();
             query = query.Where(c => c.EarTag.ToUpper().Contains(search) ||
+                                     (c.Nickname != null && c.Nickname.ToUpper().Contains(search)) ||
                                      (c.SisbovId != null && c.SisbovId.ToUpper().Contains(search)) ||
                                      (c.RfidTag != null && c.RfidTag.ToUpper().Contains(search)));
         }
@@ -123,23 +247,36 @@ internal static class CowMappings
         cow.EarTag,
         cow.SisbovId,
         cow.RfidTag,
+        cow.Nickname,
         cow.Breed,
+        cow.Category,
         cow.Status,
         cow.ParityCount,
         cow.LastCalvingDate,
-        IepCalculator.CalculateIepMonths(null, cow.LastCalvingDate ?? DateTime.UtcNow));
+        IepCalculator.CalculateIepMonths(null, cow.LastCalvingDate ?? DateTime.UtcNow),
+        cow.BodyConditionScore);
 
-    public static CowDetailDto ToDetailDto(this Cow cow) => new(
+    public static CowDetailDto ToDetailDto(this Cow cow, IReadOnlyList<TimelineEventDto>? timeline = null) => new(
         cow.Id,
         cow.EarTag,
         cow.SisbovId,
         cow.RfidTag,
         cow.Tattoo,
+        cow.Nickname,
+        cow.RegistryNumber,
         cow.Breed,
+        cow.Origin,
         cow.BirthDate,
+        cow.EntryDate,
+        cow.EntryWeightKg,
+        cow.SireInfo,
+        cow.DamInfo,
+        cow.BodyConditionScore,
+        cow.Category,
         cow.Status,
         cow.ParityCount,
         cow.LastCalvingDate,
         IepCalculator.CalculateIepMonths(null, cow.LastCalvingDate ?? DateTime.UtcNow),
-        IepCalculator.CalculateOpenDays(cow.LastCalvingDate, DateTime.UtcNow));
+        IepCalculator.CalculateOpenDays(cow.LastCalvingDate, DateTime.UtcNow),
+        timeline ?? Array.Empty<TimelineEventDto>());
 }

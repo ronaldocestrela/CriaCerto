@@ -4,13 +4,29 @@
 @using CriaCerto.Web.Client.Components.Plantel
 @using CriaCerto.Web.Client.Models
 @inject CriaCerto.Web.Client.Services.PlantelApiClient PlantelApi
+@inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Cria Certo - Plantel de Matrizes Bovinas</PageTitle>
+<PageTitle>Cria Certo - Cadastro & Plantel de Bovinos</PageTitle>
 
 <ModuleGuard Module="Breeding">
     <div class="plantel-page">
         <OfflineBanner Visible="@_offlineMode" />
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Erro:</strong> @_errorMessage
+                <button type="button" class="btn-close" @onclick="() => _errorMessage = null"></button>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(_successMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Sucesso:</strong> @_successMessage
+                <button type="button" class="btn-close" @onclick="() => _successMessage = null"></button>
+            </div>
+        }
 
         <section class="plantel-hero">
             <div>
@@ -18,20 +34,20 @@
                 <h1>Registro de Matrizes e Reprodutores Bovinos</h1>
                 <p>Gestão zootécnica e reprodutiva do rebanho bovino para curral e pasto.</p>
             </div>
-            <button type="button" class="plantel-primary-action">
+            <button type="button" class="plantel-primary-action" @onclick="OpenCreateModal">
                 <span class="material-symbols-outlined">add</span>
-                Cadastrar Matriz
+                Cadastrar Bovino
             </button>
         </section>
 
         <section class="plantel-kpi-grid">
-            <KpiStatCard Label="Total de Matrizes" Value="@_cows.Count.ToString("N0")" Trend="Vacas em acompanhamento" Icon="groups" />
+            <KpiStatCard Label="Total no Rebanho" Value="@_cows.Count.ToString("N0")" Trend="Animais monitorados" Icon="groups" />
             <KpiStatCard Label="IEP Médio" Value="@AverageIep.ToString("0.0")" Trend="Meses de Intervalo Entre Partos" Icon="timer" IconClass="primary" />
             <KpiStatCard Label="Confirmadas Prenhes" Value="@PregnantCount.ToString("N0")" Trend="Diagnósticos positivos de gestação" Icon="child_care" />
         </section>
 
         <section class="plantel-toolbar">
-            <PlantelSearchBar Search="@_search" SearchChanged="OnSearchChanged" Placeholder="Buscar por Brinco, SISBOV ou RFID..." />
+            <PlantelSearchBar Search="@_search" SearchChanged="OnSearchChanged" Placeholder="Buscar por Brinco, Apelido, SISBOV ou RFID..." />
             <div class="plantel-filter-row">
                 <span>FILTRAR POR:</span>
                 <button class="@FilterClass(null)" @onclick="() => SetFilter(null)">Todas</button>
@@ -43,28 +59,39 @@
         </section>
 
         <section class="plantel-table-card">
-            <table class="plantel-table" aria-label="Matrizes bovinas cadastradas">
+            <table class="plantel-table" aria-label="Bovinos cadastradas">
                 <thead>
                     <tr>
                         <th>Brinco / Identificação</th>
+                        <th>Apelido / Raça</th>
+                        <th>Categoria / Custo</th>
                         <th>Status Reprodutivo</th>
-                        <th>Partos (Nº)</th>
-                        <th>IEP (Meses)</th>
-                        <th>Último Parto</th>
+                        <th>ECC</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var cow in FilteredCows)
                     {
-                        <tr>
+                        <tr style="cursor: pointer;" @onclick="() => NavigateToDetail(cow.Id)">
                             <td>
                                 <strong class="plantel-tag">@cow.EarTag</strong>
-                                <small>@cow.Breed | SISBOV: @(cow.SisbovId ?? "N/A")</small>
+                                <small class="d-block text-muted">SISBOV: @(cow.SisbovId ?? "N/A") | RFID: @(cow.RfidTag ?? "N/A")</small>
+                            </td>
+                            <td>
+                                <strong>@(cow.Nickname ?? cow.EarTag)</strong>
+                                <small class="d-block text-muted">@cow.Breed</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@cow.Category</span>
                             </td>
                             <td><span class="status-badge">@cow.Status</span></td>
-                            <td>@cow.ParityCount</td>
-                            <td>@(cow.IepMonths?.ToString("0.0") ?? "-")</td>
-                            <td>@(cow.LastCalvingDate?.ToString("dd/MM/yyyy") ?? "Sem registros")</td>
+                            <td>@(cow.BodyConditionScore?.ToString("0.0") ?? "-")</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true" @onclick="() => NavigateToDetail(cow.Id)">
+                                    Ficha Completa
+                                </button>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -73,15 +100,121 @@
     </div>
 </ModuleGuard>
 
+@if (_showCreateModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Cadastro de Bovino</h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@_createRequest" OnValidSubmit="HandleCreateAnimal">
+                        <DataAnnotationsValidator />
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Brinco / Identificador *</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.EarTag" placeholder="Ex: BR-105" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Apelido / Nome</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.Nickname" placeholder="Ex: Mimosa" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Categoria *</label>
+                                <InputSelect class="form-select" @bind-Value="_createRequest.Category">
+                                    <option value="Matriz">Matriz (Fêmea)</option>
+                                    <option value="Reprodutor">Reprodutor (Touro)</option>
+                                    <option value="Bezerro">Bezerro / Bezerra</option>
+                                    <option value="Novilho">Novilho / Garrote</option>
+                                </InputSelect>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Brinco SISBOV</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.SisbovId" placeholder="Ex: 1000301" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Chip RFID</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.RfidTag" placeholder="Ex: RFID-9902" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Registro PBB (Tattoo)</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.RegistryNumber" placeholder="Ex: PBB-8812" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Raça *</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.Breed" placeholder="Ex: Nelore" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Origem</label>
+                                <InputSelect class="form-select" @bind-Value="_createRequest.Origin">
+                                    <option value="Nascimento Interno">Nascimento Interno</option>
+                                    <option value="Compra">Compra / Aquisição</option>
+                                    <option value="Transferencia">Transferência</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Escore de Condição Corporal (1-5)</label>
+                                <InputNumber class="form-control" @bind-Value="_createRequest.BodyConditionScore" min="1" max="5" step="0.5" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Data de Nascimento *</label>
+                                <InputDate class="form-control" @bind-Value="_createRequest.BirthDate" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Data de Entrada no Rebanho</label>
+                                <InputDate class="form-control" @bind-Value="_createRequest.EntryDate" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Peso de Entrada (kg)</label>
+                                <InputNumber class="form-control" @bind-Value="_createRequest.EntryWeightKg" placeholder="Ex: 240.5" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Pai (Sêmen / Touro)</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.SireInfo" placeholder="Ex: Touro Nelore PO" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Mãe (Matriz)</label>
+                                <InputText class="form-control" @bind-Value="_createRequest.DamInfo" placeholder="Ex: BR-040" />
+                            </div>
+                        </div>
+
+                        <div class="modal-footer mt-4 px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseCreateModal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" disabled="@_isSaving">
+                                @_isSaving ? "Salvando..." : "Salvar Animal"
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private readonly List<CowSummaryDto> _cows = new();
     private string? _search;
     private ReproductiveStatus? _status;
     private bool _offlineMode;
+    private bool _showCreateModal;
+    private bool _isSaving;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    private CreateAnimalRequest _createRequest = new();
 
     private IEnumerable<CowSummaryDto> FilteredCows => _cows.Where(c =>
         (!_status.HasValue || c.Status == _status.Value) &&
-        (string.IsNullOrWhiteSpace(_search) || c.EarTag.Contains(_search, StringComparison.OrdinalIgnoreCase)));
+        (string.IsNullOrWhiteSpace(_search) ||
+            c.EarTag.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+            (c.Nickname != null && c.Nickname.Contains(_search, StringComparison.OrdinalIgnoreCase))));
 
     private double AverageIep => _cows.Where(c => c.IepMonths.HasValue).Select(c => c.IepMonths!.Value).DefaultIfEmpty(12.5).Average();
     private int PregnantCount => _cows.Count(c => c.Status == ReproductiveStatus.Pregnant);
@@ -128,15 +261,61 @@
 
     private string FilterClass(ReproductiveStatus? status) => _status == status ? "active" : string.Empty;
 
+    private void OpenCreateModal()
+    {
+        _createRequest = new CreateAnimalRequest();
+        _showCreateModal = true;
+    }
+
+    private void CloseCreateModal()
+    {
+        _showCreateModal = false;
+    }
+
+    private async Task HandleCreateAnimal()
+    {
+        _isSaving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var response = await PlantelApi.CreateCowAsync(_createRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                _successMessage = $"Animal {_createRequest.EarTag} cadastrado com sucesso!";
+                _showCreateModal = false;
+                await LoadCowsAsync();
+            }
+            else
+            {
+                _errorMessage = "Não foi possível cadastrar o animal. Verifique se o brinco já está cadastrado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erro ao enviar cadastro: {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void NavigateToDetail(Guid id)
+    {
+        Navigation.NavigateTo($"/breeding/animal/{id}");
+    }
+
     private void SeedFallbackData()
     {
         _cows.Clear();
         _cows.AddRange(new[]
         {
-            new CowSummaryDto(Guid.NewGuid(), "BR-101", "1000293", "RFID-001", "Nelore", ReproductiveStatus.Pregnant, 3, new DateTime(2025, 2, 10), 12.2),
-            new CowSummaryDto(Guid.NewGuid(), "BR-102", "1000294", "RFID-002", "Angus x Nelore", ReproductiveStatus.InIatfProtocol, 1, new DateTime(2024, 11, 05), 13.0),
-            new CowSummaryDto(Guid.NewGuid(), "BR-103", null, null, "Gyr Leiteiro", ReproductiveStatus.Open, 2, new DateTime(2024, 12, 01), 12.8),
-            new CowSummaryDto(Guid.NewGuid(), "BR-104", "1000298", "RFID-005", "Nelore PO", ReproductiveStatus.Pregnant, 5, new DateTime(2024, 10, 15), 11.9)
+            new CowSummaryDto(Guid.NewGuid(), "BR-101", "1000293", "RFID-001", "Mimosa", "Nelore", "Matriz", ReproductiveStatus.Pregnant, 3, new DateTime(2025, 2, 10), 12.2, 3.5m),
+            new CowSummaryDto(Guid.NewGuid(), "BR-102", "1000294", "RFID-002", "Estrela", "Angus x Nelore", "Matriz", ReproductiveStatus.InIatfProtocol, 1, new DateTime(2024, 11, 05), 13.0, 3.0m),
+            new CowSummaryDto(Guid.NewGuid(), "BR-103", null, null, "Morena", "Gyr Leiteiro", "Matriz", ReproductiveStatus.Open, 2, new DateTime(2024, 12, 01), 12.8, 3.0m),
+            new CowSummaryDto(Guid.NewGuid(), "BR-104", "1000298", "RFID-005", "Baronesa", "Nelore PO", "Matriz", ReproductiveStatus.Pregnant, 5, new DateTime(2024, 10, 15), 11.9, 4.0m)
         });
     }
 }

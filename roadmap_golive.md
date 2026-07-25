@@ -104,7 +104,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 
 ### Phase 3: Usabilidade Plena dos Módulos Zootécnicos
 
-#### Sub-fase 3.1: Cadastro Individual & Ficha Completa do Bovino
+#### Sub-fase 3.1: Cadastro Individual & Ficha Completa do Bovino [CONCLUÍDA]
 * **Backend:**
   * Endpoints `CreateAnimalCommand`, `UpdateAnimalCommand` e `GetAnimalDetailQuery` atendendo a especificação do `Funções MVP`.
 * **Frontend:**

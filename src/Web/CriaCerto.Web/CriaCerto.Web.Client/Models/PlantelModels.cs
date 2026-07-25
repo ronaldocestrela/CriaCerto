@@ -71,16 +71,27 @@ public sealed record DnpAlertBannerDto(
 
 public sealed record CattleListResponse<TAnimal>(List<TAnimal> Items, int TotalCount, int Page, int PageSize);
 
+public sealed record TimelineEventDto(
+    DateTime EventDate,
+    string EventType,
+    string Title,
+    string Description,
+    string Category,
+    string IconName);
+
 public sealed record CowSummaryDto(
     Guid Id,
     string EarTag,
     string? SisbovId,
     string? RfidTag,
+    string? Nickname,
     string Breed,
+    string Category,
     ReproductiveStatus Status,
     int ParityCount,
     DateTime? LastCalvingDate,
-    double? IepMonths);
+    double? IepMonths,
+    decimal? BodyConditionScore);
 
 public sealed record CowDetailDto(
     Guid Id,
@@ -88,13 +99,63 @@ public sealed record CowDetailDto(
     string? SisbovId,
     string? RfidTag,
     string? Tattoo,
+    string? Nickname,
+    string? RegistryNumber,
     string Breed,
+    string Origin,
     DateTime BirthDate,
+    DateTime? EntryDate,
+    decimal? EntryWeightKg,
+    string? SireInfo,
+    string? DamInfo,
+    decimal? BodyConditionScore,
+    string Category,
     ReproductiveStatus Status,
     int ParityCount,
     DateTime? LastCalvingDate,
     double? IepMonths,
-    int? OpenDays);
+    int? OpenDays,
+    List<TimelineEventDto> Timeline);
+
+public sealed class CreateAnimalRequest
+{
+    public string EarTag { get; set; } = string.Empty;
+    public string Breed { get; set; } = "Nelore";
+    public DateTime BirthDate { get; set; } = DateTime.Today.AddYears(-2);
+    public Guid TenantId { get; set; }
+    public string? SisbovId { get; set; }
+    public string? RfidTag { get; set; }
+    public string? Tattoo { get; set; }
+    public string? Nickname { get; set; }
+    public string? RegistryNumber { get; set; }
+    public string Origin { get; set; } = "Nascimento Interno";
+    public DateTime? EntryDate { get; set; } = DateTime.Today;
+    public decimal? EntryWeightKg { get; set; }
+    public string? SireInfo { get; set; }
+    public string? DamInfo { get; set; }
+    public decimal? BodyConditionScore { get; set; } = 3.0m;
+    public string Category { get; set; } = "Matriz";
+}
+
+public sealed class UpdateAnimalRequest
+{
+    public Guid Id { get; set; }
+    public string EarTag { get; set; } = string.Empty;
+    public string Breed { get; set; } = string.Empty;
+    public DateTime BirthDate { get; set; }
+    public string? SisbovId { get; set; }
+    public string? RfidTag { get; set; }
+    public string? Tattoo { get; set; }
+    public string? Nickname { get; set; }
+    public string? RegistryNumber { get; set; }
+    public string Origin { get; set; } = "Nascimento Interno";
+    public DateTime? EntryDate { get; set; }
+    public decimal? EntryWeightKg { get; set; }
+    public string? SireInfo { get; set; }
+    public string? DamInfo { get; set; }
+    public decimal? BodyConditionScore { get; set; }
+    public string Category { get; set; } = "Matriz";
+}
 
 public sealed record BullSummaryDto(
     Guid Id,
