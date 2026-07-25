@@ -54,7 +54,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 * **TDD & Validação:**
   * Testes de renderização dos componentes e redirecionamento de navegação.
 
-#### Sub-fase 1.2: Auto-Cadastro de Usuário (Sign-Up) & Recuperação de Senha
+#### Sub-fase 1.2: Auto-Cadastro de Usuário (Sign-Up) & Recuperação de Senha [CONCLUÍDA]
 * **Backend:**
   * `RegisterUserCommand` (Nome Completo, E-mail, Senha, Telefone) com `FluentValidation` (formato de e-mail, senha forte, e-mail único).
   * `ForgotPasswordCommand` e `ResetPasswordCommand` para recuperação de acesso via token.
@@ -62,7 +62,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
   * Componente `Register.razor` gerado via padrão MCP Stitch com formulário reativo e feedback visual.
   * Modal/Página `ForgotPassword.razor` para solicitação de redefinição.
 * **TDD & Validação:**
-  * Testes unitários para `RegisterUserCommandHandler` garantindo tratamento de e-mail duplicado via `Result.Failure(Error.Conflict)`.
+  * Testes unitários para `RegisterUserCommandHandler`, `RegisterUserCommandValidator`, `ForgotPasswordCommandHandler` e `ResetPasswordCommandHandler` garantindo cobertura completa e tratamento de e-mail duplicado via `Result.Failure(Error.Conflict)`.
 
 #### Sub-fase 1.3: Wizard de Onboarding do Primeiro Acesso & Cadastro da Fazenda
 * **Backend:**

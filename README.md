@@ -66,9 +66,12 @@ Nesta fase inicial (Sub-phase 0.1), o foco esta na fundacao tecnica: arquitetura
 |       `-- CriaCerto.Web/
 |           |-- CriaCerto.Web/
 |           `-- CriaCerto.Web.Client/
-`-- tests/
-    |-- Unit/
-    `-- Integration/
+|-- tests/
+|   |-- Unit/
+|   |   |-- CriaCerto.BuildingBlocks.UnitTests/
+|   |   |-- CriaCerto.Modules.Tenancy.UnitTests/
+|   |   `-- ...
+|   `-- Integration/
 ```
 
 ## 4. Principios Arquiteturais
@@ -93,25 +96,21 @@ Nesta fase inicial (Sub-phase 0.1), o foco esta na fundacao tecnica: arquitetura
 
 Fluxo Red -> Green -> Refactor em qualquer entrega funcional.
 
-## 5. Estado Atual (Sub-phase 0.1)
+## 5. Estado Atual (Go-Live Phase 1)
 
-Implementado:
+Concluído:
 
-- Solucao monorepo em `CriaCerto.slnx`
-- BuildingBlocks base (Abstractions, Application, Infrastructure)
-- Pipeline de validacao MediatR + FluentValidation
-- Registro base EF Core + SQL Server com retry
-- API host com endpoint de health check
-- Blazor Web App + WASM interativo
-- PWA baseline com service worker e manifest
-- Testes unitarios iniciais do shared kernel e behaviors
-- ADR inicial e guias de arquitetura/contribuicao
+- **Sub-fase 1.1 (CONCLUÍDA):** Landing Page Comercial (`/`) com catálogo de planos (`/api/v1/tenancy/plans`), design system visual Stitch.
+- **Sub-fase 1.2 (CONCLUÍDA):** Auto-Cadastro de Usuário (`/register`) e Recuperação/Redefinição de Senha (`/forgot-password`), validados com FluentValidation e Result Pattern (`Result.Failure(Error.Conflict)`).
+- Solucao monorepo em `CriaCerto.slnx` com 92 testes automatizados (100% de aprovação).
+- BuildingBlocks base (Abstractions, Application, Infrastructure).
+- Blazor Web App + WASM PWA com cache offline.
+- Documentação viva e ADRs atualizadas em `/docs`.
 
-Em andamento/Proximas fases:
+Em andamento / Próxima entrega:
 
-- Multi-tenancy, licensing e feature gating (Phase 1)
-- Casos de uso de dominio por modulo (Phase 2+)
-- Sincronizacao offline completa (alem do shell offline)
+- **Sub-fase 1.3:** Wizard de Onboarding do Primeiro Acesso & Cadastro da Fazenda (`CreateTenantCommand`).
+- **Phase 2:** Gestão da Organização, Unidades & Permissões (RBAC).
 
 ## 6. Requisitos de Ambiente
 
