@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+
+@using CriaCerto.Web.Client.Components
 
 <div class="shell-page">
     <aside class="shell-sidebar">
@@ -11,10 +13,7 @@
                 <p class="shell-kicker">Cria Certo</p>
                 <h1 class="shell-title">Swine Breeding Dashboard</h1>
             </div>
-            <div class="shell-status">
-                <span class="status-dot"></span>
-                Offline-ready
-            </div>
+            <SyncStatusHeader />
         </header>
 
         <article class="shell-content">

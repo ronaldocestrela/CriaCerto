@@ -55,5 +55,6 @@
     <Project Path="tests/Unit/CriaCerto.Modules.Sanitary.UnitTests/CriaCerto.Modules.Sanitary.UnitTests.csproj" />
     <Project Path="tests/Unit/CriaCerto.Modules.Analytics.UnitTests/CriaCerto.Modules.Analytics.UnitTests.csproj" />
     <Project Path="tests/Unit/CriaCerto.Modules.Tenancy.UnitTests/CriaCerto.Modules.Tenancy.UnitTests.csproj" />
+    <Project Path="tests/Unit/CriaCerto.Web.Client.UnitTests/CriaCerto.Web.Client.UnitTests.csproj" />
   </Folder>
 </Solution>

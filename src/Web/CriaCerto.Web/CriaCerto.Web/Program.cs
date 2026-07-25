@@ -20,6 +20,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddScoped(sp => new HttpClient());
 builder.Services.AddScoped<CriaCerto.Web.Client.Services.TenancyApiClient>();
+builder.Services.AddScoped<CriaCerto.Web.Client.Services.IOfflineSyncService, CriaCerto.Web.Client.Services.OfflineSyncService>();
 
 var app = builder.Build();
 

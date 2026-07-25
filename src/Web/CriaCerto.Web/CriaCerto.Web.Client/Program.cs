@@ -13,6 +13,7 @@ builder.Services.AddScoped<BreedingOpsApiClient>();
 builder.Services.AddScoped<GrowthApiClient>();
 builder.Services.AddScoped<NutritionApiClient>();
 builder.Services.AddScoped<TenancyApiClient>();
+builder.Services.AddScoped<IOfflineSyncService, OfflineSyncService>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

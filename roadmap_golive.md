@@ -146,7 +146,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 
 ### Phase 4: Central Global de Sincronização Off-line PWA
 
-#### Sub-fase 4.1: Gerenciador de Sincronização & Mediação de Conflitos
+#### Sub-fase 4.1: Gerenciador de Sincronização & Mediação de Conflitos [CONCLUÍDA]
 * **Frontend (Blazor WASM PWA):**
   * Criar o componente global `SyncStatusHeader.razor` integrado ao `MainLayout.razor`.
   * Exibir contagem reativa de operações armazenadas no `IndexedDB` pendentes de envio.
