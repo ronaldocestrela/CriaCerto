@@ -1,4 +1,5 @@
 using CriaCerto.BuildingBlocks.Abstractions.Tenancy;
+using CriaCerto.BuildingBlocks.Application.Abstractions;
 using CriaCerto.BuildingBlocks.Infrastructure.Persistence;
 using CriaCerto.BuildingBlocks.Infrastructure.Tenancy;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ public static class DependencyInjection
 
             options.EnableDetailedErrors();
         });
+
+        services.AddScoped<IFoundationDbContext>(sp => sp.GetRequiredService<FoundationDbContext>());
 
         return services;
     }

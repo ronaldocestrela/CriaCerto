@@ -1,4 +1,7 @@
 using System.Text;
+using CriaCerto.BuildingBlocks.Application.Features.GetReferenceBreeds;
+using CriaCerto.Api.Seeders;
+using CriaCerto.Modules.Sanitary.Application.Features.GetVaccineCalendar;
 using CriaCerto.BuildingBlocks.Application;
 using CriaCerto.BuildingBlocks.Abstractions.Results;
 using CriaCerto.BuildingBlocks.Infrastructure;
@@ -110,6 +113,7 @@ builder.Services.AddAuthorization(options =>
 var app = builder.Build();
 
 ApplyMigrations(app);
+SeedReferenceData(app);
 
 if (app.Environment.IsDevelopment())
 {
@@ -553,7 +557,28 @@ analytics.MapPost("/export-csv", async (ExecutiveScorecardDto scorecard, ISender
     return ToHttpResult(result);
 });
 
+// --- REFERENCE DATA ENDPOINTS ---
+var reference = app.MapGroup("/api/reference");
+
+reference.MapGet("/breeds", async (ISender sender) =>
+{
+    var result = await sender.Send(new GetReferenceBreedsQuery());
+    return ToHttpResult(result);
+});
+
+reference.MapGet("/vaccines", async (ISender sender) =>
+{
+    var result = await sender.Send(new GetVaccineCalendarQuery());
+    return ToHttpResult(result);
+});
+
 app.Run();
+
+static void SeedReferenceData(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    SystemDataSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+}
 
 static void ApplyMigrations(WebApplication app)
 {

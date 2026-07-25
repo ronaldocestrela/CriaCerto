@@ -46,6 +46,7 @@ public interface ISanitaryDbContext
 {
     DbSet<VaccinationCampaign> VaccinationCampaigns { get; }
     DbSet<TreatmentRecord> TreatmentRecords { get; }
+    DbSet<VaccineReference> VaccineReferences { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 

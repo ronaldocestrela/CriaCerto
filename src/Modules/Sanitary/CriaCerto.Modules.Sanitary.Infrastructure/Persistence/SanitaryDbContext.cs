@@ -8,6 +8,7 @@ public class SanitaryDbContext : DbContext, ISanitaryDbContext
 {
     public DbSet<VaccinationCampaign> VaccinationCampaigns => Set<VaccinationCampaign>();
     public DbSet<TreatmentRecord> TreatmentRecords => Set<TreatmentRecord>();
+    public DbSet<VaccineReference> VaccineReferences => Set<VaccineReference>();
 
     public SanitaryDbContext(DbContextOptions<SanitaryDbContext> options)
         : base(options)
@@ -36,6 +37,18 @@ public class SanitaryDbContext : DbContext, ISanitaryDbContext
             builder.Property(t => t.Dosage).HasMaxLength(50);
             builder.Property(t => t.AppliedByVeterinarian).HasMaxLength(150);
             builder.Property(t => t.Notes).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<VaccineReference>(builder =>
+        {
+            builder.ToTable("vaccine_references");
+            builder.HasKey(v => v.Id);
+            builder.HasIndex(v => v.Code).IsUnique();
+            builder.Property(v => v.Code).HasMaxLength(30).IsRequired();
+            builder.Property(v => v.DiseaseName).HasMaxLength(150).IsRequired();
+            builder.Property(v => v.CommercialCategory).HasMaxLength(100);
+            builder.Property(v => v.TargetAudience).HasMaxLength(150);
+            builder.Property(v => v.Notes).HasMaxLength(500);
         });
     }
 }

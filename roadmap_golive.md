@@ -159,7 +159,7 @@ Este roadmap complementar define o plano de ação detalhado para solucionar as 
 
 ### Phase 5: Infraestrutura, Segurança & Esteira CI/CD
 
-#### Sub-fase 5.1: Seeders de Banco de Dados & Dados de Referência
+#### Sub-fase 5.1: Seeders de Banco de Dados & Dados de Referência [CONCLUÍDA]
 * **Backend:**
   * `SystemDataSeeder` para popular automaticamente em produção as tabelas de referência (Raças Bovinas Brasileiras: Nelore, Angus, Brahman, Senepol, Gir, Girolando; Calendário de vacinas oficiais MAPA/Estaduais).
 * **TDD & Validação:**
