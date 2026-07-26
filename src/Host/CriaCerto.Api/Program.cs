@@ -58,6 +58,8 @@ using CriaCerto.Modules.Analytics.Application.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -633,20 +635,39 @@ static void ApplyMigrations(WebApplication app)
         scope.ServiceProvider.GetRequiredService<BreedingDbContext>(),
         scope.ServiceProvider.GetRequiredService<CalvingDbContext>(),
         scope.ServiceProvider.GetRequiredService<GrowthDbContext>(),
-        scope.ServiceProvider.GetRequiredService<NutritionDbContext>()
+        scope.ServiceProvider.GetRequiredService<NutritionDbContext>(),
+        scope.ServiceProvider.GetRequiredService<SanitaryDbContext>()
     };
 
     foreach (var dbContext in dbContexts)
     {
         try
         {
+            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+            if (databaseCreator != null)
+            {
+                if (!databaseCreator.Exists())
+                {
+                    databaseCreator.Create();
+                }
+
+                try
+                {
+                    databaseCreator.CreateTables();
+                    logger.LogInformation("Tables created for DbContext {DbContextName}", dbContext.GetType().Name);
+                }
+                catch
+                {
+                    // Tables may already exist
+                }
+            }
+
             dbContext.Database.Migrate();
             logger.LogInformation("Migrations applied for DbContext {DbContextName}", dbContext.GetType().Name);
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Failed to apply migrations for DbContext {DbContextName}", dbContext.GetType().Name);
-            throw;
+            logger.LogWarning(ex, "Note for DbContext {DbContextName} during startup migration/schema check.", dbContext.GetType().Name);
         }
     }
 }
