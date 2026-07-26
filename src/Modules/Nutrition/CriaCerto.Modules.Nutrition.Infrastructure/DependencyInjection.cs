@@ -1,3 +1,4 @@
+using CriaCerto.BuildingBlocks.Abstractions.Tenancy;
 using CriaCerto.Modules.Nutrition.Application.Features.SiloStockFeatures;
 using CriaCerto.Modules.Nutrition.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,17 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddNutritionInfrastructure(this IServiceCollection services)
     {
+        services.AddDbContext<NutritionDbContext>((sp, options) =>
+        {
+            var connectionProvider = sp.GetRequiredService<ITenantConnectionProvider>();
+            options.UseSqlServer(connectionProvider.GetConnectionString(), sqlServerOptions =>
+            {
+                sqlServerOptions.EnableRetryOnFailure(maxRetryCount: 3);
+            });
+
+            options.EnableDetailedErrors();
+        });
+
         services.AddScoped<INutritionDbContext>(sp => sp.GetRequiredService<NutritionDbContext>());
         return services;
     }

@@ -6,7 +6,6 @@ WORKDIR /src
 COPY CriaCerto.slnx ./
 COPY src/BuildingBlocks/CriaCerto.BuildingBlocks.Abstractions/CriaCerto.BuildingBlocks.Abstractions.csproj src/BuildingBlocks/CriaCerto.BuildingBlocks.Abstractions/
 COPY src/BuildingBlocks/CriaCerto.BuildingBlocks.Application/CriaCerto.BuildingBlocks.Application.csproj src/BuildingBlocks/CriaCerto.BuildingBlocks.Application/
-COPY src/BuildingBlocks/CriaCerto.BuildingBlocks.Domain/CriaCerto.BuildingBlocks.Domain.csproj src/BuildingBlocks/CriaCerto.BuildingBlocks.Domain/
 COPY src/BuildingBlocks/CriaCerto.BuildingBlocks.Infrastructure/CriaCerto.BuildingBlocks.Infrastructure.csproj src/BuildingBlocks/CriaCerto.BuildingBlocks.Infrastructure/
 COPY src/Modules/Analytics/CriaCerto.Modules.Analytics.Application/CriaCerto.Modules.Analytics.Application.csproj src/Modules/Analytics/CriaCerto.Modules.Analytics.Application/
 COPY src/Modules/Analytics/CriaCerto.Modules.Analytics.Infrastructure/CriaCerto.Modules.Analytics.Infrastructure.csproj src/Modules/Analytics/CriaCerto.Modules.Analytics.Infrastructure/

@@ -44,9 +44,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=${DB_HOST},${DB_PORT:-1433};Database=${DATABASE_NAME:-CriaCertoDb};User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
-      JwtSettings__Secret: "${JWT_SECRET:-SuperSecretJwtKeyForCriaCertoProduction123!}"
+      JwtSettings__Secret: "${JWT_SECRET:-CriaCertoProductionSecureJwtKey2026!32Bytes}"
+      Jwt__SecretKey: "${JWT_SECRET:-CriaCertoProductionSecureJwtKey2026!32Bytes}"
       JwtSettings__Issuer: "CriaCerto.Api"
       JwtSettings__Audience: "CriaCerto.Client"
+      Jwt__Issuer: "CriaCerto.Api"
+      Jwt__Audience: "CriaCerto.Client"
     depends_on:
       database:
         condition: service_healthy

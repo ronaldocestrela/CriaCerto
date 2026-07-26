@@ -16,9 +16,12 @@ public sealed class JwtService : IJwtService
 
     public JwtService(IConfiguration configuration)
     {
-        _secretKey = configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
-        _issuer = configuration["Jwt:Issuer"] ?? "CriaCerto";
-        _audience = configuration["Jwt:Audience"] ?? "CriaCertoClient";
+        _secretKey = configuration["Jwt:SecretKey"] 
+            ?? configuration["JwtSettings:Secret"] 
+            ?? configuration["JWT_SECRET"] 
+            ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
+        _issuer = configuration["Jwt:Issuer"] ?? configuration["JwtSettings:Issuer"] ?? "CriaCerto";
+        _audience = configuration["Jwt:Audience"] ?? configuration["JwtSettings:Audience"] ?? "CriaCertoClient";
     }
 
     public string GenerateToken(User user, Tenant tenant, UserRole role = UserRole.Admin)

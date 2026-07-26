@@ -103,10 +103,19 @@ builder.Services.AddCors(options =>
 });
 
 // Configure JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
+var jwtSecret = builder.Configuration["Jwt:SecretKey"] 
+    ?? builder.Configuration["JwtSettings:Secret"] 
+    ?? Environment.GetEnvironmentVariable("JWT_SECRET") 
+    ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
+    ?? "CriaCertoSuperSecretKeyThatIsAtLeast32BytesLong!";
+
 if (builder.Environment.IsProduction())
 {
-    var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? builder.Configuration["Jwt:SecretKey"];
+    var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET") 
+        ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
+        ?? builder.Configuration["Jwt:SecretKey"] 
+        ?? builder.Configuration["JwtSettings:Secret"];
+
     if (string.IsNullOrWhiteSpace(envSecret) || 
         envSecret.Contains("SuperSecretKey") || 
         Encoding.UTF8.GetByteCount(envSecret) < 32)
