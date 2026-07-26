@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using CriaCerto.Web.Client.Pages;
 using CriaCerto.Web.Components;
+using CriaCerto.Web.Client.Services;
+using CriaCerto.Web.Client.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +10,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<CriaCerto.Web.Client.Auth.CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => 
-    sp.GetRequiredService<CriaCerto.Web.Client.Auth.CustomAuthStateProvider>());
+    sp.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -19,8 +20,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped(sp => new HttpClient());
-builder.Services.AddScoped<CriaCerto.Web.Client.Services.TenancyApiClient>();
-builder.Services.AddScoped<CriaCerto.Web.Client.Services.IOfflineSyncService, CriaCerto.Web.Client.Services.OfflineSyncService>();
+builder.Services.AddScoped<PlantelApiClient>();
+builder.Services.AddScoped<BreedingOpsApiClient>();
+builder.Services.AddScoped<GrowthApiClient>();
+builder.Services.AddScoped<NutritionApiClient>();
+builder.Services.AddScoped<TenancyApiClient>();
+builder.Services.AddScoped<IOfflineSyncService, OfflineSyncService>();
+builder.Services.AddScoped<IToastService, ToastService>();
 
 var app = builder.Build();
 
