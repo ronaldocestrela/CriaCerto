@@ -390,6 +390,18 @@ var calving = app.MapGroup("/api/calving")
     .RequireAuthorization()
     .WithTags("Calving");
 
+calving.MapGet("/records", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetCalvingRecordsQuery(tenantId));
+    return ToHttpResult(result);
+});
+
+calving.MapGet("", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetCalvingRecordsQuery(tenantId));
+    return ToHttpResult(result);
+});
+
 calving.MapPost("/calvings", async (RegisterCalvingCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);

@@ -164,3 +164,74 @@ public sealed class RegisterWeaningCommandHandler : IRequestHandler<RegisterWean
             weaningResult.Value.DestinationLotId));
     }
 }
+
+public sealed record CalvingRecordListItemDto(
+    Guid CalvingId,
+    Guid MotherCowId,
+    DateTime CalvingDate,
+    CalvingType Type,
+    BirthCondition Condition,
+    Guid CalfId,
+    string CalfTagId,
+    string CalfSex,
+    string CalfBreed,
+    decimal CalfBirthWeightKg,
+    CalfStatus CalfStatus,
+    DateTime? WeaningDate,
+    decimal? WeaningWeightKg,
+    decimal? Adjusted205DayWeightKg,
+    Guid? DestinationLotId);
+
+public sealed record GetCalvingRecordsQuery(Guid TenantId) : IQuery<List<CalvingRecordListItemDto>>;
+
+public sealed class GetCalvingRecordsQueryHandler : IRequestHandler<GetCalvingRecordsQuery, Result<List<CalvingRecordListItemDto>>>
+{
+    private readonly ICalvingDbContext _dbContext;
+
+    public GetCalvingRecordsQueryHandler(ICalvingDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<List<CalvingRecordListItemDto>>> Handle(GetCalvingRecordsQuery request, CancellationToken cancellationToken)
+    {
+        var calvings = await _dbContext.Calvings
+            .AsNoTracking()
+            .Where(c => c.TenantId == request.TenantId)
+            .OrderByDescending(c => c.CalvingDate)
+            .ToListAsync(cancellationToken);
+
+        var calves = await _dbContext.Calves
+            .AsNoTracking()
+            .Where(c => c.TenantId == request.TenantId)
+            .ToDictionaryAsync(c => c.Id, cancellationToken);
+
+        var weanings = await _dbContext.Weanings
+            .AsNoTracking()
+            .Where(w => w.TenantId == request.TenantId)
+            .ToDictionaryAsync(w => w.CalfId, cancellationToken);
+
+        var dtos = calvings.Select(c =>
+        {
+            calves.TryGetValue(c.CalfId, out var calf);
+            weanings.TryGetValue(c.CalfId, out var weaning);
+
+            return new CalvingRecordListItemDto(
+                c.Id,
+                c.MotherCowId,
+                c.CalvingDate,
+                c.Type,
+                c.Condition,
+                c.CalfId,
+                calf?.TagId ?? string.Empty,
+                calf?.Sex ?? "M",
+                calf?.Breed ?? string.Empty,
+                calf?.BirthWeightKg ?? 0m,
+                calf?.Status ?? CalfStatus.Unweaned,
+                weaning?.WeaningDate,
+                weaning?.WeaningWeightKg,
+                weaning?.Adjusted205DayWeightKg,
+                weaning?.DestinationLotId);
+        }).ToList();
+
+        return Result.Success(dtos);
+    }
+}
+
