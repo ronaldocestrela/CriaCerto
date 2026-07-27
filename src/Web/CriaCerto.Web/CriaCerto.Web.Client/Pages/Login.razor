@@ -233,7 +233,7 @@
                     else if (!string.IsNullOrEmpty(result.Token))
                     {
                         await AuthStateProvider.MarkUserAsAuthenticated(result.Token);
-                        Navigation.NavigateTo("");
+                        Navigation.NavigateTo("/analytics/executive-dashboard");
                     }
                 }
             }
@@ -283,7 +283,7 @@
                 if (result != null && !string.IsNullOrEmpty(result.Token))
                 {
                     await AuthStateProvider.MarkUserAsAuthenticated(result.Token);
-                    Navigation.NavigateTo("");
+                    Navigation.NavigateTo("/analytics/executive-dashboard");
                 }
                 else
                 {

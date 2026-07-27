@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <Routes />
+    <CriaCerto.Web.Client.Routes @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />
     <script src="@Assets["js/downloadHelper.js"]"></script>
     <script src="@Assets["js/offlineSync.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>

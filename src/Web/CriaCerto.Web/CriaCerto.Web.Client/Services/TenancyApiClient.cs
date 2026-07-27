@@ -1,4 +1,6 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.JSInterop;
 
 namespace CriaCerto.Web.Client.Services;
 
@@ -94,10 +96,12 @@ public sealed record InviteTeamMemberRequest(
 public sealed class TenancyApiClient
 {
     private readonly HttpClient _httpClient;
+    private readonly IJSRuntime? _jsRuntime;
 
-    public TenancyApiClient(HttpClient httpClient)
+    public TenancyApiClient(HttpClient httpClient, IJSRuntime? jsRuntime = null)
     {
         _httpClient = httpClient;
+        _jsRuntime = jsRuntime;
     }
 
     public async Task<List<SubscriptionPlanModel>> GetSubscriptionPlansAsync(CancellationToken cancellationToken = default)

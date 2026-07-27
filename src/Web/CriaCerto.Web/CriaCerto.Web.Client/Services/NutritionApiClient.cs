@@ -110,9 +110,16 @@ public sealed class NutritionApiClient
 
     private async Task AttachTokenAsync()
     {
-        var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");
-        _httpClient.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(token)
-            ? null
-            : new AuthenticationHeaderValue("Bearer", token);
+        try
+        {
+            var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            _httpClient.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(token)
+                ? null
+                : new AuthenticationHeaderValue("Bearer", token);
+        }
+        catch
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
     }
 }

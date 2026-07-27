@@ -25,7 +25,19 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
                 return new AuthenticationState(_anonymous);
             }
 
-            var identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
+            var claims = ParseClaimsFromJwt(token).ToList();
+            var expClaim = claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+            if (expClaim != null && long.TryParse(expClaim, out var expSeconds))
+            {
+                var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
+                if (expirationDate <= DateTimeOffset.UtcNow)
+                {
+                    await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+                    return new AuthenticationState(_anonymous);
+                }
+            }
+
+            var identity = new ClaimsIdentity(claims, "jwt");
             var user = new ClaimsPrincipal(identity);
             return new AuthenticationState(user);
         }
