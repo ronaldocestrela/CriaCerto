@@ -51,7 +51,7 @@ public class CreateTenantCommandHandlerTests : IDisposable
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
 
-        var handler = new CreateTenantCommandHandler(_dbContext, _jwtService);
+        var handler = new CreateTenantCommandHandler(_dbContext, _jwtService, new NoOpTenantDatabaseProvisioner());
         var command = new CreateTenantCommand(
             user.Id,
             "Fazenda Esperança",
@@ -88,7 +88,7 @@ public class CreateTenantCommandHandlerTests : IDisposable
     public async Task Handle_Should_Fail_When_User_Does_Not_Exist()
     {
         // Arrange
-        var handler = new CreateTenantCommandHandler(_dbContext, _jwtService);
+        var handler = new CreateTenantCommandHandler(_dbContext, _jwtService, new NoOpTenantDatabaseProvisioner());
         var command = new CreateTenantCommand(
             Guid.NewGuid(),
             "Fazenda Inexistente",
@@ -115,5 +115,11 @@ public class CreateTenantCommandHandlerTests : IDisposable
         private readonly string _token;
         public TestJwtService(string token) => _token = token;
         public string GenerateToken(User user, Tenant tenant, UserRole role = UserRole.Admin) => _token;
+    }
+
+    private sealed class NoOpTenantDatabaseProvisioner : CriaCerto.BuildingBlocks.Abstractions.Tenancy.ITenantDatabaseProvisioner
+    {
+        public Task EnsureTenantDatabaseAsync(Guid tenantId, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

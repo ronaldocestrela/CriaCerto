@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantContext, HttpContextTenantContext>();
         services.AddScoped<ITenantConnectionProvider, TenantConnectionProvider>();
+        services.AddSingleton<ITenantDatabaseProvisioner, TenantDatabaseProvisioner>();
 
         services.AddDbContextPool<FoundationDbContext>(options =>
         {

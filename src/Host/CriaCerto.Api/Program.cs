@@ -104,7 +104,14 @@ builder.Services.AddSanitaryModule(builder.Configuration);
 
 // Configure CORS Policy
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
-    ?? new[] { "https://localhost:7001", "http://localhost:5001" };
+    ?? new[] { 
+        "http://localhost:8081", 
+        "http://localhost:8080", 
+        "http://localhost:5000", 
+        "http://localhost:5001", 
+        "https://localhost:7001", 
+        "http://localhost:5173" 
+    };
 
 builder.Services.AddCors(options =>
 {
@@ -164,6 +171,15 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+if (app.Services.GetService<CriaCerto.BuildingBlocks.Abstractions.Tenancy.ITenantDatabaseProvisioner>() is CriaCerto.BuildingBlocks.Infrastructure.Tenancy.TenantDatabaseProvisioner provisioner)
+{
+    provisioner.RegisterTenantDbContextType(typeof(BreedingDbContext));
+    provisioner.RegisterTenantDbContextType(typeof(CalvingDbContext));
+    provisioner.RegisterTenantDbContextType(typeof(GrowthDbContext));
+    provisioner.RegisterTenantDbContextType(typeof(NutritionDbContext));
+    provisioner.RegisterTenantDbContextType(typeof(SanitaryDbContext));
+}
+
 ApplyMigrations(app);
 SeedReferenceData(app);
 
@@ -179,6 +195,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseTenantDatabase();
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "CriaCerto.Api" }))
     .WithName("Health");

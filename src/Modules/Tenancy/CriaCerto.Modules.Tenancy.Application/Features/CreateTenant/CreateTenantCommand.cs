@@ -1,4 +1,5 @@
 using CriaCerto.BuildingBlocks.Abstractions.Results;
+using CriaCerto.BuildingBlocks.Abstractions.Tenancy;
 using CriaCerto.Modules.Tenancy.Application.Abstractions;
 using CriaCerto.Modules.Tenancy.Application.Contracts;
 using CriaCerto.Modules.Tenancy.Application.Domain;
@@ -24,11 +25,13 @@ public sealed class CreateTenantCommandHandler : IRequestHandler<CreateTenantCom
 {
     private readonly ITenancyDbContext _dbContext;
     private readonly IJwtService _jwtService;
+    private readonly ITenantDatabaseProvisioner _provisioner;
 
-    public CreateTenantCommandHandler(ITenancyDbContext dbContext, IJwtService jwtService)
+    public CreateTenantCommandHandler(ITenancyDbContext dbContext, IJwtService jwtService, ITenantDatabaseProvisioner provisioner)
     {
         _dbContext = dbContext;
         _jwtService = jwtService;
+        _provisioner = provisioner;
     }
 
     public async Task<Result<AuthResponse>> Handle(CreateTenantCommand request, CancellationToken cancellationToken)
@@ -86,6 +89,8 @@ public sealed class CreateTenantCommandHandler : IRequestHandler<CreateTenantCom
         _dbContext.UserTenants.Add(userTenant);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        await _provisioner.EnsureTenantDatabaseAsync(tenant.Id, cancellationToken);
 
         var token = _jwtService.GenerateToken(user, tenant);
 

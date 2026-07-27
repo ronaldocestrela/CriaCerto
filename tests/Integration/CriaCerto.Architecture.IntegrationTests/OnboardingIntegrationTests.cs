@@ -59,7 +59,7 @@ public class OnboardingIntegrationTests : IDisposable
         loginPreOnboard.Error.Code.Should().Be("Auth.NoTenantAssociation");
 
         // Step 3: Complete Onboarding Wizard (CreateTenantCommand)
-        var createTenantHandler = new CreateTenantCommandHandler(_dbContext, _jwtService);
+        var createTenantHandler = new CreateTenantCommandHandler(_dbContext, _jwtService, new NoOpTenantDatabaseProvisioner());
         var createTenantCommand = new CreateTenantCommand(
             userId,
             "Fazenda Vista Alegre",
@@ -91,5 +91,11 @@ public class OnboardingIntegrationTests : IDisposable
         private readonly string _token;
         public TestJwtService(string token) => _token = token;
         public string GenerateToken(User user, Tenant tenant, UserRole role = UserRole.Admin) => _token;
+    }
+
+    private sealed class NoOpTenantDatabaseProvisioner : CriaCerto.BuildingBlocks.Abstractions.Tenancy.ITenantDatabaseProvisioner
+    {
+        public Task EnsureTenantDatabaseAsync(Guid tenantId, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }
