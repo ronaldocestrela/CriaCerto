@@ -57,6 +57,12 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("Permissions-Policy", "unload=*");
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
