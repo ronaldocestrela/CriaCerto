@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using CriaCerto.Web.Components;
 using CriaCerto.Web.Client.Services;
 using CriaCerto.Web.Client.Auth;
-
 using Microsoft.AspNetCore.DataProtection;
+using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +32,37 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/login";
     });
 builder.Services.AddAuthorization();
+
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] 
+    ?? builder.Configuration["API_BASE_URL"] 
+    ?? "http://localhost:8080";
+
+builder.Services.AddReverseProxy()
+    .LoadFromMemory(
+        new[]
+        {
+            new RouteConfig
+            {
+                RouteId = "api-route",
+                ClusterId = "api-cluster",
+                Match = new RouteMatch
+                {
+                    Path = "/api/{**catch-all}"
+                }
+            }
+        },
+        new[]
+        {
+            new ClusterConfig
+            {
+                ClusterId = "api-cluster",
+                Destinations = new Dictionary<string, DestinationConfig>
+                {
+                    { "api-destination", new DestinationConfig { Address = apiBaseUrl } }
+                }
+            }
+        });
+
 builder.Services.AddScoped(sp => new HttpClient());
 builder.Services.AddScoped<PlantelApiClient>();
 builder.Services.AddScoped<BreedingOpsApiClient>();
@@ -91,6 +122,7 @@ app.Use(async (context, next) =>
 
 app.UseAntiforgery();
 
+app.MapReverseProxy();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
