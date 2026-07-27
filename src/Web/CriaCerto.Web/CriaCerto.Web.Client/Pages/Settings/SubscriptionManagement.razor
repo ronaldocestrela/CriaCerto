@@ -1,7 +1,10 @@
 @page "/settings/subscription"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @attribute [Authorize]
+@using CriaCerto.Web.Client.Auth
 @inject AuthenticationStateProvider AuthStateProvider
+@inject TenancyApiClient TenancyApiClient
+@inject PlantelApiClient PlantelApiClient
 @inject NavigationManager Navigation
 
 <PageTitle>Cria Certo - Planos e Assinatura</PageTitle>
@@ -23,6 +26,13 @@
         </p>
     </div>
 
+    @if (!string.IsNullOrEmpty(_message))
+    {
+        <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; background-color: @(_isSuccessMessage ? "#dcfce7" : "#fee2e2"); color: @(_isSuccessMessage ? "#166534" : "#991b1b"); font-weight: bold; border: 1px solid @(_isSuccessMessage ? "#86efac" : "#fca5a5");">
+            @_message
+        </div>
+    }
+
     <!-- Usage Limit Indicators (Stitch Mobile component styling) -->
     <section style="background-color: white; border: 1px solid var(--cc-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2.5rem; box-shadow: var(--cc-shadow);">
         <h3 class="font-mono text-[12px] font-bold text-secondary" style="margin: 0 0 1rem 0; text-transform: uppercase; tracking-wider: 0.05em;">Uso Atual das Cotas do Plano</h3>
@@ -33,7 +43,7 @@
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <span style="font-size: 14px; font-weight: 600; color: var(--cc-ink);">Animais Cadastrados</span>
-                    <span class="font-mono" style="font-size: 14px; font-weight: bold; color: var(--cc-primary);">142 / @_maxAnimalsAllowed</span>
+                    <span class="font-mono" style="font-size: 14px; font-weight: bold; color: var(--cc-primary);">@_registeredAnimalsCount / @_maxAnimalsAllowed</span>
                 </div>
                 <div style="width: 100%; bg-color: var(--cc-canvas); background-color: var(--cc-canvas); height: 8px; border-radius: 99px; overflow: hidden; display: flex;">
                     <div style="width: @(_animalsPercentage)%; height: 100%; background-color: @(_animalsPercentage > 90 ? "#ba1a1a" : "var(--cc-primary-container)"); border-radius: 99px;"></div>
@@ -50,7 +60,7 @@
             <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <span style="font-size: 14px; font-weight: 600; color: var(--cc-ink);">Relatórios Mensais</span>
-                    <span class="font-mono" style="font-size: 14px; font-weight: bold; color: var(--cc-ink);">5 / @_maxReportsAllowed</span>
+                    <span class="font-mono" style="font-size: 14px; font-weight: bold; color: var(--cc-ink);">@_reportsCount / @_maxReportsAllowed</span>
                 </div>
                 <div style="width: 100%; background-color: var(--cc-canvas); height: 8px; border-radius: 99px; overflow: hidden; display: flex;">
                     <div style="width: @(_reportsPercentage)%; height: 100%; background-color: var(--cc-secondary); border-radius: 99px;"></div>
@@ -262,15 +272,22 @@
 </div>
 
 @code {
+    private Guid _tenantId = Guid.Empty;
     private string _activePlan = "Starter";
     private bool _isAnnual = false;
     private bool _showAccordion = true;
+    private bool _isSubmitting = false;
+    private string? _message;
+    private bool _isSuccessMessage;
+
+    private int _registeredAnimalsCount = 0;
+    private int _reportsCount = 0;
 
     // Usage limits
     private int _maxAnimalsAllowed => _activePlan == "Starter" ? 150 : (_activePlan == "Pro" ? 1000 : 99999);
     private int _maxReportsAllowed => _activePlan == "Starter" ? 10 : (_activePlan == "Pro" ? 50 : 999);
-    private int _animalsPercentage => (142 * 100) / _maxAnimalsAllowed;
-    private int _reportsPercentage => (5 * 100) / _maxReportsAllowed;
+    private int _animalsPercentage => _maxAnimalsAllowed > 0 ? Math.Min(100, (_registeredAnimalsCount * 100) / _maxAnimalsAllowed) : 0;
+    private int _reportsPercentage => _maxReportsAllowed > 0 ? Math.Min(100, (_reportsCount * 100) / _maxReportsAllowed) : 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -283,6 +300,30 @@
             if (!string.IsNullOrEmpty(planClaim))
             {
                 _activePlan = planClaim;
+            }
+
+            var tenantIdClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantIdClaim, out var tenantId))
+            {
+                _tenantId = tenantId;
+                var profile = await TenancyApiClient.GetTenantProfileAsync(tenantId);
+                if (profile != null && !string.IsNullOrEmpty(profile.SubscribedPlan))
+                {
+                    _activePlan = profile.SubscribedPlan;
+                }
+            }
+
+            try
+            {
+                var cowsResponse = await PlantelApiClient.ListCowsAsync(search: null, status: null);
+                if (cowsResponse != null)
+                {
+                    _registeredAnimalsCount = cowsResponse.TotalCount;
+                }
+            }
+            catch
+            {
+                // Fallback for offline or client preview
             }
         }
         else
@@ -320,11 +361,43 @@
         return 0;
     }
 
-    private void ChangePlan(string planName)
+    private async Task ChangePlan(string planName)
     {
-        // In a real application this would make an API call to change the subscription plan.
-        // For demonstration, we simply update local state.
-        _activePlan = planName;
+        if (_isSubmitting || IsActivePlan(planName) || _tenantId == Guid.Empty)
+            return;
+
+        _isSubmitting = true;
+        _message = null;
+
+        try
+        {
+            var response = await TenancyApiClient.ChangeSubscriptionPlanAsync(new ChangeSubscriptionPlanRequest(_tenantId, planName));
+            if (response != null && response.Profile != null)
+            {
+                _activePlan = response.Profile.SubscribedPlan;
+                _message = $"Plano alterado para '{_activePlan}' com sucesso!";
+                _isSuccessMessage = true;
+
+                if (!string.IsNullOrEmpty(response.Token) && AuthStateProvider is CustomAuthStateProvider customAuthProvider)
+                {
+                    await customAuthProvider.MarkUserAsAuthenticated(response.Token);
+                }
+            }
+            else
+            {
+                _message = "Erro ao alterar o plano de assinatura. Tente novamente.";
+                _isSuccessMessage = false;
+            }
+        }
+        catch (Exception)
+        {
+            _message = "Erro inesperado ao alterar o plano de assinatura.";
+            _isSuccessMessage = false;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private void GoToSettings()
