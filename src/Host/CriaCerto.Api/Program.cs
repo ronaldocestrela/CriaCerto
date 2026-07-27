@@ -373,6 +373,12 @@ breeding.MapPut("/cows/{id:guid}", async (Guid id, UpdateCowCommand command, ISe
     return ToHttpResult(result);
 });
 
+breeding.MapGet("/iatf-protocols", async (Guid tenantId, ISender sender) =>
+{
+    var result = await sender.Send(new GetIatfProtocolsQuery(tenantId));
+    return ToHttpResult(result);
+});
+
 breeding.MapPost("/iatf-protocols", async (RegisterIatfProtocolCommand command, ISender sender) =>
 {
     var result = await sender.Send(command);

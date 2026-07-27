@@ -16,6 +16,20 @@ public sealed class BreedingOpsApiClient
         _jsRuntime = jsRuntime;
     }
 
+    public async Task<List<IatfProtocolDto>> GetIatfProtocolsAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        await AttachTokenAsync();
+        try
+        {
+            var protocols = await _httpClient.GetFromJsonAsync<List<IatfProtocolDto>>($"api/breeding/iatf-protocols?tenantId={tenantId}", cancellationToken);
+            return protocols ?? new List<IatfProtocolDto>();
+        }
+        catch
+        {
+            return new List<IatfProtocolDto>();
+        }
+    }
+
     public async Task<IatfProtocolDto?> RegisterIatfProtocolAsync(string name, DateTime startDate, DateTime inseminationDate, Guid semenBatchId, List<Guid> cowIds, Guid tenantId, CancellationToken cancellationToken = default)
     {
         await AttachTokenAsync();

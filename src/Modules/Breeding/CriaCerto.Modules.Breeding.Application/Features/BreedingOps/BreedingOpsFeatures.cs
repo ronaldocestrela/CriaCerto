@@ -114,3 +114,33 @@ public sealed class RegisterPregnancyDiagnosisCommandHandler : IRequestHandler<R
             diagResult.Value.Notes));
     }
 }
+
+[RequiresModule("Breeding")]
+public sealed record GetIatfProtocolsQuery(Guid TenantId) : IQuery<List<IatfProtocolDto>>;
+
+public sealed class GetIatfProtocolsQueryHandler : IRequestHandler<GetIatfProtocolsQuery, Result<List<IatfProtocolDto>>>
+{
+    private readonly IBreedingDbContext _dbContext;
+
+    public GetIatfProtocolsQueryHandler(IBreedingDbContext dbContext) => _dbContext = dbContext;
+
+    public async Task<Result<List<IatfProtocolDto>>> Handle(GetIatfProtocolsQuery request, CancellationToken cancellationToken)
+    {
+        var protocols = await _dbContext.IatfProtocols
+            .AsNoTracking()
+            .Where(p => p.TenantId == request.TenantId)
+            .OrderByDescending(p => p.StartDate)
+            .ToListAsync(cancellationToken);
+
+        var dtos = protocols.Select(p => new IatfProtocolDto(
+            p.Id,
+            p.Name,
+            p.StartDate,
+            p.InseminationDate,
+            p.SemenBatchId,
+            p.CowIds.Count)).ToList();
+
+        return Result.Success(dtos);
+    }
+}
+
