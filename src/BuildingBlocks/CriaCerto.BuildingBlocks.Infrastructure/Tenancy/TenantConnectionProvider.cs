@@ -14,7 +14,8 @@ public sealed class TenantConnectionProvider : ITenantConnectionProvider
         _tenantContext = tenantContext;
         // Default to a default SqlServer connection string if not configured
         _baseConnectionString = configuration.GetConnectionString("SqlServer")
-            ?? "Server=localhost,1433;User Id=sa;Password=CriaCerto@123;TrustServerCertificate=True;Encrypt=False";
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? "Server=localhost,1433;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False";
     }
 
     public string GetConnectionString()

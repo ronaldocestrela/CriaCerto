@@ -1,7 +1,7 @@
 @page "/"
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject NavigationManager Navigation
-@inject CriaCerto.Web.Client.Services.TenancyApiClient TenancyApiClient
+@inject TenancyApiClient TenancyApiClient
 
 <PageTitle>CriaCerto - Gestão Pecuária Inteligente do Pasto ao Confinamento</PageTitle>
 
@@ -317,7 +317,7 @@
 
 @code {
     private bool _isAnnual = true;
-    private List<CriaCerto.Web.Client.Services.SubscriptionPlanModel> _plans = new();
+    private List<SubscriptionPlanModel> _plans = new();
 
     protected override async Task OnInitializedAsync()
     {

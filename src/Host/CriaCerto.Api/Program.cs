@@ -60,9 +60,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Data Protection to persist keys across container restarts
+var keysDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "dataprotection-keys"));
+if (!keysDirectory.Exists)
+{
+    keysDirectory.Create();
+}
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(keysDirectory)
+    .SetApplicationName("CriaCertoApi");
 
 builder.Services.AddOpenApi();
 
@@ -78,7 +90,8 @@ builder.Services.AddBuildingBlocksApplication(
     typeof(TenancyAssemblyMarker).Assembly);
 
 var connectionString = builder.Configuration.GetConnectionString("SqlServer")
-    ?? "Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=CriaCerto@123;TrustServerCertificate=True;Encrypt=False";
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False";
 
 // Register Building Blocks and Infrastructure
 builder.Services.AddBuildingBlocksInfrastructure(connectionString);
@@ -643,27 +656,60 @@ static void ApplyMigrations(WebApplication app)
     {
         try
         {
-            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-            if (databaseCreator != null)
+            if (dbContext.Database.IsRelational())
             {
-                if (!databaseCreator.Exists())
+                var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+                if (databaseCreator != null)
                 {
-                    databaseCreator.Create();
+                    if (!databaseCreator.Exists())
+                    {
+                        databaseCreator.Create();
+                    }
+
+                    var defaultSchema = dbContext.Model.GetDefaultSchema();
+                    if (!string.IsNullOrWhiteSpace(defaultSchema))
+                    {
+                        try
+                        {
+                            var createSchemaSql = $@"
+                                IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '{defaultSchema}')
+                                BEGIN
+                                    EXEC('CREATE SCHEMA [{defaultSchema}]')
+                                END";
+                            dbContext.Database.ExecuteSqlRaw(createSchemaSql);
+                        }
+                        catch
+                        {
+                            // Schema creation fallback if already existing or unsupported
+                        }
+                    }
+
+                    try
+                    {
+                        databaseCreator.CreateTables();
+                        logger.LogInformation("Tables created for DbContext {DbContextName}", dbContext.GetType().Name);
+                    }
+                    catch
+                    {
+                        // Tables may already exist
+                    }
                 }
 
                 try
                 {
-                    databaseCreator.CreateTables();
-                    logger.LogInformation("Tables created for DbContext {DbContextName}", dbContext.GetType().Name);
+                    dbContext.Database.Migrate();
+                    logger.LogInformation("Migrations applied for DbContext {DbContextName}", dbContext.GetType().Name);
                 }
                 catch
                 {
-                    // Tables may already exist
+                    // Ignore migration errors if no migration history/files
                 }
             }
-
-            dbContext.Database.Migrate();
-            logger.LogInformation("Migrations applied for DbContext {DbContextName}", dbContext.GetType().Name);
+            else
+            {
+                dbContext.Database.EnsureCreated();
+                logger.LogInformation("EnsureCreated applied for non-relational DbContext {DbContextName}", dbContext.GetType().Name);
+            }
         }
         catch (Exception ex)
         {

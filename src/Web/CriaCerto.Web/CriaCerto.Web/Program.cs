@@ -3,7 +3,20 @@ using CriaCerto.Web.Components;
 using CriaCerto.Web.Client.Services;
 using CriaCerto.Web.Client.Auth;
 
+using Microsoft.AspNetCore.DataProtection;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Data Protection to persist keys across container restarts
+var keysDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "dataprotection-keys"));
+if (!keysDirectory.Exists)
+{
+    keysDirectory.Create();
+}
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(keysDirectory)
+    .SetApplicationName("CriaCertoWeb");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -46,6 +59,29 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException)
+    {
+        foreach (var cookieKey in context.Request.Cookies.Keys)
+        {
+            if (cookieKey.StartsWith(".AspNetCore.Antiforgery", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.Cookies.Delete(cookieKey);
+            }
+        }
+
+        if (!context.Response.HasStarted)
+        {
+            context.Response.Redirect(context.Request.Path);
+        }
+    }
+});
 
 app.UseAntiforgery();
 

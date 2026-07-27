@@ -14,7 +14,8 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("SqlServer")
-            ?? "Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=CriaCerto@123;TrustServerCertificate=True;Encrypt=False";
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? "Server=localhost,1433;Database=criacerto_foundation;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False";
 
         services.AddDbContextPool<TenancyDbContext>(options =>
         {
