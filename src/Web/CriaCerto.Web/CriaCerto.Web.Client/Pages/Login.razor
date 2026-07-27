@@ -28,9 +28,25 @@
 
                     @if (!string.IsNullOrEmpty(_errorMessage))
                     {
-                        <div class="alert-box mb-6" style="margin-bottom: 1.5rem;">
-                            @_errorMessage
-                        </div>
+                        @if (_hasNoTenantError)
+                        {
+                            <div class="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-900" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background-color: #fffbeb; color: #78350f; border: 1px solid #fde68a;">
+                                <div style="font-weight: bold; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span class="material-symbols-outlined" style="color: #d97706;">warning</span>
+                                    Fazenda Não Cadastrada
+                                </div>
+                                <p style="font-size: 13px; margin-bottom: 1rem; color: #92400e;">Sua conta foi criada, mas ainda não possui nenhuma fazenda associada. Configure as informações da sua fazenda para liberar o acesso ao sistema.</p>
+                                <button type="button" @onclick="GoToOnboardingFromLogin" class="w-full h-[42px] text-white font-bold font-mono text-xs uppercase rounded-lg transition-all" style="width: 100%; height: 42px; background-color: var(--cc-primary); border: none; border-radius: 8px; cursor: pointer;">
+                                    Cadastrar Minha Fazenda Agora &rarr;
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert-box mb-6" style="margin-bottom: 1.5rem;">
+                                @_errorMessage
+                            </div>
+                        }
                     }
 
                     <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin" class="space-y-6">
@@ -156,6 +172,7 @@
     private LoginModel _loginModel = new();
     private bool _isLoading;
     private string? _errorMessage;
+    private bool _hasNoTenantError;
     private Step _currentStep = Step.Credentials;
     private List<TenantDto> _availableTenants = new();
     private Guid _userId;
@@ -227,6 +244,7 @@
                 {
                     var err = await response.Content.ReadFromJsonAsync<CriaCerto.BuildingBlocks.Abstractions.Results.Error>();
                     _errorMessage = err?.Message ?? "Erro ao realizar login.";
+                    _hasNoTenantError = err?.Code == "Auth.NoTenantAssociation" || (_errorMessage != null && _errorMessage.Contains("não está associada a nenhuma granja"));
                 }
                 catch
                 {
@@ -242,6 +260,12 @@
         {
             _isLoading = false;
         }
+    }
+
+    private void GoToOnboardingFromLogin()
+    {
+        var url = $"/onboarding?email={Uri.EscapeDataString(_loginModel.Email)}";
+        Navigation.NavigateTo(url);
     }
 
     private async Task HandleSelectTenant(Guid tenantId)

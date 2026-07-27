@@ -31,9 +31,16 @@
                 <div class="p-6 rounded-lg bg-green-50 text-green-800 text-center space-y-4" style="padding: 1.5rem; border-radius: 8px; background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; text-align: center;">
                     <span class="material-symbols-outlined text-[48px]" style="color: #16a34a;">check_circle</span>
                     <h3 class="font-bold text-lg" style="margin: 0.5rem 0;">Conta Criada com Sucesso!</h3>
-                    <p class="text-sm" style="font-size: 14px; margin-bottom: 1rem;">Sua conta foi cadastrada. Você já pode acessar o sistema ou iniciar o cadastro da sua fazenda.</p>
-                    <button class="w-full h-[44px] text-white font-bold rounded-lg transition-all" 
-                            style="width: 100%; height: 44px; background-color: var(--cc-primary); border: none; border-radius: 8px; cursor: pointer;"
+                    <p class="text-sm" style="font-size: 14px; margin-bottom: 1.25rem;">Sua conta foi criada. Agora, cadastre as informações da sua fazenda para liberar seu acesso ao sistema.</p>
+                    
+                    <button class="w-full h-[48px] text-white font-mono text-[14px] uppercase font-bold rounded-lg transition-all" 
+                            style="width: 100%; height: 48px; background-color: var(--cc-primary); border: none; border-radius: 8px; cursor: pointer; margin-bottom: 0.75rem;"
+                            @onclick="GoToOnboarding">
+                        Cadastrar Minha Fazenda Agora &rarr;
+                    </button>
+
+                    <button class="w-full text-center text-sm font-semibold hover:underline" 
+                            style="width: 100%; border: none; background: transparent; color: var(--cc-primary); font-size: 14px; cursor: pointer;"
                             @onclick='() => Navigation.NavigateTo("/login")'>
                         Ir para o Login
                     </button>
@@ -109,6 +116,10 @@
     private bool _registrationSuccess;
     private string? _errorMessage;
 
+    private string? _createdUserId;
+    private string? _createdUserEmail;
+    private string? _createdUserName;
+
     private class RegisterModel
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "O nome completo é obrigatório.")]
@@ -130,6 +141,8 @@
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
+    private record RegisteredUserResponse(Guid Id, string FullName, string Email, string? PhoneNumber);
+
     private async Task HandleRegister()
     {
         _isLoading = true;
@@ -148,6 +161,10 @@
             var response = await Http.PostAsJsonAsync("/api/auth/register", payload);
             if (response.IsSuccessStatusCode)
             {
+                var userDto = await response.Content.ReadFromJsonAsync<RegisteredUserResponse>();
+                _createdUserId = userDto?.Id.ToString();
+                _createdUserEmail = userDto?.Email ?? _registerModel.Email;
+                _createdUserName = userDto?.FullName ?? _registerModel.FullName;
                 _registrationSuccess = true;
             }
             else
@@ -171,5 +188,11 @@
         {
             _isLoading = false;
         }
+    }
+
+    private void GoToOnboarding()
+    {
+        var url = $"/onboarding?userId={_createdUserId}&email={Uri.EscapeDataString(_createdUserEmail ?? "")}&name={Uri.EscapeDataString(_createdUserName ?? "")}";
+        Navigation.NavigateTo(url);
     }
 }

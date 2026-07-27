@@ -3,6 +3,7 @@
 @layout EmptyLayout
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject Auth.CustomAuthStateProvider AuthStateProvider
 
 <PageTitle>Cria Certo - Configuração Inicial da Fazenda</PageTitle>
 
@@ -259,6 +260,12 @@
     [SupplyParameterFromQuery]
     public string? UserId { get; set; }
 
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Name { get; set; }
+
     private int CurrentStep = 1;
     private bool IsLoading;
     private string? ErrorMessage;
@@ -277,10 +284,9 @@
 
     protected override void OnInitialized()
     {
-        if (string.IsNullOrEmpty(UserId))
+        if (!string.IsNullOrWhiteSpace(Name))
         {
-            // Fallback GUID if not passed via query string
-            UserId = Guid.NewGuid().ToString();
+            ProducerName = Uri.UnescapeDataString(Name);
         }
     }
 
@@ -328,14 +334,16 @@
 
         try
         {
-            if (!Guid.TryParse(UserId, out var parsedUserId))
+            Guid? parsedUserId = null;
+            if (!string.IsNullOrEmpty(UserId) && Guid.TryParse(UserId, out var g) && g != Guid.Empty)
             {
-                parsedUserId = Guid.NewGuid();
+                parsedUserId = g;
             }
 
             var payload = new
             {
                 UserId = parsedUserId,
+                UserEmail = string.IsNullOrWhiteSpace(Email) ? null : Uri.UnescapeDataString(Email),
                 Name = FarmName,
                 CNPJ = CNPJ,
                 State = State,
@@ -353,12 +361,11 @@
                 var authResult = await response.Content.ReadFromJsonAsync<OnboardingAuthResponse>();
                 if (authResult != null && !string.IsNullOrEmpty(authResult.Token))
                 {
-                    // Redirect to login or home dashboard with active session
-                    Navigation.NavigateTo("/login");
+                    await AuthStateProvider.MarkUserAsAuthenticated(authResult.Token);
+                    Navigation.NavigateTo("");
                 }
                 else
                 {
-
                     Navigation.NavigateTo("/login");
                 }
             }

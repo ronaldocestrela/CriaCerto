@@ -8,8 +8,9 @@ public sealed class CreateTenantCommandValidator : AbstractValidator<CreateTenan
 
     public CreateTenantCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("O ID do usuário é obrigatório.");
+        RuleFor(x => x)
+            .Must(x => (x.UserId.HasValue && x.UserId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(x.UserEmail))
+            .WithMessage("O usuário (ID ou E-mail) é obrigatório para cadastrar a fazenda.");
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("O nome da fazenda é obrigatório.")

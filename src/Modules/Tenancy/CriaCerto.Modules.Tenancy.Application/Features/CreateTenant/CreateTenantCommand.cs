@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CriaCerto.Modules.Tenancy.Application.Features.CreateTenant;
 
 public record CreateTenantCommand(
-    Guid UserId,
+    Guid? UserId,
     string Name,
     string CNPJ,
     string State,
@@ -16,7 +16,8 @@ public record CreateTenantCommand(
     string StateRegistration,
     decimal AreaInHectares,
     string SubscribedPlan,
-    int Capacity
+    int Capacity,
+    string? UserEmail = null
 ) : IRequest<Result<AuthResponse>>;
 
 public sealed class CreateTenantCommandHandler : IRequestHandler<CreateTenantCommand, Result<AuthResponse>>
@@ -32,14 +33,27 @@ public sealed class CreateTenantCommandHandler : IRequestHandler<CreateTenantCom
 
     public async Task<Result<AuthResponse>> Handle(CreateTenantCommand request, CancellationToken cancellationToken)
     {
-        var user = await _dbContext.Users
-            .Include(u => u.UserTenants)
-            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+        User? user = null;
+
+        if (request.UserId.HasValue && request.UserId.Value != Guid.Empty)
+        {
+            user = await _dbContext.Users
+                .Include(u => u.UserTenants)
+                .FirstOrDefaultAsync(u => u.Id == request.UserId.Value, cancellationToken);
+        }
+
+        if (user == null && !string.IsNullOrWhiteSpace(request.UserEmail))
+        {
+            var normalizedEmail = request.UserEmail.Trim().ToLowerInvariant();
+            user = await _dbContext.Users
+                .Include(u => u.UserTenants)
+                .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+        }
 
         if (user == null)
         {
             return Result.Failure<AuthResponse>(
-                Error.NotFound("User.NotFound", "Usuário não encontrado para criação da fazenda."));
+                Error.NotFound("User.NotFound", "Usuário não encontrado para criação da fazenda. Por favor, faça o cadastro novamente."));
         }
 
         var plan = string.IsNullOrWhiteSpace(request.SubscribedPlan) ? "Starter" : request.SubscribedPlan.Trim();
