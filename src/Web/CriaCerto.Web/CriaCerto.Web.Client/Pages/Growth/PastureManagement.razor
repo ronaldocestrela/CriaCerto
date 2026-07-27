@@ -5,6 +5,7 @@
 @using CriaCerto.Web.Client.Models
 @inject CriaCerto.Web.Client.Services.GrowthApiClient GrowthApi
 @inject IJSRuntime JSRuntime
+@inject Auth.CustomAuthStateProvider AuthStateProvider
 
 <PageTitle>Cria Certo - Manejo de Pastos e Lotação (UA/ha)</PageTitle>
 
@@ -182,7 +183,7 @@
 <MoveLotModal IsOpen="_showMoveLotModal" TenantId="_tenantId" PreSelectedPaddockId="_preSelectedPaddockId" ActiveLots="_lots" Paddocks="_paddocks" OnSaved="LoadDataAsync" OnClose="() => _showMoveLotModal = false" />
 
 @code {
-    private readonly Guid _tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private Guid _tenantId = Guid.Empty;
     private readonly List<PaddockStockingRateDto> _paddocks = new();
     private readonly List<LotDto> _lots = new();
 
@@ -201,6 +202,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var tenantClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantClaim, out var tenantId))
+            {
+                _tenantId = tenantId;
+            }
+        }
         await LoadDataAsync();
     }
 
@@ -209,27 +220,23 @@
         _isLoading = true;
         try
         {
-            var paddocksTask = GrowthApi.GetPaddocksAsync(_tenantId);
-            var lotsTask = GrowthApi.GetLotsAsync(_tenantId);
-
-            await Task.WhenAll(paddocksTask, lotsTask);
-
-            _paddocks.Clear();
-            _paddocks.AddRange(paddocksTask.Result);
-
-            _lots.Clear();
-            _lots.AddRange(lotsTask.Result);
-
-            if (_paddocks.Count == 0 && _lots.Count == 0)
+            if (_tenantId != Guid.Empty)
             {
-                SeedDemoData();
-            }
+                var paddocksTask = GrowthApi.GetPaddocksAsync(_tenantId);
+                var lotsTask = GrowthApi.GetLotsAsync(_tenantId);
 
+                await Task.WhenAll(paddocksTask, lotsTask);
+
+                _paddocks.Clear();
+                _paddocks.AddRange(paddocksTask.Result);
+
+                _lots.Clear();
+                _lots.AddRange(lotsTask.Result);
+            }
             _isOffline = false;
         }
         catch
         {
-            SeedDemoData();
             _isOffline = true;
         }
         finally
@@ -271,21 +278,5 @@
                 _lots.Remove(lot);
             }
         }
-    }
-
-    private void SeedDemoData()
-    {
-        _paddocks.Clear();
-        var pad1 = Guid.NewGuid();
-        var pad2 = Guid.NewGuid();
-        var pad3 = Guid.NewGuid();
-
-        _paddocks.Add(new PaddockStockingRateDto(pad1, "Pasto da Sede", "PIQ-01", 15.0m, 20.0m, PaddockStatus.Active, 18.5m, 1.23m, 25, 1, false, true));
-        _paddocks.Add(new PaddockStockingRateDto(pad2, "Pasto Varjão 02", "PIQ-02", 10.0m, 12.0m, PaddockStatus.Active, 15.0m, 1.50m, 20, 1, true, false));
-        _paddocks.Add(new PaddockStockingRateDto(pad3, "Pasto Reserva Pousio", "PIQ-03", 20.0m, 30.0m, PaddockStatus.Resting, 0.0m, 0.0m, 0, 0, false, false));
-
-        _lots.Clear();
-        _lots.Add(new LotDto(Guid.NewGuid(), "Lote Engorda Nelore", "L-ENG-01", LotCategory.Engorda, pad1, "Pasto da Sede", 25, 333.0m, 8325.0m, 18.5m, LotStatus.Active, DateTime.UtcNow));
-        _lots.Add(new LotDto(Guid.NewGuid(), "Lote Recria Novilhas", "L-NOV-01", LotCategory.Recria, pad2, "Pasto Varjão 02", 20, 337.5m, 6750.0m, 15.0m, LotStatus.Active, DateTime.UtcNow));
     }
 }

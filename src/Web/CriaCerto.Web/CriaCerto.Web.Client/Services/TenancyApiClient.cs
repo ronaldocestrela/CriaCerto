@@ -106,6 +106,7 @@ public sealed class TenancyApiClient
 
     public async Task<List<SubscriptionPlanModel>> GetSubscriptionPlansAsync(CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var plans = await _httpClient.GetFromJsonAsync<List<SubscriptionPlanModel>>("/api/v1/tenancy/plans", cancellationToken);
@@ -124,18 +125,20 @@ public sealed class TenancyApiClient
 
     public async Task<TenantProfileModel?> GetTenantProfileAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             return await _httpClient.GetFromJsonAsync<TenantProfileModel>($"/api/v1/tenancy/profile?tenantId={tenantId}", cancellationToken);
         }
         catch
         {
-            return GetFallbackProfile(tenantId);
+            return null;
         }
     }
 
     public async Task<bool> UpdateTenantProfileAsync(UpdateTenantProfileRequest request, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var response = await _httpClient.PutAsJsonAsync("/api/v1/tenancy/profile", request, cancellationToken);
@@ -149,6 +152,7 @@ public sealed class TenancyApiClient
 
     public async Task<List<ProductionUnitModel>> GetProductionUnitsAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var units = await _httpClient.GetFromJsonAsync<List<ProductionUnitModel>>($"/api/v1/tenancy/production-units?tenantId={tenantId}", cancellationToken);
@@ -159,14 +163,15 @@ public sealed class TenancyApiClient
         }
         catch
         {
-            // Fallback
+            // Return empty list on failure
         }
 
-        return GetFallbackProductionUnits(tenantId);
+        return new List<ProductionUnitModel>();
     }
 
     public async Task<ProductionUnitModel?> CreateProductionUnitAsync(CreateProductionUnitRequest request, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync("/api/v1/tenancy/production-units", request, cancellationToken);
@@ -177,25 +182,14 @@ public sealed class TenancyApiClient
         }
         catch
         {
-            // Fallback creation
         }
 
-        return new ProductionUnitModel(
-            Guid.NewGuid(),
-            request.TenantId,
-            $"UN-00{Random.Shared.Next(4, 99)}-SFE",
-            request.Name,
-            request.Type,
-            "Active",
-            request.Capacity,
-            0,
-            request.LocationDetails,
-            0m
-        );
+        return null;
     }
 
     public async Task<TeamOverviewModel> GetTeamMembersAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var overview = await _httpClient.GetFromJsonAsync<TeamOverviewModel>($"/api/v1/tenancy/members?tenantId={tenantId}", cancellationToken);
@@ -206,14 +200,15 @@ public sealed class TenancyApiClient
         }
         catch
         {
-            // Fallback
+            // Return empty list on failure
         }
 
-        return GetFallbackTeamOverview(tenantId);
+        return new TeamOverviewModel(new List<TeamMemberModel>(), new List<TeamInviteModel>());
     }
 
     public async Task<TeamInviteModel?> InviteTeamMemberAsync(InviteTeamMemberRequest request, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync("/api/v1/tenancy/invites", request, cancellationToken);
@@ -224,23 +219,14 @@ public sealed class TenancyApiClient
         }
         catch
         {
-            // Fallback
         }
 
-        return new TeamInviteModel(
-            Guid.NewGuid(),
-            request.TenantId,
-            request.Email,
-            request.Role,
-            Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 16),
-            DateTime.UtcNow,
-            DateTime.UtcNow.AddDays(7),
-            false
-        );
+        return null;
     }
 
     public async Task<bool> RevokeInviteAsync(Guid tenantId, Guid inviteId, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/tenancy/invites/{inviteId}?tenantId={tenantId}", cancellationToken);
@@ -248,12 +234,13 @@ public sealed class TenancyApiClient
         }
         catch
         {
-            return true;
+            return false;
         }
     }
 
     public async Task<bool> RemoveTeamMemberAsync(Guid tenantId, Guid userId, CancellationToken cancellationToken = default)
     {
+        await AttachTokenAsync();
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/tenancy/members/{userId}?tenantId={tenantId}", cancellationToken);
@@ -261,7 +248,23 @@ public sealed class TenancyApiClient
         }
         catch
         {
-            return true;
+            return false;
+        }
+    }
+
+    private async Task AttachTokenAsync()
+    {
+        if (_jsRuntime == null) return;
+        try
+        {
+            var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            _httpClient.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(token)
+                ? null
+                : new AuthenticationHeaderValue("Bearer", token);
+        }
+        catch
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
         }
     }
 

@@ -7,6 +7,7 @@
 @using CriaCerto.Web.Client.Services
 @inject NutritionApiClient ApiClient
 @inject GrowthApiClient GrowthApiClient
+@inject Auth.CustomAuthStateProvider AuthStateProvider
 @attribute [Authorize]
 
 <PageTitle>Suplementação de Pasto | CriaCerto</PageTitle>
@@ -142,7 +143,7 @@
 }
 
 @code {
-    private Guid currentTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private Guid currentTenantId = Guid.Empty;
     private bool showModal = false;
 
     private Guid selectedPaddockId = Guid.Empty;
@@ -158,13 +159,27 @@
 
     protected override async Task OnInitializedAsync()
     {
-        availablePaddocks = await GrowthApiClient.GetPaddocksAsync(currentTenantId);
-        availableLots = await GrowthApiClient.GetLotsAsync(currentTenantId);
-        availableRations = await ApiClient.GetRationsAsync(currentTenantId);
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var tenantClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantClaim, out var tenantId))
+            {
+                currentTenantId = tenantId;
+            }
+        }
 
-        if (availablePaddocks.Any()) selectedPaddockId = availablePaddocks.First().Id;
-        if (availableLots.Any()) selectedLotId = availableLots.First().Id;
-        if (availableRations.Any()) selectedRationId = availableRations.First().Id;
+        if (currentTenantId != Guid.Empty)
+        {
+            availablePaddocks = await GrowthApiClient.GetPaddocksAsync(currentTenantId);
+            availableLots = await GrowthApiClient.GetLotsAsync(currentTenantId);
+            availableRations = await ApiClient.GetRationsAsync(currentTenantId);
+
+            if (availablePaddocks.Any()) selectedPaddockId = availablePaddocks.First().Id;
+            if (availableLots.Any()) selectedLotId = availableLots.First().Id;
+            if (availableRations.Any()) selectedRationId = availableRations.First().Id;
+        }
     }
 
     private void OpenModal() => showModal = true;

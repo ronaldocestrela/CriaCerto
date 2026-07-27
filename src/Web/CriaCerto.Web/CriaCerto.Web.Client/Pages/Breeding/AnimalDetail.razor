@@ -167,14 +167,10 @@
         try
         {
             _animal = await PlantelApi.GetCowAsync(Id);
-            if (_animal == null)
-            {
-                SeedFallbackDetail();
-            }
         }
         catch
         {
-            SeedFallbackDetail();
+            _animal = null;
         }
         finally
         {
@@ -191,38 +187,5 @@
     private void GoBack()
     {
         Navigation.NavigateTo("/breeding/registry");
-    }
-
-    private void SeedFallbackDetail()
-    {
-        _animal = new CowDetailDto(
-            Id,
-            "BR-101",
-            "1000293",
-            "RFID-001",
-            "TAT-101",
-            "Mimosa",
-            "PBB-9901",
-            "Nelore PO",
-            "Nascimento Interno",
-            DateTime.Today.AddMonths(-36),
-            DateTime.Today.AddMonths(-36),
-            180.0m,
-            "Touro Nelore PO 5000",
-            "BR-012 (Matriz Sorte)",
-            3.5m,
-            "Matriz",
-            ReproductiveStatus.Pregnant,
-            3,
-            DateTime.Today.AddMonths(-5),
-            12.2,
-            45,
-            new List<TimelineEventDto>
-            {
-                new(DateTime.Today.AddMonths(-5), "Calving", "Registro de Parto", "Bezerro macho nascido com 32kg.", "Reprodução", "child_care"),
-                new(DateTime.Today.AddMonths(-7), "Sanitary", "Vacinação Febre Aftosa", "Dose aplicada com carência de 30 dias.", "Sanidade", "vaccines"),
-                new(DateTime.Today.AddMonths(-12), "Weighing", "Pesagem de Curral", "Peso registrado: 450.5 kg (GPD: +0.85 kg/dia).", "Curral", "scale"),
-                new(DateTime.Today.AddMonths(-36), "Birth", "Nascimento do Animal", "Raça Nelore PO. Registrado em Nascimento Interno.", "Cadastral", "cake")
-            });
     }
 }

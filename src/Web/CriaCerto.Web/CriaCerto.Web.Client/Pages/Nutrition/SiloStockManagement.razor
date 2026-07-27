@@ -5,6 +5,7 @@
 @using CriaCerto.Web.Client.Services
 @inject NutritionApiClient ApiClient
 @inject IJSRuntime JSRuntime
+@inject Auth.CustomAuthStateProvider AuthStateProvider
 @attribute [Authorize]
 
 <PageTitle>Gestão de Silos e Insumos | CriaCerto</PageTitle>
@@ -188,7 +189,7 @@
 }
 
 @code {
-    private Guid currentTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private Guid currentTenantId = Guid.Empty;
     private bool isLoading = true;
     private List<SiloStockDto> silos = new();
 
@@ -208,13 +209,26 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var tenantClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantClaim, out var tenantId))
+            {
+                currentTenantId = tenantId;
+            }
+        }
         await LoadDataAsync();
     }
 
     private async Task LoadDataAsync()
     {
         isLoading = true;
-        silos = await ApiClient.GetSilosAsync(currentTenantId);
+        if (currentTenantId != Guid.Empty)
+        {
+            silos = await ApiClient.GetSilosAsync(currentTenantId);
+        }
         isLoading = false;
     }
 

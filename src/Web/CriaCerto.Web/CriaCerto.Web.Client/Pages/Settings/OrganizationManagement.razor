@@ -281,8 +281,8 @@
     OnInvited="HandleMemberInvited" />
 
 @code {
-    private string _tenantName = "Fazenda Santa Fé - Matriz";
-    private string _subscribedPlan = "Enterprise";
+    private string _tenantName = "";
+    private string _subscribedPlan = "";
     private Guid? _tenantId;
 
     private TenantProfileModel? _profile;
@@ -319,11 +319,16 @@
             }
         }
 
-        _tenantId ??= Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-        _profile = await TenancyApi.GetTenantProfileAsync(_tenantId.Value);
-        _units = await TenancyApi.GetProductionUnitsAsync(_tenantId.Value);
-        _teamOverview = await TenancyApi.GetTeamMembersAsync(_tenantId.Value);
+        if (_tenantId.HasValue)
+        {
+            _profile = await TenancyApi.GetTenantProfileAsync(_tenantId.Value);
+            if (_profile != null && !string.IsNullOrEmpty(_profile.Name))
+            {
+                _tenantName = _profile.Name;
+            }
+            _units = await TenancyApi.GetProductionUnitsAsync(_tenantId.Value);
+            _teamOverview = await TenancyApi.GetTeamMembersAsync(_tenantId.Value);
+        }
     }
 
     private void OpenEditProfile()

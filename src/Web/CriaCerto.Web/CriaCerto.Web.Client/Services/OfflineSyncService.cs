@@ -107,6 +107,7 @@ public sealed class OfflineSyncService : IOfflineSyncService
 
         try
         {
+            await AttachTokenAsync();
             foreach (var op in operationsToProcess)
             {
                 op.Status = SyncOperationStatus.Syncing;
@@ -178,6 +179,7 @@ public sealed class OfflineSyncService : IOfflineSyncService
 
         if (resolution == ConflictResolutionOption.UseLocal)
         {
+            await AttachTokenAsync();
             // Força a substituição no servidor
             var response = await _httpClient.PostAsJsonAsync($"api/v1/sync/{op.ModuleName}/{op.ActionType}?force=true", op.PayloadJson);
             if (response.IsSuccessStatusCode)
@@ -251,4 +253,19 @@ public sealed class OfflineSyncService : IOfflineSyncService
     }
 
     private void NotifyStateChanged() => OnStateChanged?.Invoke();
+
+    private async Task AttachTokenAsync()
+    {
+        try
+        {
+            var token = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            _httpClient.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(token)
+                ? null
+                : new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+        catch
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+    }
 }

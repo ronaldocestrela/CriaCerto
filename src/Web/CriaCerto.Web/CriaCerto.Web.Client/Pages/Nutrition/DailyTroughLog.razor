@@ -9,6 +9,7 @@
 @inject NutritionApiClient ApiClient
 @inject GrowthApiClient GrowthApiClient
 @inject IJSRuntime JSRuntime
+@inject Auth.CustomAuthStateProvider AuthStateProvider
 @attribute [Authorize]
 
 <PageTitle>Trato Diário & Leitura de Cocho | CriaCerto</PageTitle>
@@ -155,7 +156,7 @@
 </div>
 
 @code {
-    private Guid currentTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private Guid currentTenantId = Guid.Empty;
     private Guid selectedLotId = Guid.Empty;
     private Guid selectedRationId = Guid.Empty;
     private decimal offeredAsFedKg = 1200m;
@@ -170,18 +171,32 @@
 
     protected override async Task OnInitializedAsync()
     {
-        availableLots = await GrowthApiClient.GetLotsAsync(currentTenantId);
-        availableRations = await ApiClient.GetRationsAsync(currentTenantId);
-
-        if (availableLots.Any())
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
         {
-            selectedLotId = availableLots.First().Id;
-            await UpdateAnalyticsAsync();
+            var tenantClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantClaim, out var tenantId))
+            {
+                currentTenantId = tenantId;
+            }
         }
 
-        if (availableRations.Any())
+        if (currentTenantId != Guid.Empty)
         {
-            selectedRationId = availableRations.First().Id;
+            availableLots = await GrowthApiClient.GetLotsAsync(currentTenantId);
+            availableRations = await ApiClient.GetRationsAsync(currentTenantId);
+
+            if (availableLots.Any())
+            {
+                selectedLotId = availableLots.First().Id;
+                await UpdateAnalyticsAsync();
+            }
+
+            if (availableRations.Any())
+            {
+                selectedRationId = availableRations.First().Id;
+            }
         }
     }
 

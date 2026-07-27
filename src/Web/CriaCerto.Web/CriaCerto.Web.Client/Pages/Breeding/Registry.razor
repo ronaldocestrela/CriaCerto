@@ -7,6 +7,7 @@
 @inject CriaCerto.Web.Client.Services.PlantelApiClient PlantelApi
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject Auth.CustomAuthStateProvider AuthStateProvider
 
 <PageTitle>Cria Certo - Cadastro & Plantel de Bovinos</PageTitle>
 
@@ -29,74 +30,160 @@
             </div>
         }
 
-        <section class="plantel-hero">
+        <!-- HEADER & ACTIONS -->
+        <div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4">
             <div>
-                <p class="plantel-breadcrumb">PLANTEL / BOVINOCULTURA</p>
-                <h1>Registro de Matrizes e Reprodutores Bovinos</h1>
-                <p>Gestão zootécnica e reprodutiva do rebanho bovino para curral e pasto.</p>
+                <h2 class="h4 mb-1 font-weight-bold text-dark">Plantel Matrizes e Reprodutores</h2>
+                <p class="text-muted small mb-0">Gestão individual de fêmeas em reprodução, IEP, ECC e status reprodutivo.</p>
             </div>
-            <button type="button" class="plantel-primary-action" @onclick="OpenCreateModal">
-                <span class="material-symbols-outlined">add</span>
-                Cadastrar Bovino
-            </button>
-        </section>
-
-        <section class="plantel-kpi-grid">
-            <KpiStatCard Label="Total no Rebanho" Value="@_cows.Count.ToString("N0")" Trend="Animais monitorados" Icon="groups" />
-            <KpiStatCard Label="IEP Médio" Value="@AverageIep.ToString("0.0")" Trend="Meses de Intervalo Entre Partos" Icon="timer" IconClass="primary" />
-            <KpiStatCard Label="Confirmadas Prenhes" Value="@PregnantCount.ToString("N0")" Trend="Diagnósticos positivos de gestação" Icon="child_care" />
-        </section>
-
-        <section class="plantel-toolbar">
-            <PlantelSearchBar Search="@_search" SearchChanged="OnSearchChanged" Placeholder="Buscar por Brinco, Apelido, SISBOV ou RFID..." />
-            <div class="plantel-filter-row">
-                <span>FILTRAR POR:</span>
-                <button class="@FilterClass(null)" @onclick="() => SetFilter(null)">Todas</button>
-                <button class="@FilterClass(ReproductiveStatus.Open)" @onclick="() => SetFilter(ReproductiveStatus.Open)">Vazia</button>
-                <button class="@FilterClass(ReproductiveStatus.InIatfProtocol)" @onclick="() => SetFilter(ReproductiveStatus.InIatfProtocol)">Protocolo IATF</button>
-                <button class="@FilterClass(ReproductiveStatus.Inseminated)" @onclick="() => SetFilter(ReproductiveStatus.Inseminated)">Inseminada</button>
-                <button class="@FilterClass(ReproductiveStatus.Pregnant)" @onclick="() => SetFilter(ReproductiveStatus.Pregnant)">Prenhe</button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-1" @onclick="LoadCowsAsync">
+                    <span class="material-symbols-outlined">refresh</span> Sincronizar
+                </button>
+                <button class="btn btn-success d-flex align-items-center gap-1" @onclick="OpenCreateModal">
+                    <span class="material-symbols-outlined">add</span> Novo Animal
+                </button>
             </div>
-        </section>
+        </div>
 
-        <section class="plantel-table-card">
-            <table class="plantel-table" aria-label="Bovinos cadastradas">
-                <thead>
+        <!-- METRICS SUMMARY CARDS -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase font-weight-bold">Total Fêmeas Ativas</span>
+                            <h3 class="h3 font-weight-bold mb-0 text-dark">@_cows.Count</h3>
+                        </div>
+                        <div class="p-3 bg-light-success text-success rounded-circle">
+                            <span class="material-symbols-outlined">pets</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase font-weight-bold">Matrizes Prenhes</span>
+                            <h3 class="h3 font-weight-bold mb-0 text-primary">@PregnantCount</h3>
+                        </div>
+                        <div class="p-3 bg-light-primary text-primary rounded-circle">
+                            <span class="material-symbols-outlined">pregnancy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase font-weight-bold">Média IEP Estimada</span>
+                            <h3 class="h3 font-weight-bold mb-0 text-warning">@AverageIep.ToString("F1") <span class="fs-6 font-weight-normal text-muted">meses</span></h3>
+                        </div>
+                        <div class="p-3 bg-light-warning text-warning rounded-circle">
+                            <span class="material-symbols-outlined">event_repeat</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH & FILTER BAR -->
+        <div class="card border-0 shadow-sm p-3 mb-4 bg-white rounded-3">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <span class="material-symbols-outlined text-muted">search</span>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar por brinco, nome, chip ou SISBOV..." @bind="_search" @bind:event="oninput" @bind:after="LoadCowsAsync" />
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+                    <button class="btn btn-sm btn-outline-secondary @FilterClass(null)" @onclick="() => SetFilter(null)">Todos</button>
+                    <button class="btn btn-sm btn-outline-secondary @FilterClass(ReproductiveStatus.Open)" @onclick="() => SetFilter(ReproductiveStatus.Open)">Vazias</button>
+                    <button class="btn btn-sm btn-outline-secondary @FilterClass(ReproductiveStatus.InIatfProtocol)" @onclick="() => SetFilter(ReproductiveStatus.InIatfProtocol)">Em IATF</button>
+                    <button class="btn btn-sm btn-outline-secondary @FilterClass(ReproductiveStatus.Pregnant)" @onclick="() => SetFilter(ReproductiveStatus.Pregnant)">Prenhes</button>
+                    <button class="btn btn-sm btn-outline-secondary @FilterClass(ReproductiveStatus.Lactating)" @onclick="() => SetFilter(ReproductiveStatus.Lactating)">Lactantes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATAGRID TABLE -->
+        <section class="card border-0 shadow-sm bg-white rounded-3 overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
                     <tr>
-                        <th>Brinco / Identificação</th>
-                        <th>Apelido / Raça</th>
-                        <th>Categoria / Custo</th>
+                        <th class="ps-4">Brinco / Apelido</th>
+                        <th>Raça / Categoria</th>
                         <th>Status Reprodutivo</th>
                         <th>ECC</th>
-                        <th>Ações</th>
+                        <th>Último Parto / Inseminação</th>
+                        <th class="text-end pe-4">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var cow in FilteredCows)
+                    @if (_cows.Count == 0)
                     {
-                        <tr style="cursor: pointer;" @onclick="() => NavigateToDetail(cow.Id)">
-                            <td>
-                                <strong class="plantel-tag">@cow.EarTag</strong>
-                                <small class="d-block text-muted">SISBOV: @(cow.SisbovId ?? "N/A") | RFID: @(cow.RfidTag ?? "N/A")</small>
-                            </td>
-                            <td>
-                                <strong>@(cow.Nickname ?? cow.EarTag)</strong>
-                                <small class="d-block text-muted">@cow.Breed</small>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">@cow.Category</span>
-                            </td>
-                            <td><span class="status-badge">@cow.Status</span></td>
-                            <td>@(cow.BodyConditionScore?.ToString("0.0") ?? "-")</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true" @onclick="() => NavigateToDetail(cow.Id)">
-                                    Ficha Completa
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-success ms-1" @onclick:stopPropagation="true" @onclick="() => OpenDispatchModal(cow)">
-                                    <i class="bi bi-truck me-1"></i>Despacho
-                                </button>
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <span class="material-symbols-outlined fs-1 d-block mb-2 text-secondary">pets</span>
+                                Nenhum animal encontrado nesta fazenda.
                             </td>
                         </tr>
+                    }
+                    else
+                    {
+                        @foreach (var cow in FilteredCows)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-dark font-monospace fs-6">@cow.EarTag</span>
+                                        @if (!string.IsNullOrEmpty(cow.Nickname))
+                                        {
+                                            <span class="text-secondary small">(@cow.Nickname)</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(cow.SisbovId))
+                                    {
+                                        <div class="text-muted extra-small font-monospace">SISBOV: @cow.SisbovId</div>
+                                    }
+                                </td>
+                                <td>
+                                    <div>@cow.Breed</div>
+                                    <span class="badge bg-light text-dark border extra-small">@cow.Category</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">@cow.Status</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">@(cow.BodyConditionScore?.ToString("F1") ?? "-")</span>
+                                </td>
+                                <td>
+                                    @if (cow.LastCalvingDate.HasValue)
+                                    {
+                                        <div>@cow.LastCalvingDate.Value.ToString("dd/MM/yyyy")</div>
+                                        <div class="text-muted extra-small">IEP: @(cow.IepMonths?.ToString("F1") ?? "-") meses</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted extra-small">N/A</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" @onclick="() => NavigateToDetail(cow.Id)" title="Ver Ficha Completa">
+                                            <span class="material-symbols-outlined fs-6">visibility</span>
+                                        </button>
+                                        <button class="btn btn-outline-danger" @onclick="() => OpenDispatchModal(cow)" title="Registrar Baixa / Descarte">
+                                            <span class="material-symbols-outlined fs-6">output</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -107,7 +194,7 @@
 @if (_showDispatchModal && _selectedCow != null)
 {
     <DispatchAnimalModal 
-        TenantId="@Guid.Parse("00000000-0000-0000-0000-000000000001")"
+        TenantId="_tenantId"
         AnimalId="@_selectedCow.Id"
         AnimalEarTag="@_selectedCow.EarTag"
         OnClose="CloseDispatchModal"
@@ -253,8 +340,20 @@
     private double AverageIep => _cows.Where(c => c.IepMonths.HasValue).Select(c => c.IepMonths!.Value).DefaultIfEmpty(12.5).Average();
     private int PregnantCount => _cows.Count(c => c.Status == ReproductiveStatus.Pregnant);
 
+    private Guid _tenantId = Guid.Empty;
+
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var tenantClaim = user.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantClaim, out var tenantId))
+            {
+                _tenantId = tenantId;
+            }
+        }
         await LoadCowsAsync();
     }
 
@@ -268,15 +367,11 @@
             {
                 _cows.AddRange(response.Items);
             }
-            else
-            {
-                SeedFallbackData();
-            }
             _offlineMode = false;
         }
         catch
         {
-            SeedFallbackData();
+            _cows.Clear();
             _offlineMode = true;
         }
     }
@@ -339,17 +434,5 @@
     private void NavigateToDetail(Guid id)
     {
         Navigation.NavigateTo($"/breeding/animal/{id}");
-    }
-
-    private void SeedFallbackData()
-    {
-        _cows.Clear();
-        _cows.AddRange(new[]
-        {
-            new CowSummaryDto(Guid.NewGuid(), "BR-101", "1000293", "RFID-001", "Mimosa", "Nelore", "Matriz", ReproductiveStatus.Pregnant, 3, new DateTime(2025, 2, 10), 12.2, 3.5m),
-            new CowSummaryDto(Guid.NewGuid(), "BR-102", "1000294", "RFID-002", "Estrela", "Angus x Nelore", "Matriz", ReproductiveStatus.InIatfProtocol, 1, new DateTime(2024, 11, 05), 13.0, 3.0m),
-            new CowSummaryDto(Guid.NewGuid(), "BR-103", null, null, "Morena", "Gyr Leiteiro", "Matriz", ReproductiveStatus.Open, 2, new DateTime(2024, 12, 01), 12.8, 3.0m),
-            new CowSummaryDto(Guid.NewGuid(), "BR-104", "1000298", "RFID-005", "Baronesa", "Nelore PO", "Matriz", ReproductiveStatus.Pregnant, 5, new DateTime(2024, 10, 15), 11.9, 4.0m)
-        });
     }
 }
