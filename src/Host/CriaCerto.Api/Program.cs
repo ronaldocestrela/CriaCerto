@@ -111,7 +111,8 @@ var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
         "http://localhost:5000", 
         "http://localhost:5001", 
         "https://localhost:7001", 
-        "http://localhost:5173" 
+        "http://localhost:5173",
+        "https://criacerto.com.br"
     };
 
 builder.Services.AddCors(options =>
